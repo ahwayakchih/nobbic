@@ -243,12 +243,19 @@ function startPod () {
 		return 1
 	fi
 
-	podman pod exists "$podName" || buildPod "$podName" || return 1
+	local existed=$(podman pod exists "$podName" && echo yes)
+	if [ "$existed" != "yes" ] ; then
+		buildPod "$podName" || return 1
+	fi
 
 	echo "Starting '$podName' pod..."
 	podman pod start "$podName" || return 1
-	sleep 1
-	podman exec -it "${podName}-nodebb" tail -f /app/nodebb/logs/output.log
+
+	if [ "$existed" ] ; then
+		podman exec -it "${podName}-nodebb" tail -F /data/nodebb/logs/output.log
+	else
+		podman exec -it "${podName}-nodebb" tail -F /app/logs/deploy.log
+	fi
 }
 
 #

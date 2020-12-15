@@ -3,7 +3,7 @@
 set -e
 
 if [ ! -d "${CONTAINER_REPO_DIR}/nodebb/nodebb" ] ; then
-	./.container/action_hooks/deploy || exit 1
+	./.container/action_hooks/deploy | tee ${CONTAINER_REPO_DIR}logs/deploy.log || exit 1
 	cd "${CONTAINER_REPO_DIR}nodebb"
 else
 	cd "${CONTAINER_REPO_DIR}nodebb"
