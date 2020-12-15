@@ -32,7 +32,7 @@ function showHelp () {
 	echo "APP_ADD_REDIS    - set it to 1 to use default 'alpine3.12' image, or set image name, e.g., docker.io/redis:6.0.9-alpine"
 	echo "You can specify two: one of MongoDB or PostgreSQL and Redis, to make NodeBB use Redis for session storage only."
 	echo ""
-	echo "For example: APP_ADD_MONGODB=1 ./app start my-forum"
+	echo "For example: CONTAINER_APP_DNS_ALIAS=localhost APP_ADD_MONGODB=1 ./app start my-forum"
 	echo "It will create pod that includes MongoDB based on Ubuntu bionic (default) and NodeBB v1.15.5 (default), and then run it."
 }
 
