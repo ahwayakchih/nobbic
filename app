@@ -63,10 +63,10 @@ function podAddMongoDB () {
 	# 	APP_SET_MONGODB_ENV_PASSWORD=MONGO_INITDB_ROOT_PASSWORD
 	# fi
 
-	# if [ -z "$APP_SET_MONGODB_ENV_DBNAME" ] ; then
-	# 	echo "APP_SET_MONGODB_ENV_DBNAME was not set in environment, defaulting to 'MONGO_INITDB_DATABASE'" >&2
-	# 	APP_SET_MONGODB_ENV_DBNAME=MONGO_INITDB_DATABASE
-	# fi
+	if [ -z "$APP_SET_MONGODB_ENV_DBNAME" ] ; then
+		echo "APP_SET_MONGODB_ENV_DBNAME was not set in environment, defaulting to 'MONGO_INITDB_DATABASE'" >&2
+		APP_SET_MONGODB_ENV_DBNAME=MONGO_INITDB_DATABASE
+	fi
 
 	# if [ -z "$APP_ADD_MONGODB_DATA_DIR" ] ; then
 	# 	echo "APP_ADD_MONGODB_DATA_DIR was not specified in environment, using default '/data/db'" >&2
