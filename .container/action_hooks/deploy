@@ -1,0 +1,274 @@
+#!/bin/bash
+
+source "${CONTAINER_REPO_DIR}.container/lib/onbb_utils.sh"
+
+#
+# Prepare config JSON for preconfigured setup
+# @echoes {string} JSON data
+#
+function onbb_setup_config () {
+	# Prepare JSON
+	local json=""
+
+	# Generate URL
+	local fqdn=$(onbb_setup_fqdn)
+	if [ -z "$fqdn" ] ; then
+		echo "ERROR: Could not determine FQDN to use as public URL of forum" >&2
+		return 1
+	fi
+	json=$json'"url":"http://'$fqdn':'${CONTAINER_NODEJS_PORT:-8080}'"'
+
+	# Generate NodeBB secret
+	local secret=`tr -cd '[:alnum:]' < /dev/urandom | fold -w32 | head -n1 | fold -w8 | paste -sd\- -`
+	json=$json',"secret":"'$secret'"'
+
+	# Generate name
+	local name=${CONTAINER_APP_NAME}
+	json=$json',"admin:username":"'$name'"'
+
+	# Generate password
+	local pass=`tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1 | fold -w4 | paste -sd\- -`
+	json=$json',"admin:password":"'$pass'","admin:password:confirm":"'$pass'"'
+
+	# Try to get e-mail, if not found, use fake address
+	local email=$(onbb_setup_email)
+	if [ -z "$email" ] ; then
+		echo "ERROR: NODEBB_ADMIN_EMAIL was not specified" >&2
+		return 1
+	fi
+	json=$json',"admin:email":"'$email'"'
+
+	# Check various setup required variables and exit early if missing any
+	# This kinda duplicates some code, but allows to prevent running long operation before failing anyway
+	if [ -z "$CONTAINER_APP_DNS_ALIAS" -a -z "$CONTAINER_APP_DNS" ] ; then
+		echo "WARNING: When running NodeBB inside a container, you should set either CONTAINER_APP_DNS_ALIAS or CONTAINER_APP_DNS environment variable." >&2
+		echo "         Without them NodeBB or its websockets may be unavailable from the outside." >&2
+		echo "         Setup will use OpenDNS service to discover public IP and use it instead." >&2
+	fi
+
+	if [ -z "$CONTAINER_MONGODB_DB_HOST" -a -z "$CONTAINER_MONGODB_IP" -a -z "$MONGOLAB_URI" -a -z "$CONTAINER_POSTGRES_HOST" -a -z "$CONTAINER_REDIS_HOST" ] ; then
+		echo "ERROR: None of MongoDB, Mongolab, PostgreSQL or Redis database access variables were found in environment." >&2
+		echo "       Specify either CONTAINER_MONGODB_DB_HOST, CONTAINER_MONGODB_IP, MONGOLAB_URI, CONTAINER_POSTGRES_HOST or CONTAINER_REDIS_HOST" >&2
+		return 1
+	fi
+
+	# local database=""
+	# if [ "${CONTAINER_MONGODB_DB_HOST}${CONTAINER_MONGODB_IP}" ] ; then
+	# 	database="mongo"
+	# 	json=$json',"mongo:host":"'${CONTAINER_MONGODB_DB_HOST}${CONTAINER_MONGODB_IP}'"'
+
+	# 	if [ -z "$CONTAINER_MONGODB_DB_PORT" ] ; then
+	# 		echo "WARNING: CONTAINER_MONGODB_DB_PORT was not specified, so default will be used" >&2
+	# 		json=$json',"mongo:port":"27017"'
+	# 	else
+	# 		json=$json',"mongo:port":"'$CONTAINER_MONGODB_DB_PORT'"'
+	# 	fi
+
+	# 	if [ -z "$CONTAINER_MONGODB_DB_NAME" ] ; then
+	# 		if [ "$CONTAINER_APP_NAME" ] ; then
+	# 			echo "WARNING: CONTAINER_MONGODB_DB_NAME was not specified, so '$CONTAINER_APP_NAME' will be used" >&2
+	# 			json=$json',"mongo:database":"'$CONTAINER_APP_NAME'"'
+	# 		else
+	# 			echo "WARNING: CONTAINER_MONGODB_DB_NAME was not specified, so default 'nodebb' will be used" >&2
+	# 			json=$json',"mongo:database":"nodebb"'
+	# 		fi
+	# 	else
+	# 		json=$json',"mongo:database":"'$CONTAINER_MONGODB_DB_NAME'"'
+	# 	fi
+
+	# 	if [ -z "$CONTAINER_MONGODB_DB_USERNAME" ] ; then
+	# 		echo "WARNING: CONTAINER_MONGODB_DB_USERNAME was not specified, which may prevent NodeBB from accessing database" >&2
+	# 	else
+	# 		json=$json',"mongo:username":"'$CONTAINER_MONGODB_DB_USERNAME'"'
+	# 	fi
+	# 	if [ "$CONTAINER_MONGODB_DB_USERNAME" -a -z "$CONTAINER_MONGODB_DB_PASSWORD" ] ; then
+	# 		echo "WARNING: CONTAINER_MONGODB_DB_PASSWORD was not specified, which may prevent NodeBB from accessing database" >&2
+	# 	else
+	# 		json=$json',"mongo:password":"'$CONTAINER_MONGODB_DB_PASSWORD'"'
+	# 	fi
+	# fi
+
+	# if [ "$CONTAINER_REDIS_HOST" ] ; then
+	# 	if [ -z "$database" ] ; then
+	# 		database="redis"
+	# 	fi
+
+	# 	json=$json',"redis:host":"'${CONTAINER_REDIS_HOST}'"'
+
+	# 	if [ -z "$CONTAINER_REDIS_PORT" ] ; then
+	# 		echo "WARNING: CONTAINER_REDIS_PORT was not specified, so default will be used" >&2
+	# 		json=$json',"redis:port":"6379"'
+	# 	else
+	# 		json=$json',"redis:port":"'$CONTAINER_REDIS_PORT'"'
+	# 	fi
+	# 	if [ -z "$REDIS_PASSWORD" ] ; then
+	# 		echo "WARNING: REDIS_PASSWORD was not specified, which may prevent NodeBB from accessing database" >&2
+	# 	fi
+	# fi
+
+	# json=$json',"database":"'$database'"'
+
+	echo "{$json}"
+}
+
+#
+# Clone NodeBB from git and switch to specified version (or latest release)
+#
+# @param {string} url
+# @param {string} version   For example: "1.15.5" or "master"
+#
+function onbb_get_source_from_git () {
+	echo "Downloading NodeBB from git repository"
+
+	local url=$1
+	local version=$2
+
+	if [ "$url" = "" ] ; then
+		echo "URL of NodeBB's git repository is required" >&2
+		return 1
+	fi
+
+	# Remember current working directory and switch to repo directory
+	local d=`pwd`
+	cd $CONTAINER_REPO_DIR
+
+	# Get number of CPUs avaialable
+	local availableCPUs=$(nproc)
+
+	# Clone git repository if it does not exist yet
+	if [ ! -d nodebb ] ; then
+		git clone --recurse-submodules -j${availableCPUs:-1} "${NODEBB_GIT}" nodebb || return 1
+	elif [ ! -d nodebb/.git ] ; then
+		echo "'${CONTAINER_REPO_DIR}nodebb' directory already exists, but does not look like a git repository." >&2
+		echo "Please rename or remove it and try again." >&2
+		return 1
+	else
+		echo "'${CONTAINER_REPO_DIR}nodebb' directory already exists and looks like a git repo."
+		# Reset repo, so we can checkout without any errors
+		cd nodebb
+		# git reset --hard
+		cd ..
+		# TODO: ask to assume it's the one we want to use? Require passing arg to force using it?
+		# TODO: soft rest and stash changes? commit to separate branch? commit will require setting up git user, similar to admin?
+	fi
+
+	# Switch to specified version or latest release
+	cd nodebb
+	if [ "$version" = "" ] ; then
+		version=${version:-"tags/"$(git tag -l v* | cat | sort -V | tail -n 1)}
+	elif [ $(git tag -l v* | grep "v$version") ] ; then
+		version="tags/v$version"
+	fi
+
+	local branchName=${version/"tags/"/}
+	local isBranch=$(git branch -l | grep "$branchName")
+
+	if [ "$isBranch" != "" ] ; then
+		git checkout "${branchName}" || return 1
+	else
+		git checkout ${version} -b "$branchName" || return 1
+	fi
+
+	# NodeBB does not come with package.json.
+	# It auto-populates it and auto-installs dependencies on first run.
+	# So we call "dummy-run", to make it install `nconf` which we use
+	# in our `container-app.js`.
+	./nodebb --help || return 1
+
+	# Make NodeBB's modules available to our tools
+	ln -s "${CONTAINER_REPO_DIR}nodebb/node_modules" "${CONTAINER_REPO_DIR}.container/lib/node_modules"
+
+	# Switch back to previous directory
+	cd "$d"
+
+	return 0
+}
+
+#
+# Run NodeBB setup passing through all its output
+# @param {string} json   configuration data to pass to NodeBB setup
+#
+function onbb_setup_nodebb () {
+	# Prepared JSON
+	local json=$1
+
+	echo "Running setup using following JSON config:"
+	echo "$json"
+
+	# Remember current working directory and switch to repo directory
+	local d=`pwd`
+	cd ${CONTAINER_REPO_DIR}nodebb
+
+	# Run setup and redirect output to file, so we can search it later
+	local logfile=$(onbb_get_logfile "container-nodebb-setup.log")
+	node app --setup "$json" 2>&1 | tee $logfile
+
+	# Success marker
+	local failed=1
+
+	# Check result by looking for specific text
+	# Would be better if NodeBB's setup would exit with code
+	# but it does not, so we use this fragile workaround.
+	if cat $logfile | grep -q "NodeBB Setup Completed" ; then
+		# Success
+		failed=0
+
+		if cat $logfile | grep -q "running initial user setup" ; then
+			# Created new admin user and finished
+			local name=$(echo "$json" | jq -r '."admin:username"')
+			local pass=$(echo "$json" | jq -r '."admin:password"')
+			local email=$(echo "$json" | jq -r '."admin:email"')
+			onbb_echo_result_of_setup_success $name $pass $email
+		else
+			# Finished upgrade (admin user already existed)
+			onbb_echo_result_of_setup_success
+		fi
+
+		# Remove log file
+		rm $logfile
+	else
+		if cat $logfile | grep -q "There was a problem completing NodeBB\|NodeBB Setup Aborted\|Error: listen EADDRINUSE" ; then
+			# Failed
+			onbb_echo_result_of_setup_failed $logfile "There was a problem completing NodeBB setup."
+		else
+			# Possibly failed
+			onbb_echo_result_of_setup_failed $logfile
+		fi
+	fi
+
+	# Switch back to previous directory
+	cd "$d"
+
+	# Return error when failed
+	if [ $failed -eq 1 ] ; then
+		return 1
+	fi
+}
+
+#
+# Prepare everything and run setup
+#
+function onbb_deploy () {
+	# echo "Stopping NodeBB processes"
+	# onbb_wait_until_stopped 3 || return 1
+
+	local config=$(onbb_setup_config)
+	if [ -z "$config" ] ; then
+		return 1
+	fi
+
+	# Make sure we have the source code
+	onbb_get_source_from_git "$NODEBB_GIT" "$NODEBB_VERSION" || return 1
+
+	# Get version number
+	local version=$(onbb_get_nodebb_version)
+
+	echo "Configuring NodeBB $version for container"
+
+	onbb_setup_sourcecode $version || return 1
+	onbb_setup_environment || return 1
+	onbb_setup_nodebb "$config" || return 1
+}
+
+# Exit with error if something went wrong - that will prevent rest of the deployment process from erroring even more.
+onbb_deploy || exit 1

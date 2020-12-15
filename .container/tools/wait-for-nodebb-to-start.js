@@ -33,7 +33,7 @@ function waitForNodeBBToStart (timeout, callback) {
 		timeout = 120000;
 	}
 
-	tail = spawn('tail', ['-F', '-n', '0', path.join(process.env.OPENSHIFT_REPO_DIR, 'logs/output.log')]);
+	tail = spawn('tail', ['-F', '-n', '0', path.join(process.env.CONTAINER_REPO_DIR, 'nodebb/logs/output.log')]);
 	var logs = '';
 	var errors = '';
 

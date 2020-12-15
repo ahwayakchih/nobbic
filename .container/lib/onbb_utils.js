@@ -2,17 +2,11 @@ var net   = require('net');
 var fs    = require('fs');
 
 // These are installed by NodeBB, so we do not need to install them
-var async = require('async');
 var nconf = require('nconf');
+var async = require('async');
 
 // Our stuff
 var CommandServer = require('./onbb/CommandServer');
-
-// NodeBB stuff
-var emitter   = require(process.env.OPENSHIFT_REPO_DIR + '/src/emitter');
-var webserver = require(process.env.OPENSHIFT_REPO_DIR + '/src/webserver');
-var User      = require(process.env.OPENSHIFT_REPO_DIR + '/src/user');
-var UserReset = require(process.env.OPENSHIFT_REPO_DIR + '/src/user/reset');
 
 /**
  * Our custom commands.
@@ -31,6 +25,10 @@ COMMANDS.resetPassword = function resetPassword (done, email) {
 	if (!email) {
 		return setImmediate(done.bind(null, 'E-mail parameter is missing'));
 	}
+
+	// NodeBB stuff
+	var User      = require(process.env.CONTAINER_REPO_DIR + 'nodebb/src/user');
+	var UserReset = require(process.env.CONTAINER_REPO_DIR + 'nodebb/src/user/reset');
 
 	async.waterfall([
 		function(next) {
@@ -65,16 +63,21 @@ COMMANDS.resetPassword = function resetPassword (done, email) {
 function onbb_start_command_server (address, callback) {
 	var server = new CommandServer({commands: COMMANDS});
 
-	webserver.server.once('listening', function () {
-		var nodebbAddress = webserver.server.address();
+	// Wait for NodeBB webserver to start listening
+	process.on('listening', () => {
+		if (server.listening) {
+			return;
+		}
 
 		if (!address) {
+			// NodeBB stuff
+			var webserver = require(process.env.CONTAINER_REPO_DIR + 'nodebb/src/webserver');
+			var nodebbAddress = webserver.server.address();
 			address = 'onbb-' + (nodebbAddress.port || nodebbAddress) + '.sock';
 		}
 
 		server.start(address, callback);
 	});
-
 
 	process.on('SIGTERM', server.stop.bind(server));
 	process.on('SIGINT', server.stop.bind(server));

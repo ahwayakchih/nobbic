@@ -1,26 +1,42 @@
 #!/bin/bash
 
-source $OPENSHIFT_CARTRIDGE_SDK_BASH
+#
+#
+#
+function client_result () {
+	echo $@
+}
+
+#
+# Echo full path to specified logfile name or logs directory
+#
+# @param {string} [logfileName]
+#
+function onbb_get_logfile () {
+	local logfileName=$1
+
+	readlink -f "${CONTAINER_REPO_DIR}logs/${logfileName}"
+}
 
 #
 # Echo NodeBB version number from package.json file
 #
 function onbb_get_nodebb_version () {
-	cat "${OPENSHIFT_REPO_DIR}package.json" | grep version | sed -s 's/[^0-9\.]//g'
+	jq -je '.version' "${CONTAINER_REPO_DIR}nodebb/install/package.json" || return 1
 }
 
 #
 # Echo URL found in config.json
 #
 function onbb_get_url_from_config () {
-	cat "${OPENSHIFT_REPO_DIR}config.json" | sed -nr '/.*"url":\s*"(.*)".*/{s%.*:\s*"(https?://[^\/]+)/?".*%\1%p;}'
+	jq -je '.url' "${CONTAINER_REPO_DIR}nodebb/config.json" || return 1
 }
 
 #
 # Print information about failed NodeBB setup.
 #
-# @param {string} [logfile=log/openshift-nodebb-setup.log]   Path to NodeBB logfile
-# @param {string} [reason]                                   Possible reason as a short one-liner, defaults to "unknown"
+# @param {string} [logfile=logs/container-nodebb-setup.log]   Path to NodeBB logfile
+# @param {string} [reason]                                    Possible reason as a short one-liner, defaults to "unknown"
 #
 function onbb_echo_result_of_setup_failed () {
 	local logfile=$1
@@ -28,7 +44,7 @@ function onbb_echo_result_of_setup_failed () {
 	local message="Setup failed."
 
 	if [ "$logfile" = "" ] ; then
-		logfile="logs/openshift-nodebb-setup.log"
+		logfile=$(onbb_get_logfile "container-nodebb-setup.log")
 	fi
 
 	if [ "$reason" = "" ] ; then
@@ -97,7 +113,7 @@ function onbb_echo_result_of_start_failed () {
 	local logfile=$1
 
 	if [ "$logfile" = "" ] ; then
-		logfile="logs/output.log"
+		logfile=$(onbb_get_logfile "output.log")
 	fi
 
 	client_result ""
@@ -105,7 +121,7 @@ function onbb_echo_result_of_start_failed () {
 	client_result ".  NodeBB failed to start for some reason."
 	client_result "."
 	client_result ".  Check logfile for more information:"
-	client_result ".  logs/output.log"
+	client_result ".  $logfile"
 	client_result "^-============================================-^"
 	client_result ""
 }
@@ -136,41 +152,85 @@ function onbb_echo_result_of_start_success () {
 }
 
 #
-# Setup NODEBB_FQDN, preferring OPENSHIFT_APP_DNS_ALIAS, then OPENSHIFT_APP_DNS, or fail.
+# Setup NODEBB_FQDN, preferring CONTAINER_APP_DNS_ALIAS, then CONTAINER_APP_DNS, or fail.
 #
 function onbb_setup_fqdn () {
-	local FQDN="$OPENSHIFT_APP_DNS_ALIAS"
+	local FQDN="$CONTAINER_APP_DNS_ALIAS"
 
-	if [ "$FQDN" = "" ] ; then
-		FQDN="$OPENSHIFT_APP_DNS"
+	if [ -z "$FQDN" ] ; then
+		FQDN="$CONTAINER_APP_DNS"
 	fi
 
-	if [ "$FQDN" = "" ] ; then
-		return 1
+	if [ -z "$FQDN" ] ; then
+		echo "WARNING: No CONTAINER_APP_DNS_ALIAS nor CONTAINER_APP_DNS was specified" >&2
+		echo "         OpenDNS service will be used to get public IP" >&2
+		FQDN=$(dig +short myip.opendns.com @resolver1.opendns.com)
 	fi
 
-	export NODEBB_FQDN="$FODN"
+	export NODEBB_FQDN="$FQDN"
+	echo "$FQDN"
 }
 
 #
-# Setup NODEBB_ADMIN_EMAIL from NODEBB_ADMIN_EMAIL, or from OPENSHIFT_LOGIN, or as OPENSHIFT_APP_NAME@NODEBB_FQDN, or fail.
+# Setup NODEBB_ADMIN_EMAIL from NODEBB_ADMIN_EMAIL, or from CONTAINER_LOGIN, or as CONTAINER_APP_NAME@NODEBB_FQDN, or fail.
 #
 function onbb_setup_email () {
 	local email="$NODEBB_ADMIN_EMAIL"
 
-	if [ "$email" = "" ] ; then
-		email="$OPENSHIFT_LOGIN"
+	if [ -z "$email" ] ; then
+		email="$CONTAINER_LOGIN"
 	fi
 
-	if [ "$email" = "" -a "$NODEBB_FQDN" != "" ] ; then
-		email="$OPENSHIFT_APP_NAME@$NODEBB_FQDN"
+	if [ -z "$email" -a "$NODEBB_FQDN" != "" ] ; then
+		email="$CONTAINER_APP_NAME@$NODEBB_FQDN"
 	fi
 
-	if [ "$email" = "" ] ; then
-		return 1
+	if [ -z "$email" ] ; then
+		email="${CONTAINER_APP_NAME}@127.0.0.1"
 	fi
 
 	export NODEBB_ADMIN_EMAIL="$email"
+	echo "$email"
+}
+
+#
+# Relocate directory replacing it with symlink to new location
+#
+# @param {string} from
+# @param {string} to
+#
+function onbb_relocate () {
+	local from=$(readlink -f "$1")
+	local to=$(readlink -f "$2")
+
+	if [ "$from" = "$to" ] ; then
+		return 0
+	fi
+
+	local name=$(basename "$from")
+	echo "Pointing ${from} to $to"
+	local result
+
+	cp -aT "$from" "$to"
+	if [ ! -e "$to" ] ; then
+		echo "Could not copy current content to $to"
+		echo "$result"
+		return 1
+	fi
+
+	rm -rf "$from"
+	if [ -e "$from" ] ; then
+		echo "Could not clean up $from"
+		echo "$result"
+		return 1
+	fi
+
+	ln -s "$to" "$from"
+	if [ ! -e "$from" ] ; then
+		echo "Could not link $from to $to"
+		echo "$result"
+		return 1
+	fi
 }
 
 #
@@ -181,20 +241,27 @@ function onbb_setup_email () {
 function onbb_setup_sourcecode () {
 	local version=$1
 
-	local d=`pwd`
-	cd "$OPENSHIFT_REPO_DIR"
-
 	if [ "$version" = "" ] ; then
 		version=$(onbb_get_nodebb_version)
 	fi
 
-	local patches=`ls patches/openshift-$version*.diff 2>/dev/null`
+	if [ "$version" = "" ] ; then
+		echo "Could not find NodeBB version number in source code"
+		return 1
+	fi
+
+	local d=`pwd`
+	cd "${CONTAINER_REPO_DIR}"
+
+	# TODO: fix paths, since we now have soruce code in `nodebb` subdir
+
+	local patches=`ls patches/container-$version*.diff 2>/dev/null`
 	if [ "$patches" != "" ] ; then
 		# Apply patches for selected version
 		for changeset in $patches ; do
 			echo "Applying changeset "$changeset
 			local rejected=$changeset".rejected"
-			patch -N --no-backup-if-mismatch -s -r $rejected -p1 < $changeset
+			patch -N --no-backup-if-mismatch -s -r $rejected -p1 < $changeset || return 1
 			if [ -f "$rejected" ] ; then
 				echo "Changeset $changeset was rejected. Check $rejected to see what parts of it could not be applied"
 			fi
@@ -209,78 +276,90 @@ function onbb_setup_sourcecode () {
 #
 function onbb_setup_environment () {
 	local d=`pwd`
-	cd "$OPENSHIFT_REPO_DIR"
-
-	# Make sure, that `npm start` will run `nodebb start`, so nodejs cartridge can start it correctly
-	.openshift/tools/ensure-package-scripts.js || return 1
+	cd "$CONTAINER_REPO_DIR"
 
 	# Make sure NODEBB_FQDN is set
-	onbb_setup_fqdn || return 1
+	local fqdn=$(onbb_setup_fqdn)
+	if [ -z "$fqdn" ] ; then
+		echo "Could not find FQDN"
+		return 1
+	fi
+	export NODEBB_FQDN="$fqdn"
 
 	# Make sure NODEBB_ADMIN_EMAIL is set
-	onbb_setup_email || return 1
+	local email=$(onbb_setup_email)
+	if [ -z "$email" ] ; then
+		echo "Could not find email"
+		return 1
+	fi
+	export NODEBB_ADMIN_EMAIL="$email"
 
 	# Make sure, that our `onbb` module is installed and has all dependencies met
-	cd .openshift/lib/onbb || return 1
+	cd .container/lib/onbb || echo "Could not find onbb module"
 	npm prune --production
-	npm install --production || return 1
+	npm install --production || echo "Could not install onbb module"
 	cd ../../../
-
-	# Make sure, that node.env, if it exists, will know to run nodebb
-	# This is needed only for legacy support and only on OpenShift's default nodejs-0.10 cartridge
-	local envFile="${OPENSHIFT_NODEJS_DIR}configuration/node.env"
-	if [ -f $envFile ] ; then
-		echo "Patching $envFile"
-		sed -i 's/server.js/nodebb/g' "$envFile"
-		sed -i 's/app.js/nodebb/g' "$envFile"
-	fi
 
 	# Override app.js
 	# We have to move original and replace it with our "wrapper"
 	# because NodeBB calls hardcoded "app.js" in some cases
 	# and we do not want to modify code in too many places.
-	if [ -f "openshift-app.js" ] ; then
+	local containerApp="${CONTAINER_REPO_DIR}.container/onbb-app.js"
+	if [ -f "$containerApp" ] ; then
 		echo "Overriding app.js"
-		mv app.js _app.js
-		mv openshift-app.js app.js
+		local needUpdate=$(diff "$containerApp" "nodebb/app.js" || false)
+		if [ "$needUpdate" ] ; then
+			if [ ! -f nodebb/_app.js ] ; then
+				mv nodebb/app.js nodebb/_app.js
+			fi
+			cp -a "$containerApp" nodebb/app.js
+		fi
 	fi
 
-	local NODEBB_DATA_DIR="${OPENSHIFT_DATA_DIR}nodebb"
+	local NODEBB_DATA_DIR="${CONTAINER_DATA_DIR}nodebb"
 
 	# Make sure there is persistent data directory
 	mkdir -p "$NODEBB_DATA_DIR"
 
-	# Symlink public/uploads to $OPENSHIFT_DATA_DIR/nodebb/public-uploads
-	local uploadsDir="$NODEBB_DATA_DIR/public-uploads"
-	if [ `readlink -f $uploadsDir` != `readlink -f public/uploads` ] ; then
-		echo "Pointing uploads directory to $uploadsDir"
-		cp -a public/uploads "$uploadsDir"
-		rm -rf public/uploads
-		ln -s "$uploadsDir" public/uploads
-	fi
+	local target
+	local current
 
-	# Symlink logs to $OPENSHIFT_DATA_DIR/nodebb/logs
-	local logsDir="$NODEBB_DATA_DIR/logs"
-	if [ `readlink -f $logsDir` != `readlink -f logs` ] ; then
-		echo "Pointing logs directory to $logsDir"
-		cp -a logs "$logsDir"
-		rm -rf logs
-		ln -s "$logsDir" logs
-	fi
+	# Symlink nodebb/public/uploads to $CONTAINER_DATA_DIR/nodebb/public-uploads
+	onbb_relocate "nodebb/public/uploads" "$NODEBB_DATA_DIR/public-uploads" || return 1
+	# local uploadsDir="$NODEBB_DATA_DIR/public-uploads"
+	# target=$(readlink -f $uploadsDir)
+	# current=$(readlink -f )
+	# if [ "$target" != "$current" ] ; then
+	# 	echo "Pointing uploads directory to $uploadsDir"
+	# 	cp -a nodebb/public/uploads "$uploadsDir" || echo "Could not copy current content"
+	# 	rm -rf nodebb/public/uploads || echo "Could not clean up current directory"
+	# 	ln -s "$uploadsDir" nodebb/public/uploads || echo "Could not link"
+	# fi
 
-	# Symlink config.json to $OPENSHIFT_DATA_DIR/nodebb/config.json
-	local configFilePath="$NODEBB_DATA_DIR/config.json"
-	if [ `readlink -f $configFilePath` != `readlink -f config.json` ] ; then
-		echo "Pointing config.json to $configFilePath"
-		if [ -f config.json ] ; then
-			cp -a config.json "$configFilePath"
+	# Symlink nodebb/logs to $CONTAINER_DATA_DIR/nodebb/logs
+	onbb_relocate "nodebb/logs" "$NODEBB_DATA_DIR/logs" || return 1
+	# local logsDir="$NODEBB_DATA_DIR/logs"
+	# if [ `readlink -f $logsDir` != `readlink -f nodebb/logs` ] ; then
+	# 	echo "Pointing logs directory to $logsDir"
+	# 	cp -a nodebb/logs "$logsDir"
+	# 	rm -rf nodebb/logs
+	# 	ln -s "$logsDir" nodebb/logs
+	# fi
+
+	# Symlink nodebb/config.json to $CONTAINER_DATA_DIR/nodebb/config.json
+	local from="nodebb/config.json"
+	local to="$NODEBB_DATA_DIR/config.json"
+	if [ `readlink -f $to` != `readlink -f "$from"` ] ; then
+		echo "Pointing config.json to $to"
+		if [ -f "$from" ] ; then
+			cp -a "$from" "$to"
 		fi
-		if [ ! -f "$configFilePath" ] ; then
+		if [ ! -f "$to" ] ; then
 			# Create valid, "empty" config, so we can create symlink
-			echo -n "{}" > "$configFilePath"
+			echo -n "{}" > "$to"
 		fi
-		rm -rf config.json
-		ln -s "$configFilePath" config.json
+		rm -rf "$from"
+		ln -s "$to" "$from"
 	fi
 
 	cd "$d"
@@ -304,8 +383,8 @@ function onbb_wait_until_stopped () {
 		graceful="yes"
 	fi
 
-	# Find first PID of node process of current user
-	local PID=`pgrep -u $OPENSHIFT_APP_UUID -x node -o`
+	# Find first PID of node process, since we know there should be no other node processes running in "this" container
+	local PID=`pgrep -x node -o`
 
 	# Return early if it stopped already
 	if [ "$PID" = "" ] ; then
@@ -320,8 +399,8 @@ function onbb_wait_until_stopped () {
 	# Stop it gracefully if we have more than a second of time left
 	if [ "$seconds" -gt "1" -a "$graceful" = "yes" ] ; then
 		local d=`pwd`
-		cd "$OPENSHIFT_REPO_DIR"
-		npm stop 2>/dev/null
+		cd "${CONTAINER_REPO_DIR}nodebb"
+		./nodebb stop 2>/dev/null
 		cd "$d"
 
 		sleep 1
@@ -352,19 +431,19 @@ function onbb_wait_until_ready () {
 
 	local milliseconds=$(echo "$seconds * 1000" | bc)
 
-	"${OPENSHIFT_REPO_DIR}.openshift/tools/wait-for-nodebb-to-start.js" $milliseconds || return 1
+	"${CONTAINER_REPO_DIR}.container/tools/wait-for.sh" localhost:${CONTAINER_NODEJS_PORT:-8080} -t $milliseconds || return 1
 }
 
 #
 # Execute command on NodeBB server.
 #
 function onbb_exec_command () {
-	local server=`ls "${OPENSHIFT_REPO_DIR}" | grep -m 1 'onbb-[0-9]*.sock'`
+	local server=`ls "${CONTAINER_REPO_DIR}nodebb" | grep -m 1 'onbb-[0-9]*.sock'`
 
 	if [ $server = "" ] ; then
 		>&2 echo "No server found"
 		return 1
 	fi
 
-	echo $@ | "${OPENSHIFT_REPO_DIR}.openshift/tools/run-command.js" "${OPENSHIFT_REPO_DIR}${server}" || return 1
+	echo $@ | "${CONTAINER_REPO_DIR}.container/tools/run-command.js" "${CONTAINER_REPO_DIR}nodebb/${server}" || return 1
 }

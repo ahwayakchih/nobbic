@@ -291,7 +291,7 @@ Of course, instead of `example.com` enter your own domain name.
 This will make NodeBB installation work correctly with your custom domain name.
 
 ```sh
-rhc env set OPENSHIFT_APP_DNS_ALIAS=example.com -a nodebb
+rhc env set CONTAINER_APP_DNS_ALIAS=example.com -a nodebb
 ```
 
 Again, use your own domain name in place of `example.com`.
@@ -389,7 +389,7 @@ This should configure remote "origin" in your local git repository to point to y
 If you want to remove custom domain name, this will stop NodeBB from using it:
 
 ```sh
-rhc env unset OPENSHIFT_APP_DNS_ALIAS
+rhc env unset CONTAINER_APP_DNS_ALIAS
 ```
 
 If you did add certificate, this will remove it:
@@ -409,10 +409,10 @@ rhc alias remove nodebb example.com
 If you ever lose password to your administrator account, and email is not configured or does not work for some reason, use this command to get URL to "password reset" page:
 
 ```sh
-rhc ssh -a nodebb 'source "${OPENSHIFT_REPO_DIR}.openshift/lib/onbb_utils.sh" && onbb_exec_command resetPassword youremail@example.com'
+rhc ssh -a nodebb 'source "${CONTAINER_REPO_DIR}.openshift/lib/onbb_utils.sh" && onbb_exec_command resetPassword youremail@example.com'
 ```
 
-Relace `youremail@example.com` with e-mail address set for the account. You can try `"${NODEBB_ADMIN_EMAIL}"` or `"${OPENSHIFT_APP_NAME}@${OPENSHIFT_APP_DNS}"` as an e-mail address.
+Relace `youremail@example.com` with e-mail address set for the account. You can try `"${NODEBB_ADMIN_EMAIL}"` or `"${CONTAINER_APP_NAME}@${CONTAINER_APP_DNS}"` as an e-mail address.
 
 
 ## Acknowledgments
