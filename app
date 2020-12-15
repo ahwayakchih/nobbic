@@ -225,6 +225,10 @@ function buildPod () {
 		nodebbOptions="$nodebbOptions -e CONTAINER_NODEJS_IP=${CONTAINER_NODEJS_IP}"
 	fi
 
+	if [ "$NODEBB_VERSION" ] ; then
+		nodebbOptions="$nodebbOptions -e NODEBB_VERSION=${NODEBB_VERSION}"
+	fi
+
 	# Add NodeBB container
 	podman run -d --pod "$podName" --name "${podName}-nodebb"\
 		-e CONTAINER_NODEJS_PORT=$webPort\
