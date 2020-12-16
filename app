@@ -174,7 +174,15 @@ function buildPod () {
 		echo "         or specify database access info when running the pod" >&2
 	fi
 
-	podman images | grep "localhost/nodebb" || podman build -t nodebb -f nodebb.containerfile . || return 1
+	# Prepare NodeBB image
+	local imageNameFile=$(mktemp)
+	IMAGE_NAME_FILE="$imageNameFile" NODE_VERSION="$NODE_VERSION" NODEBB_VERSION="$NODEBB_VERSION" tools/podman-create-nodebb.sh || return 1
+	local NODEBB_IMAGE=$(cat "$imageNameFile")
+	rm "$imageNameFile"
+	if [ -z "$NODEBB_IMAGE" ] ; then
+		echo "ERROR: could not get NodeBB container image name" >&2
+		return 1
+	fi
 
 	if [ -z "$CONTAINER_APP_DNS_ALIAS" -a -z "$CONTAINER_APP_DNS" ] ; then
 		echo "WARNING: no CONTAINER_APP_DNS_ALIAS nor CONTAINER_APP_DNS was specified" >&2
@@ -225,15 +233,11 @@ function buildPod () {
 		nodebbOptions="$nodebbOptions -e CONTAINER_NODEJS_IP=${CONTAINER_NODEJS_IP}"
 	fi
 
-	if [ "$NODEBB_VERSION" ] ; then
-		nodebbOptions="$nodebbOptions -e NODEBB_VERSION=${NODEBB_VERSION}"
-	fi
-
 	# Add NodeBB container
 	podman run -d --pod "$podName" --name "${podName}-nodebb"\
 		-e CONTAINER_NODEJS_PORT=$webPort\
 		-e CONTAINER_WEBSOCKET_PORT=$wsPort\
-		$nodebbOptions nodebb || return 1
+		$nodebbOptions $NODEBB_IMAGE || return 1
 }
 
 #

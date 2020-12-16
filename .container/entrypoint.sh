@@ -2,7 +2,7 @@
 
 set -e
 
-if [ ! -d "${CONTAINER_REPO_DIR}/nodebb/nodebb" ] ; then
+if [ ! -d "${CONTAINER_REPO_DIR}/nodebb/node_modules" ] ; then
 	./.container/action_hooks/deploy | tee ${CONTAINER_REPO_DIR}logs/deploy.log || exit 1
 	cd "${CONTAINER_REPO_DIR}nodebb"
 else

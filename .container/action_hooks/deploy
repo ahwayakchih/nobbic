@@ -112,79 +112,6 @@ function onbb_setup_config () {
 }
 
 #
-# Clone NodeBB from git and switch to specified version (or latest release)
-#
-# @param {string} url
-# @param {string} version   For example: "1.15.5" or "master"
-#
-function onbb_get_source_from_git () {
-	echo "Downloading NodeBB from git repository"
-
-	local url=$1
-	local version=$2
-
-	if [ "$url" = "" ] ; then
-		echo "URL of NodeBB's git repository is required" >&2
-		return 1
-	fi
-
-	# Remember current working directory and switch to repo directory
-	local d=`pwd`
-	cd $CONTAINER_REPO_DIR
-
-	# Get number of CPUs avaialable
-	local availableCPUs=$(nproc)
-
-	# Clone git repository if it does not exist yet
-	if [ ! -d nodebb ] ; then
-		git clone --recurse-submodules -j${availableCPUs:-1} "${NODEBB_GIT}" nodebb || return 1
-	elif [ ! -d nodebb/.git ] ; then
-		echo "'${CONTAINER_REPO_DIR}nodebb' directory already exists, but does not look like a git repository." >&2
-		echo "Please rename or remove it and try again." >&2
-		return 1
-	else
-		echo "'${CONTAINER_REPO_DIR}nodebb' directory already exists and looks like a git repo."
-		# Reset repo, so we can checkout without any errors
-		cd nodebb
-		# git reset --hard
-		cd ..
-		# TODO: ask to assume it's the one we want to use? Require passing arg to force using it?
-		# TODO: soft rest and stash changes? commit to separate branch? commit will require setting up git user, similar to admin?
-	fi
-
-	# Switch to specified version or latest release
-	cd nodebb
-	if [ "$version" = "" ] ; then
-		version=${version:-"tags/"$(git tag -l v* | cat | sort -V | tail -n 1)}
-	elif [ $(git tag -l v* | grep "v$version") ] ; then
-		version="tags/v$version"
-	fi
-
-	local branchName=${version/tags\//}
-	local isBranch=$(git branch -l | grep "$branchName" || echo "")
-
-	if [ "$isBranch" != "" ] ; then
-		git checkout "${branchName}" || return 1
-	else
-		git checkout ${version} -b "$branchName" || return 1
-	fi
-
-	# NodeBB does not come with package.json.
-	# It auto-populates it and auto-installs dependencies on first run.
-	# So we call "dummy-run", to make it install `nconf` which we use
-	# in our `container-app.js`.
-	./nodebb --help || return 1
-
-	# Make NodeBB's modules available to our tools
-	ln -s "${CONTAINER_REPO_DIR}nodebb/node_modules" "${CONTAINER_REPO_DIR}.container/lib/node_modules"
-
-	# Switch back to previous directory
-	cd "$d"
-
-	return 0
-}
-
-#
 # Run NodeBB setup passing through all its output
 # @param {string} json   configuration data to pass to NodeBB setup
 #
@@ -257,8 +184,11 @@ function onbb_deploy () {
 		return 1
 	fi
 
-	# Make sure we have the source code
-	onbb_get_source_from_git "$NODEBB_GIT" "$NODEBB_VERSION" || return 1
+	# NodeBB does not come with package.json.
+	# It auto-populates it and auto-installs dependencies on first run.
+	# So we call "dummy-run", to make it install `nconf` which we use
+	# in our `container-app.js`.
+	(cd nodebb && ./nodebb --help && cd ..) || return 1
 
 	# Get version number
 	local version=$(onbb_get_nodebb_version)
