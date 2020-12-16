@@ -160,8 +160,8 @@ function onbb_get_source_from_git () {
 		version="tags/v$version"
 	fi
 
-	local branchName=${version/"tags/"/}
-	local isBranch=$(git branch -l | grep "$branchName")
+	local branchName=${version/tags\//}
+	local isBranch=$(git branch -l | grep "$branchName" || echo "")
 
 	if [ "$isBranch" != "" ] ; then
 		git checkout "${branchName}" || return 1
