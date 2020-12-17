@@ -213,8 +213,15 @@ function buildPod () {
 	echo "Building '$podName' pod..."
 
 	local webPort=${CONTAINER_NODEJS_PORT:-8080}
-	local wsPort=${CONTAINER_WEBSOCKET_PORT:-8000}
-	podman pod create -n "$podName" -p $webPort:$webPort -p $wsPort:$wsPort --add-host=localhost:127.0.0.1 --hostname="$podName" || return 1
+	local wsPort=${CONTAINER_WEBSOCKET_PORT:-8080}
+
+	local podOptions="-p $webPort:$webPort"
+	if [ "$webPort" != "$wsPort" ] ; then
+		podOptions="$podOptions -p $wsPort:$wsPort"
+		nodebbOptions="$nodebbOptions -e CONTAINER_WEBSOCKET_PORT=$wsPort"
+	fi
+
+	podman pod create -n "$podName" $podOptions --add-host=localhost:127.0.0.1 --hostname="$podName" || return 1
 
 	# Add "data" container, to be shared by database, nodebb, etc...
 	# podman create --pod "$podName" --name "${podName}-data" -v /data docker.io/busybox:musl || return 1
@@ -252,7 +259,6 @@ function buildPod () {
 	# Add NodeBB container
 	podman run -d --pod "$podName" --name "${podName}-nodebb"\
 		-e CONTAINER_NODEJS_PORT=$webPort\
-		-e CONTAINER_WEBSOCKET_PORT=$wsPort\
 		$nodebbOptions $NODEBB_IMAGE || return 1
 }
 
