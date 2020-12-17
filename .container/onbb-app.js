@@ -49,6 +49,8 @@ testSSL(IP, PORT, FQDN, function onTestSSLResult (err) {
 		else {
 			config['socket.io'].address = 'ws://' + FQDN + ':' + (WSPORT || '8000');
 		}
+
+		// TODO: support multiple domain names? If so, "socket.io".origigns changed from string to array of strings in v1.16.0
 	}
 
 	// MongoDB is preferred by default

@@ -31,9 +31,25 @@ function showHelp () {
 	echo "APP_ADD_POSTGRES - set it to 1 to use default 'alpine' image, or set image name, e.g., docker.io/postgres:13.1-alpine"
 	echo "APP_ADD_REDIS    - set it to 1 to use default 'alpine3.12' image, or set image name, e.g., docker.io/redis:6.0.9-alpine"
 	echo "You can specify two: one of MongoDB or PostgreSQL and Redis, to make NodeBB use Redis for session storage only."
+	echo "Keep in mind that support for PostgreSQL was added in v1.10.x."
+	echo ""
+	echo "You can set NODEBB_VERSION to select which version of the forum to run. By default, latest release will be used."
+	echo ""
+	echo "Set NODEBB_GIT to URL of git repository of NodeBB forum."
+	echo "Official repo will be used by default, but you can specify other, e.g., with your custom modifications."
+	echo "It just has to follow example of official repo and create tag per released version."
+	echo ""
+	echo "By default, forum will be run with Node.js version specified in the 'package.json' file."
+	echo "You can enforce different version by setting NODE_VERSION environment variable."
+	echo ""
+	echo "You can set also CONTAINER_NODEJS_PORT and CONTAINER_WEBSOCKET_PORT values to port numbers you want pod to listen to."
+	echo "They default to 8080 and 8000 respectively."
 	echo ""
 	echo "For example: CONTAINER_APP_DNS_ALIAS=localhost APP_ADD_MONGODB=1 ./app start my-forum"
-	echo "It will create pod that includes MongoDB based on Ubuntu bionic (default) and NodeBB v1.15.5 (default), and then run it."
+	echo "It will create pod that includes MongoDB based on Ubuntu bionic (default) and NodeBB v1.15.5 (default), and then run it with Node.js v10 container (minimum required by NodeBB v1.15.5)."
+	echo ""
+	echo "Another example: NODEBB_VERSION=1.12.1 CONTAINER_APP_DNS_ALIAS=localhost APP_ADD_POSTGRES=1 ./app start my-forum"
+	echo "It will create pod with NodeBB v1.12.1 that uses PostgreSQL as database engine and sets its URL to localhost:8080 (default port) and websockets to localhost:8000 (default)"
 }
 
 #
@@ -176,7 +192,7 @@ function buildPod () {
 
 	# Prepare NodeBB image
 	local imageNameFile=$(mktemp)
-	IMAGE_NAME_FILE="$imageNameFile" NODE_VERSION="$NODE_VERSION" NODEBB_VERSION="$NODEBB_VERSION" tools/podman-create-nodebb.sh || return 1
+	IMAGE_NAME_FILE="$imageNameFile" NODE_VERSION="$NODE_VERSION" NODEBB_VERSION="$NODEBB_VERSION" NODEBB_GIT="$NODEBB_GIT" tools/podman-create-nodebb.sh || return 1
 	local NODEBB_IMAGE=$(cat "$imageNameFile")
 	rm "$imageNameFile"
 	if [ -z "$NODEBB_IMAGE" ] ; then
