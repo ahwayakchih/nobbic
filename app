@@ -218,7 +218,6 @@ function buildPod () {
 	local podOptions="-p $webPort:$webPort"
 	if [ "$webPort" != "$wsPort" ] ; then
 		podOptions="$podOptions -p $wsPort:$wsPort"
-		nodebbOptions="$nodebbOptions -e CONTAINER_WEBSOCKET_PORT=$wsPort"
 	fi
 
 	podman pod create -n "$podName" $podOptions --add-host=localhost:127.0.0.1 --hostname="$podName" || return 1
@@ -259,6 +258,7 @@ function buildPod () {
 	# Add NodeBB container
 	podman run -d --pod "$podName" --name "${podName}-nodebb"\
 		-e CONTAINER_NODEJS_PORT=$webPort\
+		-e CONTAINER_WEBSOCKET_PORT=$wsPort\
 		$nodebbOptions $NODEBB_IMAGE || return 1
 }
 
