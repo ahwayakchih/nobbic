@@ -213,7 +213,7 @@ function buildPod () {
 	echo "Building '$podName' pod..."
 
 	local webPort=${CONTAINER_NODEJS_PORT:-8080}
-	local wsPort=${CONTAINER_WEBSOCKET_PORT:-8080}
+	local wsPort=${CONTAINER_WEBSOCKET_PORT:-$webPort}
 
 	local podOptions="-p $webPort:$webPort"
 	if [ "$webPort" != "$wsPort" ] ; then
