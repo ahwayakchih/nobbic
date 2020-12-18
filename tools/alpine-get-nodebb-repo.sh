@@ -49,7 +49,7 @@ else
 	git checkout ${NODEBB_VERSION} -b "$branchName" || exit 1
 fi
 # Extract currently checked out version number to a file for easy access
-echo $branchName > /app/NODEBB_VERSION
+echo ${branchName/v/} > /app/NODEBB_VERSION
 
 # Extract required nodejs version to a file for easy access
 packageFile="/app/nodebb/package.json"
