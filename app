@@ -162,14 +162,17 @@ function podAddPostgres () {
 
 	local password=`tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1 | fold -w4 | paste -sd\- -`
 
+		# Specyfing user and db names seem to prevent us from accessing db:
+		# Specyfing custom user name seem to prevent us from accessing db:
+		# "NodeBB could not connect to your PostgreSQL database. PostgreSQL returned the following error: role "custom_user" does not exist"
+		# -e POSTGRES_USER="$podName"\
 	podman run -d --pod "$podName" --name "$containerName" \
 		-e POSTGRES_PASSWORD="$password"\
-		-e POSTGRES_USER="$podName"\
 		-e POSTGRES_DB="$podName"\
 		"$postgreImage" >/dev/null || return 1
 
 	echo '-e CONTAINER_POSTGRES_HOST=localhost -e CONTAINER_POSTGRES_PORT=5432 -e CONTAINER_POSTGRES_PASSWORD='$password\
-		'-e CONTAINER_POSTGRES_USER='$podName' -e CONTAINER_POSTGRES_DB='$podName
+		'-e CONTAINER_POSTGRES_USER=postgres -e CONTAINER_POSTGRES_DB='$podName
 }
 
 #
