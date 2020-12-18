@@ -2,6 +2,14 @@
 
 source "${CONTAINER_REPO_DIR}.container/lib/onbb_utils.sh"
 
+# Keep those backed-up
+packageFile="${CONTAINER_REPO_DIR}nodebb/package.json"
+if [ -f "$packageFile" ] ; then
+	cp -aT "$packageFile" "${CONTAINER_DATA_DIR}/package.json"
+	jq -r -c '.version' "$packageFile" > "${CONTAINER_DATA_DIR}NODEBB_VERSION"
+	jq -r -c '.engines.node' "$packageFile" | tr -dc '0-9' > "${CONTAINER_DATA_DIR}/NODE_VERSION"
+fi
+
 # Hide stdout, keep stderr, wait, output result
 onbb_wait_until_ready 120 >/dev/null || (onbb_echo_result_of_start_failed ${CONTAINER_REPO_DIR}/nodebb/logs/output.log && exit 1) || exit 1
 onbb_echo_result_of_start_success

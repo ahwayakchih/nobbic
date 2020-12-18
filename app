@@ -101,6 +101,7 @@ function podAddMongoDB () {
 		# -e ${APP_SET_MONGODB_ENV_PASSWORD}="$password" \
 	podman run -d --pod "$podName" --name "$containerName" \
 		-e ${APP_SET_MONGODB_ENV_DBNAME}="$podName" \
+        -e CONTAINER_DATA_DIR="/data/"\
 		"$mongoImage" >/dev/null || return 1
 
 		# '-e CONTAINER_MONGODB_DB_USERNAME=nodebb -e CONTAINER_MONGODB_DB_PASSWORD='$password
@@ -130,6 +131,9 @@ function podAddRedis () {
 	if [ -z "$exists" ] ; then
 		return 1
 	fi
+
+	# We do not set CONTAINER_DATA_DIR, because, for now, Redis is used only for temporary data
+	# and does not persist data between restarts.
 
 	podman run -d --pod "$podName" --name "$containerName" \
 		"$redisImage" >/dev/null || return 1
@@ -162,13 +166,17 @@ function podAddPostgres () {
 
 	local password=`tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1 | fold -w4 | paste -sd\- -`
 
-		# Specyfing user and db names seem to prevent us from accessing db:
+	# Get PGDATA from env used by default by official PostgreSQL images.
+	# We'll set CONTAINER_DATA_DIR to the same value, so backups know what to archive.
+	local dataDir=$(podman inspect "$postgreImage" --format='{{range .Config.Env}}{{.}}\n{{end}}'| grep PGDATA | cut -d= -f2)
+
 		# Specyfing custom user name seem to prevent us from accessing db:
 		# "NodeBB could not connect to your PostgreSQL database. PostgreSQL returned the following error: role "custom_user" does not exist"
 		# -e POSTGRES_USER="$podName"\
 	podman run -d --pod "$podName" --name "$containerName" \
 		-e POSTGRES_PASSWORD="$password"\
 		-e POSTGRES_DB="$podName"\
+		-e CONTAINER_DATA_DIR="$dataDir"\
 		"$postgreImage" >/dev/null || return 1
 
 	echo '-e CONTAINER_POSTGRES_HOST=localhost -e CONTAINER_POSTGRES_PORT=5432 -e CONTAINER_POSTGRES_PASSWORD='$password\
