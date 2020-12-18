@@ -276,7 +276,9 @@ function startPod () {
 	podman pod exists "$podName" || buildPod "$podName" || return 1
 
 	echo "Starting '$podName' pod..."
-	podman pod start "$podName" || return 1
+	# Use `restart` instead of `start` because of https://github.com/containers/podman/issues/7103
+	# Issue is closed, but on podman v2.2.1 it seems to still exist
+	podman pod restart "$podName" || return 1
 
 	podman attach --no-stdin --sig-proxy=false "${podName}-nodebb"
 }
