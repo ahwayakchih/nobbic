@@ -19,7 +19,7 @@ fi
 
 BACKUP_TO_FILE="$BACKUP_TO_FILE"
 if [ -z "$BACKUP_TO_FILE" ] ; then
-	echo "ERROR: BACKUP_TO_FILE ust be specified for backuper to know where to store data" >&2
+	echo "ERROR: BACKUP_TO_FILE must be specified for backuper to know where to store data" >&2
 	exit 1
 fi
 

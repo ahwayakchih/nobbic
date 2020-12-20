@@ -19,7 +19,7 @@ fi
 
 BACKUP_TO_FILE="$BACKUP_TO_FILE"
 if [ -z "$BACKUP_TO_FILE" ] ; then
-	echo "ERROR: BACKUP_TO_FILE ust be specified for backuper to know where to store data" >&2
+	echo "ERROR: BACKUP_TO_FILE must be specified for backuper to know where to store data" >&2
 	exit 1
 fi
 
@@ -40,6 +40,6 @@ MONGO_INITDB_DATABASE=$(echo "$containerEnv" | grep "MONGO_INITDB_DATABASE" | cu
 podman exec -u mongodb $CONTAINER sh -c 'exec mongodump -d "'$MONGO_INITDB_DATABASE'" --archive' > "${targetName}.archive"
 
 if [ -z "$isRunning" ] ; then
-	echo -n "Backup done, starting '$CONTAINER' now..."
+	echo -n "Backup done, stopping '$CONTAINER' now..."
 	podman stop "$CONTAINER"
 fi
