@@ -288,7 +288,7 @@ function startPod () {
 
 	echo "Starting '$podName' pod..."
 	# Use `restart` instead of `start` because of https://github.com/containers/podman/issues/7103
-	# Issue is closed, but on podman v2.2.1 it seems to still exist
+	# Issue is closed, but on podman v2.2.1 problem seems to exist
 	podman pod restart "$podName" || return 1
 
 	podman attach --no-stdin --sig-proxy=false "${podName}-nodebb"

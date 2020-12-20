@@ -417,7 +417,7 @@ function onbb_wait_until_stopped () {
 }
 
 #
-# Watch NodeBB log until it says it is listening for connections.
+# Try NodeBB's port until it is listening for connections.
 #
 # @param {number} [timeout=120]   In seconds
 #
@@ -432,6 +432,38 @@ function onbb_wait_until_ready () {
 	local milliseconds=$(echo "$seconds * 1000" | bc)
 
 	"${CONTAINER_REPO_DIR}.container/tools/wait-for.sh" localhost:${CONTAINER_NODEJS_PORT:-8080} -t $milliseconds || return 1
+}
+
+#
+# Try databases' port until it is listening for connections.
+#
+# @param {number} [timeout=120]   In seconds
+#
+function onbb_wait_until_db_ready () {
+	local seconds=$1
+
+	if [ "$seconds" = "" ] ; then
+		# 2 minutes
+		seconds=120
+	fi
+
+	local milliseconds=$(echo "$seconds * 1000" | bc)
+	local target=""
+
+	if [ "${CONTAINER_MONGODB_DB_HOST}${CONTAINER_MONGODB_IP}" ] ; then
+		target="${CONTAINER_MONGODB_DB_HOST:-$CONTAINER_MONGODB_IP}:${CONTAINER_MONGODB_DB_PORT:-27017}"
+	elif [ "${MONGOLAB_URI}" ] ; then
+		target=$(URL="${MONGOLAB_URI}" node -e 'const url=require("url");const u=url.parse(process.env.URL);const r=u.hostname+(u.port?":"+u.port:"");console.log(r);')
+	elif [ "${CONTAINER_POSTGRES_HOST}${CONTAINER_POSTGRES_PASSWORD}" ] ; then
+		target="${CONTAINER_POSTGRES_HOST:-127.0.0.1}:${CONTAINER_POSTGRES_PORT:-5432}"
+	elif [ "${CONTAINER_REDIS_HOST}${REDIS_PASSWORD}" ] ; then
+		target="${CONTAINER_REDIS_HOST:-127.0.0.1}:${CONTAINER_POSTGRES_PORT:-6379}"
+	else
+		echo "ERROR: no database connection specified" >&2
+		return 1
+	fi
+
+	"${CONTAINER_REPO_DIR}.container/tools/wait-for.sh" ${target} -t $milliseconds || return 1
 }
 
 #

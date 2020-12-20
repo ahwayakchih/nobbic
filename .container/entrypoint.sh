@@ -2,6 +2,9 @@
 
 set -e
 
+# trigger pre start hook
+${CONTAINER_REPO_DIR}.container/action_hooks/pre_start || exit 1
+
 if [ ! -d "${CONTAINER_REPO_DIR}/nodebb/node_modules" ] ; then
 	./.container/action_hooks/deploy | tee ${CONTAINER_REPO_DIR}logs/deploy.log || exit 1
 	cd "${CONTAINER_REPO_DIR}nodebb"
