@@ -23,13 +23,13 @@ elif [ ! -d nodebb/.git ] ; then
 	echo "Please rename or remove it and try again." >&2
 	return 1
 else
-	echo "'nodebb' directory already exists and looks like a git repo."
+	echo "'nodebb' directory already exists and looks like a git repo. resetting and updating." >&2
 	# Reset repo, so we can checkout without any errors
 	cd nodebb
+	git fetch --tags
 	git reset --hard
+	git clean -xdf
 	cd ..
-	# TODO: ask to assume it's the one we want to use? Require passing arg to force using it?
-	# TODO: soft rest and stash changes? commit to separate branch? commit will require setting up git user, similar to admin?
 fi
 
 # Switch to specified version or latest release
