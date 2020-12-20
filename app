@@ -59,7 +59,7 @@ function showHelp () {
 function podAddMongoDB () {
 	local podName=$1
 	local mongoImage=$2
-	local containerName="${podName}-mongod"
+	local containerName="${podName}-mongodb"
 
 	if [ -z "$podName" ] ; then
 		return 1
