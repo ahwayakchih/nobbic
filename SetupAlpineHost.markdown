@@ -90,7 +90,7 @@ echo 'net.ipv4.ping_group_range=0 2000000' > /etc/sysctl.d/podman.conf
 
 ### Fix podman's init script
 
-Edit init script:
+While the patch is pending (https://gitlab.alpinelinux.org/alpine/aports/-/merge_requests/16050), edit init script:
 
 ```sh
 nano /etc/init.d/podman
