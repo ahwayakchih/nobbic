@@ -67,7 +67,14 @@ After logging in as a root user, it's time to install and configure podman.
 
 ### Install various dependencies and helpful tools
 
+The only "required" packages to run rootless podman are `podman` (of course) and `shadow`.
+`crun` helps running containers faster with less memory use.
+`curl` is needed later in this tutorial.
+Rest of them are simply useful for running other scripts (`bash`), getting some code (`git`) and parsing container info (`jq`).
+
+```sh
 apk add git jq podman crun shadow bash curl
+```
 
 ### Add regular user and group
 
@@ -82,15 +89,19 @@ passwd username
 
 ### Prepare system for running rootless podman
 
+Make sure that pinging from rootless container is enabled by executing following commands:
+
 ```sh
 usermod --add-subuids 200000-201000 --add-subgids 200000-201000 username
 sysctl -w "net.ipv4.ping_group_range=0 2000000"
 echo 'net.ipv4.ping_group_range=0 2000000' > /etc/sysctl.d/podman.conf
 ```
 
+You can read more about why this is needed in tutorial found in [`podman`'s repository](https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md#enable-unprivileged-ping).
+
 ### Fix podman's init script
 
-While the patch is pending (https://gitlab.alpinelinux.org/alpine/aports/-/merge_requests/16050), edit init script:
+While the patch [is pending](https://gitlab.alpinelinux.org/alpine/aports/-/merge_requests/16050), edit init script:
 
 ```sh
 nano /etc/init.d/podman
@@ -131,17 +142,18 @@ Save changes and exit editor.
 
 ### Enable podman "service"
 
+At the moment of writing this, podman info on Alpine's wiki mentions adding and enabling "cgroups" service.
+Unfortunately that's not enough. Rootless `podman` needs also two kernel modules to be loaded: `tun` and `fuse`.
+That's why it's simpler to enable "podman" service instead: it loads modules and enables "cgroups" through its dependancy.
+
 ```sh
 rc-update add podman
 rc-service podman start
 ```
 
-At the moment of writing this, podman info on Alpine's wiki mentions adding and enabling "cgroups" service instead.
-But that is not enough (as both `tun` and `fuse` kernel modules need to be loaded too), and "podman" service enables "cgroups" as its dependency anyway.
-
 ## Configure Podman for user
 
-Switch to regular user account and change its password:
+Switch to regular user account you created:
 
 ```sh
 su -l username
@@ -149,7 +161,8 @@ su -l username
 
 ### Change default configuration
 
-Podman uses "runc" runtime by default. "crun" is supoosed to be faster and use less memory, so let's switch to it.
+Podman uses `runc` runtime by default.
+You can switch it to use `crun` instead.
 
 First, prepare space for user-specific configuration:
 
@@ -186,7 +199,7 @@ That's all! Well... almost.
 
 ## Test if it works OK.
 
-While still being logged as regular user (`whoami` returns "username"), check if podman runs and uses your config:
+While still being logged as regular user (`whoami` command shows "username"), check if podman can run and uses your config:
 
 ```sh
 podman info | grep crun
