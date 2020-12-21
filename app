@@ -1,6 +1,7 @@
 #!/bin/bash
 
 action=$1
+__DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
 #
 # @param {string} appName
@@ -21,10 +22,11 @@ function showHelp () {
 	echo ""
 	echo "Supported actions are:"
 	echo "help - show this info"
-	echo "start [APP_NAME]  - start pod (build it if none exists) with specified name"
-	echo "build [APP_NAME]  - build pod with specified name"
-	echo "stop [APP_NAME]   - stop pod"
-	echo "remove [APP_NAME] - stop pod, remove all its data and containers it used"
+	echo "build APP_NAME  - build pod with specified name"
+	echo "start APP_NAME  - start pod (build it if none exists) with specified name"
+	echo "backup APP_NAME [BACKUPS_DIR] [BACKUP_NAME] - create a backup containing data and setup info"
+	echo "stop APP_NAME   - stop pod"
+	echo "remove APP_NAME - stop pod, remove all its data and containers it used"
 	echo ""
 	echo "When building, you can specify database images to use for pod containers by setting environment variables:"
 	echo "APP_ADD_MONGODB  - set it to 1 to use default 'bionic' image, or set image name, e.g., docker.io/mongo:4.4.2-bionic"
@@ -296,6 +298,24 @@ function startPod () {
 
 #
 # @param {string} podName
+# @param {string} backupsDir
+# @param {string} backupName
+#
+function backupPod () {
+	local podName=$1
+	local backupDir=$2
+	local backupName=$3
+
+	if [ -z "$podName" ] ; then
+		echo "ERROR: missing pod name" >&2
+		return 1
+	fi
+
+	APP_NAME="$podName" BACKUPS_DIR="$backupDir" BACKUP_NAME="$backupName" "${__DIRNAME}/tools/podman-backup.sh" || return 1
+}
+
+#
+# @param {string} podName
 #
 function stopPod () {
 	local podName=$1
@@ -338,6 +358,11 @@ fi
 
 if [ "$action" = "start" ] ; then
 	startPod $(sanitizeAppName $2) || exit 1
+	exit 0
+fi
+
+if [ "$action" = "backup" ] ; then
+	backupPod $(sanitizeAppName $2) "$3" "$4" || exit 1
 	exit 0
 fi
 

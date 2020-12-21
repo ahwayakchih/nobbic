@@ -54,4 +54,6 @@ done
 if [ ! -z "$isRunning" ] ; then
 	echo -n "Backup done, restarting '$APP_NAME' now..."
 	${__DIRNAME}/../app start "$APP_NAME"
+else
+	${__DIRNAME}/../app stop "$APP_NAME"
 fi
