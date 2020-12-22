@@ -110,30 +110,17 @@ echo 'net.ipv4.ping_group_range=0 2000000' > /etc/sysctl.d/podman.conf
 
 You can read more about why this is needed in tutorial found in [`podman`'s repository](https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md#enable-unprivileged-ping).
 
-### Fix podman's init script
+### Add a new regular user
 
-While the patch [is pending](https://gitlab.alpinelinux.org/alpine/aports/-/merge_requests/16050), edit init script:
-
-```sh
-nano /etc/init.d/podman
-```
-
-Make `start_pre()` function look like this (just add `modprobe fuse` line into the "else" part of original file):
+Execute following commands to create a new user account named "username" belonging to their own "username" group.
+You can change "username" something else, of course; replacing it in all commands from this tutorial.
 
 ```sh
-	start_pre() {
-		if [ "$podman_user" = "root" ] ; then
-			einfo "Configured as rootful service"
-			checkpath -d -m 755 /run/podman
-		else
-			einfo "Configured as rootless service"
-			modprobe tun
-			modprobe fuse
-		fi
-	}
+useradd -m -U -s /bin/bash username
+passwd username
 ```
 
-Save changes and exit editor.
+*NOTICE:* use `useradd` instead of `adduser`, to make sure "virtual" ids will be properly allocated for created user account.
 
 ### Enable podman "service"
 
@@ -161,18 +148,6 @@ Enable the service.
 rc-update add podman
 rc-service podman start
 ```
-
-### Add a new regular user
-
-Execute following commands to create a new user account named "username" belonging to their own "username" group.
-You can change "username" something else, of course; replacing it in all commands from this tutorial.
-
-```sh
-useradd -m -U -s /bin/bash username
-passwd username
-```
-
-*NOTICE:* use `useradd` instead of `adduser`, to make sure "virtual" ids will be properly allocated for created user account.
 
 ## Configure Podman for user
 
