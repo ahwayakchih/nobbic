@@ -211,10 +211,17 @@ You should see something like this:
 	  crun version 0.16
 ```
 
-Finally test if podman can run containers properly by executing following command line:
+Finally test if podman can run containers properly.
+You can do that by either executing following "one-liner" command:
 
 ```sh
 ([ $(id -u) != "0" ] && [ $(podman run --rm -v $HOME:/host docker.io/alpine /bin/sh -c '[ "$container" = "podman" ] && (id -u | tee /host/test.log) && (chmod 0700 /host/test.log)') = "0" ] && [ $(cat $HOME/test.log) = "0" ] && [ $(stat -c "%U:%G" $HOME/test.log) = $(id -nu)":"$(id -ng) ] && (rm $HOME/test.log) && echo "That's all, it works :)") || echo "It failed for some reason :("
+```
+
+or by downloading and running [podman-test.sh](https://github.com/ahwayakchih/containerized-nodebb/blob/main/tools/podman-test.sh) script from [containerized-nodebb](https://github.com/ahwayakchih/containerized-nodebb) project (be sure to check its source - never run anything directly from web, if you do not know what it's going to do to your system!):
+
+```sh
+curl -sL https://raw.githubusercontent.com/ahwayakchih/containerized-nodebb/main/tools/podman-test.sh | bash -s --
 ```
 
 If it did not work, report any errors - maybe we can fix it. Otherwise...
