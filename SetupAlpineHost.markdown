@@ -135,7 +135,11 @@ Make `start_pre()` function look like this (just add `modprobe fuse` line into t
 
 Save changes and exit editor.
 
-### Switch podman to run rootless
+### Enable podman "service"
+
+At the moment of writing this, podman info on Alpine's wiki mentions adding and enabling "cgroups" service.
+Unfortunately that's not enough. Rootless `podman` needs also two kernel modules to be loaded: `tun` and `fuse`.
+That's why it's simpler to enable "podman" service instead: it loads modules and enables "cgroups" through its dependancy.
 
 Edit config file for podman "service":
 
@@ -151,11 +155,7 @@ podman_user = "username"
 
 Save changes and exit editor.
 
-### Enable podman "service"
-
-At the moment of writing this, podman info on Alpine's wiki mentions adding and enabling "cgroups" service.
-Unfortunately that's not enough. Rootless `podman` needs also two kernel modules to be loaded: `tun` and `fuse`.
-That's why it's simpler to enable "podman" service instead: it loads modules and enables "cgroups" through its dependancy.
+Enable the service.
 
 ```sh
 rc-update add podman
