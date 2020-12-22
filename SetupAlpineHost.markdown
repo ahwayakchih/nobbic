@@ -1,7 +1,7 @@
 How to set up Alpine Linux for running rootless podman
 ======================================================
 
-This document is mainly a compilation of 3 other documents:
+This tutorial is mainly a compilation of 3 other documents:
 
 1. https://wiki.alpinelinux.org/wiki/Installation
 2. https://wiki.alpinelinux.org/wiki/Podman
@@ -76,23 +76,34 @@ Rest of them are simply useful for running other scripts (`bash`), getting some 
 apk add git jq podman crun shadow bash curl
 ```
 
-### Add regular user and group
+### Prepare UID and GID mapping
 
-Execute following commands to create user named "username" belonging to "groupname" group.
-You can change "username" and "groupname" to something else, of course; replacing them in all commands from this tutorial.
+UID and GID mapping should be set for every new user. Edit defaults:
 
 ```sh
-addgroup -g 1000 -S groupname
-adduser -u 1000 -S -D -G groupname -s /bin/bash username
-passwd username
+nano /etc/login.defs
 ```
 
-### Prepare system for running rootless podman
+Make sure it contains:
 
-Make sure that pinging from rootless container is enabled by executing following commands:
+```txt
+SUB_UID_COUNT 1000
+SUB_GID_COUNT 1000
+```
+
+You can set numbers bigger than 1000, if there will be many containers (and user accounts created inside them) run by users.
+Save changes and exit editor.
+
+This will allocate pool of "virtual" ids for every user. You can read more about this in tutorial found in [`podman`'s repository](https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md#etcsubuid-and-etcsubgid-configuration)
+and deep-dive into why this is needed at [Red Hat's blog](https://www.redhat.com/en/blog/understanding-root-inside-and-outside-container).
+
+If you do not want to allocate pool of ids for every user, only for specific ones, you can skip editing `/etc/login.defs`. Instead, use the command `usermod` the way it's described in podman's repository.
+
+### Enable pinging from containers
+
+Make sure that pinging from rootless container is enabled:
 
 ```sh
-usermod --add-subuids 200000-201000 --add-subgids 200000-201000 username
 sysctl -w "net.ipv4.ping_group_range=0 2000000"
 echo 'net.ipv4.ping_group_range=0 2000000' > /etc/sysctl.d/podman.conf
 ```
@@ -151,9 +162,21 @@ rc-update add podman
 rc-service podman start
 ```
 
+### Add a new regular user
+
+Execute following commands to create a new user account named "username" belonging to their own "username" group.
+You can change "username" something else, of course; replacing it in all commands from this tutorial.
+
+```sh
+useradd -m -U -s /bin/bash username
+passwd username
+```
+
+*NOTICE:* use `useradd` instead of `adduser`, to make sure "virtual" ids will be properly allocated for created user account.
+
 ## Configure Podman for user
 
-Switch to regular user account you created:
+Switch to the new user account:
 
 ```sh
 su -l username
