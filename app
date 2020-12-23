@@ -56,133 +56,19 @@ function showHelp () {
 
 #
 # @param {string} podName
-# @param {string} mongoImage   1 to use default ("docker.io/mongo:bionic") or specify
+# @param {string} fromName   full script path or repo/image name
+# @param {string} toolPath   path to default script to use, if image is not a script path
 #
-function podAddMongoDB () {
+addToPod() {
 	local podName=$1
-	local mongoImage=$2
-	local containerName="${podName}-mongodb"
+	local fromName=$2
+	local toolPath=$3
 
-	if [ -z "$podName" ] ; then
-		return 1
-	fi
-
-	if [ "$mongoImage" = "1" ] ; then
-		mongoImage="docker.io/mongo:bionic"
-	fi
-
-	# if [ -z "$APP_SET_MONGODB_ENV_USER" ] ; then
-	# 	echo "APP_SET_MONGODB_ENV_USER was not set in environment, defaulting to 'MONGO_INITDB_ROOT_USERNAME'" >&2
-	# 	APP_SET_MONGODB_ENV_USER=MONGO_INITDB_ROOT_USERNAME
-	# fi
-
-	# if [ -z "$APP_SET_MONGODB_ENV_PASSWORD" ] ; then
-	# 	echo "APP_SET_MONGODB_ENV_PASSWORD was not set in environment, defaulting to 'MONGO_INITDB_ROOT_PASSWORD'" >&2
-	# 	APP_SET_MONGODB_ENV_PASSWORD=MONGO_INITDB_ROOT_PASSWORD
-	# fi
-
-	if [ -z "$APP_SET_MONGODB_ENV_DBNAME" ] ; then
-		echo "APP_SET_MONGODB_ENV_DBNAME was not set in environment, defaulting to 'MONGO_INITDB_DATABASE'" >&2
-		APP_SET_MONGODB_ENV_DBNAME=MONGO_INITDB_DATABASE
-	fi
-
-	# if [ -z "$APP_ADD_MONGODB_DATA_DIR" ] ; then
-	# 	echo "APP_ADD_MONGODB_DATA_DIR was not specified in environment, using default '/data/db'" >&2
-	# 	APP_ADD_MONGODB_DATA_DIR="/data/db"
-	# fi
-
-	# Make sure pod exists
-	local exists=$(podman pod ls | grep "$podName")
-	if [ -z "$exists" ] ; then
-		return 1
-	fi
-
-	# local password=`tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1 | fold -w4 | paste -sd\- -`
-
-		# -e ${APP_SET_MONGODB_ENV_USER}="$podName" \
-		# -e ${APP_SET_MONGODB_ENV_PASSWORD}="$password" \
-	podman run -d --pod "$podName" --name "$containerName" \
-		-e ${APP_SET_MONGODB_ENV_DBNAME}="$podName" \
-        -e CONTAINER_DATA_DIR="/data/"\
-		"$mongoImage" >/dev/null || return 1
-
-		# '-e CONTAINER_MONGODB_DB_USERNAME=nodebb -e CONTAINER_MONGODB_DB_PASSWORD='$password
-	echo '-e CONTAINER_MONGODB_DB_HOST=localhost -e CONTAINER_MONGODB_DB_PORT=27017 -e CONTAINER_MONGODB_DB_NAME='$podName
-}
-
-
-#
-# @param {string} podName
-# @param {string} redisImage   1 to use default ("docker.io/redis:alpine3.12") or specify
-#
-function podAddRedis () {
-	local podName=$1
-	local redisImage=$2
-	local containerName="${podName}-redis"
-
-	if [ -z "$podName" ] ; then
-		return 1
-	fi
-
-	if [ "$redisImage" = "1" ] ; then
-		redisImage="docker.io/redis:alpine3.12"
-	fi
-
-	# Make sure pod exists
-	local exists=$(podman pod ls | grep "$podName")
-	if [ -z "$exists" ] ; then
-		return 1
-	fi
-
-	# We do not set CONTAINER_DATA_DIR, because, for now, Redis is used only for temporary data
-	# and does not persist data between restarts.
-
-	podman run -d --pod "$podName" --name "$containerName" \
-		"$redisImage" >/dev/null || return 1
-
-	echo '-e CONTAINER_REDIS_HOST=localhost -e CONTAINER_REDIS_PORT=27017'
-}
-
-#
-# @param {string} podName
-# @param {string} postgreImage   1 to use default ("docker.io/postgres:alpine") or specify
-#
-function podAddPostgres () {
-	local podName=$1
-	local postgreImage=$2
-	local containerName="${podName}-postgres"
-
-	if [ -z "$podName" ] ; then
-		return 1
-	fi
-
-	if [ "$postgreImage" = "1" ] ; then
-		postgreImage="docker.io/postgres:alpine"
-	fi
-
-	# Make sure pod exists
-	local exists=$(podman pod ls | grep "$podName")
-	if [ -z "$exists" ] ; then
-		return 1
-	fi
-
-	local password=`tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1 | fold -w4 | paste -sd\- -`
-
-	# Get PGDATA from env used by default by official PostgreSQL images.
-	# We'll set CONTAINER_DATA_DIR to the same value, so backups know what to archive.
-	local dataDir=$(podman inspect "$postgreImage" --format='{{range .Config.Env}}{{.}}\n{{end}}'| grep PGDATA | cut -d= -f2)
-
-		# Specyfing custom user name seem to prevent us from accessing db:
-		# "NodeBB could not connect to your PostgreSQL database. PostgreSQL returned the following error: role "custom_user" does not exist"
-		# -e POSTGRES_USER="$podName"\
-	podman run -d --pod "$podName" --name "$containerName" \
-		-e POSTGRES_PASSWORD="$password"\
-		-e POSTGRES_DB="$podName"\
-		-e CONTAINER_DATA_DIR="$dataDir"\
-		"$postgreImage" >/dev/null || return 1
-
-	echo '-e CONTAINER_POSTGRES_HOST=localhost -e CONTAINER_POSTGRES_PORT=5432 -e CONTAINER_POSTGRES_PASSWORD='$password\
-		'-e CONTAINER_POSTGRES_USER=postgres -e CONTAINER_POSTGRES_DB='$podName
+	case "$fromName" in
+		1) POD="$podName" $toolPath;;
+		./*|/*) if [ -f "$fromName" ] ; then POD="$podName" $fromName; else echo "'$fromName' script not found">&2; fi ;;
+		*) POD="$podName" FROM_IMAGE="$fromName" $toolPath
+	esac
 }
 
 #
@@ -239,9 +125,8 @@ function buildPod () {
 	# podman create --pod "$podName" --name "${podName}-data" -v /data docker.io/busybox:musl || return 1
 
 	local addNodeBBOptions=""
-
 	if [ "$APP_ADD_MONGODB" ] ; then
-		addNodeBBOptions=$(podAddMongoDB "$podName" "$APP_ADD_MONGODB")
+		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_MONGODB "./tools/podman-add-mongodb.sh")
 		if [ -z "$addNodeBBOptions" ] ; then
 			return 1
 		fi
@@ -249,7 +134,7 @@ function buildPod () {
 	fi
 
 	if [ "$APP_ADD_REDIS" ] ; then
-		addNodeBBOptions=$(podAddRedis "$podName" "$APP_ADD_REDIS")
+		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_REDIS "./tools/podman-add-redis.sh")
 		if [ -z "$addNodeBBOptions" ] ; then
 			return 1
 		fi
@@ -257,7 +142,7 @@ function buildPod () {
 	fi
 
 	if [ "$APP_ADD_POSTGRES" ] ; then
-		addNodeBBOptions=$(podAddPostgres "$podName" "$APP_ADD_POSTGRES")
+		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_POSTGRES "./tools/podman-add-postgres.sh")
 		if [ -z "$addNodeBBOptions" ] ; then
 			return 1
 		fi
