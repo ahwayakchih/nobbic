@@ -26,7 +26,7 @@ else
 	echo "'nodebb' directory already exists and looks like a git repo. resetting and updating." >&2
 	# Reset repo, so we can checkout without any errors
 	cd nodebb
-	git fetch --tags
+	git fetch --all
 	git reset --hard
 	git clean -xdf
 	cd ..
