@@ -35,3 +35,17 @@ rootless_storage_path = "$HOME/.local/share/containers/storage"
 mount_program = "/usr/bin/fuse-overlayfs"
 mountopt = ""
 ```
+
+
+## TODO
+
+- `restore` from previously created backup
+- `upgrade` to specified version (or latest release)
+- optional, mini-test (puppeteer-based?) to run after start
+- support for podman options like cpu and ram limits
+- setting up restart options (unless-stopped by default?)
+- setup healthcheck commands
+- write proper README content
+- show README content in `./app help`?
+- maybe support auto-update configuration?
+- add nginx container
