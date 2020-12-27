@@ -4,6 +4,7 @@
 #          It's meant to build new image, based on one of official Node.js Alpine-based images.
 
 set -e
+__DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
 if [ -z "$NODE_VERSION" ] ; then
     echo "ERROR: NODE_VERSION not specified" >&2
@@ -21,6 +22,6 @@ if podman image exists ${APP_NAME}:${NODE_VERSION} ; then
 	exit 0
 fi
 
-podman run --replace --name ${APP_NAME}-node-build -v ./tools:/tools:ro docker.io/node:${NODE_VERSION}-alpine /bin/sh /tools/alpine-reconfigure-node.sh\
+podman run --replace --name ${APP_NAME}-node-build -v ${__DIRNAME}:/tools:ro docker.io/node:${NODE_VERSION}-alpine /bin/sh /tools/alpine-reconfigure-node.sh\
     && podman commit -c CMD=/bin/sh -c USER=node -c WORKDIR=/app ${APP_NAME}-node-build ${APP_NAME}:${NODE_VERSION}\
     && podman rm ${APP_NAME}-node-build

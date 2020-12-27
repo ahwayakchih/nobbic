@@ -4,6 +4,7 @@
 #          It's meant to build new image, based on one of official Node.js Alpine-based images.
 
 set -e
+__DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
 APP_NAME="$APP_NAME"
 if [ -z "$APP_NAME" ] ; then
@@ -19,7 +20,7 @@ echo "Preparing NodeBB repo in volume $NODEBB_REPO_VOLUME"
 podman run --replace --rm --name ${APP_NAME}-nodebb-downloader\
     -e NODEBB_GIT=$NODEBB_GIT\
     -e NODEBB_VERSION="$NODEBB_VERSION"\
-    -v ./tools:/tools:ro\
+    -v ${__DIRNAME}:/tools:ro\
     -v $NODEBB_REPO_VOLUME:/app\
     docker.io/alpine /bin/sh /tools/alpine-get-nodebb-repo.sh
 
@@ -54,7 +55,7 @@ else
         -e NODEBB_GIT=$NODEBB_GIT\
         -e NODEBB_VERSION=$NODEBB_VERSION\
         -u root\
-        -v ./:/containerizer:ro\
+        -v ${__DIRNAME}/../:/containerizer:ro\
         -v $NODEBB_REPO_VOLUME:/repo:ro\
         ${APP_NAME}-node:${NODE_VERSION} /bin/sh /containerizer/tools/alpine-prepare-nodebb-image.sh
     podman commit\

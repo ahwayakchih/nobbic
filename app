@@ -125,24 +125,24 @@ function buildPod () {
 	# podman create --pod "$podName" --name "${podName}-data" -v /data docker.io/busybox:musl || return 1
 
 	local addNodeBBOptions=""
-	if [ "$APP_ADD_MONGODB" ] ; then
-		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_MONGODB "./tools/podman-add-mongodb.sh")
+	if [ ! -z "$APP_ADD_MONGODB" ] ; then
+		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_MONGODB "${__DIRNAME}/tools/podman-add-mongodb.sh")
 		if [ -z "$addNodeBBOptions" ] ; then
 			return 1
 		fi
 		nodebbOptions="$nodebbOptions $addNodeBBOptions"
 	fi
 
-	if [ "$APP_ADD_REDIS" ] ; then
-		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_REDIS "./tools/podman-add-redis.sh")
+	if [ ! -z "$APP_ADD_REDIS" ] ; then
+		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_REDIS "${__DIRNAME}/tools/podman-add-redis.sh")
 		if [ -z "$addNodeBBOptions" ] ; then
 			return 1
 		fi
 		nodebbOptions="$nodebbOptions $addNodeBBOptions"
 	fi
 
-	if [ "$APP_ADD_POSTGRES" ] ; then
-		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_POSTGRES "./tools/podman-add-postgres.sh")
+	if [ ! -z "$APP_ADD_POSTGRES" ] ; then
+		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_POSTGRES "${__DIRNAME}/tools/podman-add-postgres.sh")
 		if [ -z "$addNodeBBOptions" ] ; then
 			return 1
 		fi
