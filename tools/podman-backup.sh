@@ -49,7 +49,10 @@ for container in $(podman pod inspect "$APP_NAME" --format='{{range .Containers}
 			podman run --rm --volumes-from $container:ro -v $targetName:/backup docker.io/alpine tar cvf "/backup/${container}.tar" "$dataDir"
 		fi
 	fi
+	podman inspect "$container" > "${targetName}/container-${container}.json"
 done
+
+podman pod inspect "$APP_NAME" > "${targetName}/pod.json"
 
 if [ ! -z "$isRunning" ] ; then
 	echo -n "Backup done, restarting '$APP_NAME' now..."
