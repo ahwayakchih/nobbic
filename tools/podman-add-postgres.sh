@@ -24,12 +24,20 @@ fi
 
 POSTGRES_IMAGE=${FROM_IMAGE:-docker.io/postgres:alpine}
 
-
-password=`tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1 | fold -w4 | paste -sd\- -`
+# Make sure image is available before we inspect it
+if ! podman image exists "$POSTGRES_IMAGE" >/dev/null ; then
+	if ! podman pull "$POSTGRES_IMAGE" >/dev/null ; then
+		echo "ERROR: could not find '$POSTGRES_IMAGE'" >&2
+		exit 1
+	fi
+fi
 
 # Get PGDATA from env used by default by official PostgreSQL images.
 # We'll set CONTAINER_DATA_DIR to the same value, so backups know what to archive.
 dataDir=$(podman inspect "$POSTGRES_IMAGE" --format='{{range .Config.Env}}{{.}}\n{{end}}'| grep PGDATA | cut -d= -f2)
+
+# Generate random password for database access
+password=`tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1 | fold -w4 | paste -sd\- -`
 
 	# Specyfing custom user name seem to prevent us from accessing db:
 	# "NodeBB could not connect to your PostgreSQL database. PostgreSQL returned the following error: role "custom_user" does not exist"
