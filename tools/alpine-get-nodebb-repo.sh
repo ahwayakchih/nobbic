@@ -50,6 +50,7 @@ else
 fi
 # Extract currently checked out version number to a file for easy access
 echo ${branchName/v/} > /app/NODEBB_VERSION
+echo "$NODEBB_GIT" > /app/NODEBB_GIT
 
 # Extract required nodejs version to a file for easy access
 packageFile="/app/nodebb/package.json"

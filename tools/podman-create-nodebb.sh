@@ -42,6 +42,15 @@ if [ -z "$NODEBB_VERSION" ] ; then
     fi
 fi
 
+NODEBB_GIT="$NODEBB_GIT"
+if [ -z "$NODEBB_GIT" ] ; then
+    NODEBB_GIT=$(podman run --rm -v $NODEBB_REPO_VOLUME:/app:ro docker.io/alpine cat /app/NODEBB_GIT)
+    if [ -z "$NODEBB_GIT" ] ; then
+        echo "ERROR: could not determine current NODEBB_GIT" >&2
+        exit 1
+    fi
+fi
+
 echo "Preparing Node.js v$NODE_VERSION image for NodeBB $NODEBB_VERSION"
 NODE_VERSION=$NODE_VERSION APP_NAME=${APP_NAME}-node ./tools/podman-create-nodeapp.sh
 

@@ -2,12 +2,19 @@
 
 source "${CONTAINER_REPO_DIR}.container/lib/onbb_utils.sh"
 
-# Keep those backed-up
+# Keep some stuff backed-up
 packageFile="${CONTAINER_REPO_DIR}nodebb/package.json"
 if [ -f "$packageFile" ] ; then
 	cp -aT "$packageFile" "${CONTAINER_DATA_DIR}/package.json"
+
+	# Extract current values, instead of copying them from ${CONTAINER_REPO_DIR}
 	jq -r -c '.version' "$packageFile" > "${CONTAINER_DATA_DIR}NODEBB_VERSION"
-	jq -r -c '.engines.node' "$packageFile" | tr -dc '0-9' > "${CONTAINER_DATA_DIR}/NODE_VERSION"
+	jq -r -c '.engines.node' "$packageFile" | tr -dc '0-9' > "${CONTAINER_DATA_DIR}NODE_VERSION"
+
+	currentDir=$(pwd)
+	cd "${CONTAINER_REPO_DIR}nodebb"
+	git config --get remote.origin.url > "${CONTAINER_DATA_DIR}NODEBB_GIT"
+	cd "$currentDir"
 fi
 
 # Hide stdout, keep stderr, wait, output result
