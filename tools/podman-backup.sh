@@ -19,8 +19,8 @@ fi
 
 BACKUPS_DIR="$BACKUPS_DIR"
 if [ -z "$BACKUPS_DIR" ] ; then
-	echo "WARNING: no BACKUPS_DIR specified, defaulting to './backups'" >&2
 	BACKUPS_DIR=$(pwd)"/backups"
+	echo "WARNING: no BACKUPS_DIR specified, defaulting to '$BACKUPS_DIR'" >&2
 fi
 
 BACKUP_NAME="$BACKUP_NAME"
@@ -29,7 +29,7 @@ if [ -z "$BACKUP_NAME" ] ; then
 	echo "WARNING: no BACKUP_NAME specified, defaulting to '$BACKUP_NAME'" >&2
 fi
 
-targetName=$(readlink -f "${BACKUPS_DIR}/${APP_NAME}_${BACKUP_NAME}")
+targetName="${BACKUPS_DIR}/${APP_NAME}_${BACKUP_NAME}"
 mkdir -p "$targetName"
 
 isRunning=$(podman pod ps --filter status=running --filter name="$APP_NAME" -q)
