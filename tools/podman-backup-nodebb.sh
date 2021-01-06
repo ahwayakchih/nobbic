@@ -34,8 +34,8 @@ if [ ! -z "$isRunning" ] ; then
 	podman stop "$CONTAINER" || exit 1
 fi
 
-containerEnv=$(podman inspect "$CONTAINER" --format='{{range .Config.Env}}{{.}}\n{{end}}')
-CONTAINER_DATA_DIR=$(echo "$containerEnv" | grep "CONTAINER_DATA_DIR" | cut -d= -f2)
+podman inspect "$CONTAINER" --format='{{range .Config.Env}}{{.}}\n{{end}}' | grep -E "(NODE(BB)?_|CONTAINER_)"  > "${targetName}.env"
+CONTAINER_DATA_DIR=$(cat "${targetName}.env" | grep "CONTAINER_DATA_DIR" | cut -d= -f2)
 
 podman run --rm --volumes-from $CONTAINER:ro\
 	-v $__DIRNAME:/tools:ro\
