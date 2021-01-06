@@ -7,12 +7,16 @@ ${CONTAINER_REPO_DIR}.container/action_hooks/pre_start || exit 1
 
 if [ ! -d "${CONTAINER_REPO_DIR}/nodebb/node_modules" ] ; then
 	./.container/action_hooks/deploy | tee ${CONTAINER_REPO_DIR}logs/deploy.log || exit 1
-	cd "${CONTAINER_REPO_DIR}nodebb"
-else
-	cd "${CONTAINER_REPO_DIR}nodebb"
+	# cd "${CONTAINER_REPO_DIR}nodebb"
+# else
+	# cd "${CONTAINER_REPO_DIR}nodebb"
 	# rebuild frontend stuff
-	${CONTAINER_REPO_DIR}nodebb/nodebb build || exit 1
+	# TODO: rebuilding every time is annoying waste of time, so check if rebuild may be needed.
+	#       compare package.json timestamp with build timestamp maybe?
+	# ${CONTAINER_REPO_DIR}nodebb/nodebb build || exit 1
 fi
+
+cd "${CONTAINER_REPO_DIR}nodebb"
 
 # start process detached from script
 daemon=false silent=false ${CONTAINER_REPO_DIR}nodebb/nodebb start -l &
