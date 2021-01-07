@@ -54,24 +54,24 @@ testSSL(IP, PORT, FQDN, function onTestSSLResult (err) {
 	}
 
 	// MongoDB is preferred by default
-	if (process.env.CONTAINER_MONGODB_DB_HOST || process.env.CONTAINER_MONGODB_IP || process.env.CONTAINER_MONGODB_DB_PASSWORD) {
+	if (process.env.CONTAINER_MONGODB_HOST || process.env.CONTAINER_MONGODB_IP || process.env.CONTAINER_MONGODB_PASSWORD) {
 		config.database = config.database || 'mongo';
 		config.mongo = config.mongo || {};
 
 		// OpenShift seems to create MongoDB database with the same name as the application name.
-		config.mongo.database = process.env.CONTAINER_MONGODB_DB_NAME || process.env.CONTAINER_APP_NAME || 'nodebb';
+		config.mongo.database = process.env.CONTAINER_MONGODB_NAME || process.env.CONTAINER_APP_NAME || 'nodebb';
 
-		if (process.env.CONTAINER_MONGODB_DB_HOST || process.env.CONTAINER_MONGODB_IP) {
-			config.mongo.host = process.env.CONTAINER_MONGODB_DB_HOST || process.env.CONTAINER_MONGODB_IP;
+		if (process.env.CONTAINER_MONGODB_HOST || process.env.CONTAINER_MONGODB_IP) {
+			config.mongo.host = process.env.CONTAINER_MONGODB_HOST || process.env.CONTAINER_MONGODB_IP;
 		}
-		if (process.env.CONTAINER_MONGODB_DB_PORT) {
-			config.mongo.port = process.env.CONTAINER_MONGODB_DB_PORT;
+		if (process.env.CONTAINER_MONGODB_PORT) {
+			config.mongo.port = process.env.CONTAINER_MONGODB_PORT;
 		}
-		if (process.env.CONTAINER_MONGODB_DB_USERNAME) {
-			config.mongo.username = process.env.CONTAINER_MONGODB_DB_USERNAME;
+		if (process.env.CONTAINER_MONGODB_USERNAME) {
+			config.mongo.username = process.env.CONTAINER_MONGODB_USERNAME;
 		}
-		if (process.env.CONTAINER_MONGODB_DB_PASSWORD) {
-			config.mongo.password = process.env.CONTAINER_MONGODB_DB_PASSWORD;
+		if (process.env.CONTAINER_MONGODB_PASSWORD) {
+			config.mongo.password = process.env.CONTAINER_MONGODB_PASSWORD;
 		}
 	}
 
