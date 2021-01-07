@@ -40,16 +40,17 @@ if [ ! -z "$isRunning" ] ; then
 fi
 
 for container in $(podman pod inspect "$APP_NAME" --format='{{range .Containers}}{{.Name}}\n{{end}}' | grep "^${APP_NAME}-") ; do
-	toolname="${__DIRNAME}/podman-backup-${container/$APP_NAME-/}.sh"
-	if [ -f "$toolname" ] ; then
-		CONTAINER=$container BACKUP_TO_FILE="${targetName}/${CONTAINER}" "$toolname" || true
+	backupBasename=${container/$APP_NAME-/}
+	toolName="${__DIRNAME}/podman-backup-${backupBasename}.sh"
+	if [ -f "$toolName" ] ; then
+		CONTAINER=$container BACKUP_TO_FILE="${targetName}/${backupBasename}" "$toolName" || true
 	else
 		dataDir=$(podman inspect "$container" --format='{{range .Config.Env}}{{.}}\n{{end}}'| grep CONTAINER_DATA_DIR | cut -d= -f2)
 		if [ ! -z "$dataDir" ] ; then
-			podman run --rm --volumes-from $container:ro -v $targetName:/backup docker.io/alpine tar cvf "/backup/${container}.tar" "$dataDir"
+			podman run --rm --volumes-from $container:ro -v $targetName:/backup docker.io/alpine tar cvf "/backup/${backupBasename}.tar" "$dataDir"
 		fi
 	fi
-	podman inspect "$container" > "${targetName}/container-${container}.json"
+	podman inspect "$container" > "${targetName}/container-${backupBasename}.json"
 done
 
 podman pod inspect "$APP_NAME" > "${targetName}/pod.json"
