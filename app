@@ -26,7 +26,7 @@ function showHelp () {
 	echo "start APP_NAME  - start pod (build it if none exists) with specified name"
 	echo "backup APP_NAME [BACKUPS_DIR] [BACKUP_NAME] - create a backup containing data and setup info"
 	echo "stop APP_NAME   - stop pod"
-	echo "remove APP_NAME - stop pod, remove all its data and containers it used"
+	echo "remove APP_NAME - stop pod, remove its containers and their data, remove the pod itself"
 	echo ""
 	echo "When building, you can specify database images to use for pod containers by setting environment variables:"
 	echo "APP_ADD_MONGODB  - set it to 1 to use default 'bionic' image, or set image name, e.g., docker.io/mongo:4.4.2-bionic"
