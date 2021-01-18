@@ -46,45 +46,45 @@ function onbb_setup_config () {
 		echo "         Setup will use OpenDNS service to discover public IP and use it instead." >&2
 	fi
 
-	if [ -z "$CONTAINER_MONGODB_DB_HOST" -a -z "$CONTAINER_MONGODB_IP" -a -z "$MONGOLAB_URI" -a -z "$CONTAINER_POSTGRES_HOST" -a -z "$CONTAINER_REDIS_HOST" ] ; then
+	if [ -z "$CONTAINER_MONGODB_HOST" -a -z "$CONTAINER_MONGODB_IP" -a -z "$MONGOLAB_URI" -a -z "$CONTAINER_POSTGRES_HOST" -a -z "$CONTAINER_REDIS_HOST" ] ; then
 		echo "ERROR: None of MongoDB, Mongolab, PostgreSQL or Redis database access variables were found in environment." >&2
-		echo "       Specify either CONTAINER_MONGODB_DB_HOST, CONTAINER_MONGODB_IP, MONGOLAB_URI, CONTAINER_POSTGRES_HOST or CONTAINER_REDIS_HOST" >&2
+		echo "       Specify either CONTAINER_MONGODB_HOST, CONTAINER_MONGODB_IP, MONGOLAB_URI, CONTAINER_POSTGRES_HOST or CONTAINER_REDIS_HOST" >&2
 		return 1
 	fi
 
 	# local database=""
-	# if [ "${CONTAINER_MONGODB_DB_HOST}${CONTAINER_MONGODB_IP}" ] ; then
+	# if [ "${CONTAINER_MONGODB_HOST}${CONTAINER_MONGODB_IP}" ] ; then
 	# 	database="mongo"
-	# 	json=$json',"mongo:host":"'${CONTAINER_MONGODB_DB_HOST}${CONTAINER_MONGODB_IP}'"'
+	# 	json=$json',"mongo:host":"'${CONTAINER_MONGODB_HOST}${CONTAINER_MONGODB_IP}'"'
 
-	# 	if [ -z "$CONTAINER_MONGODB_DB_PORT" ] ; then
-	# 		echo "WARNING: CONTAINER_MONGODB_DB_PORT was not specified, so default will be used" >&2
+	# 	if [ -z "$CONTAINER_MONGODB_PORT" ] ; then
+	# 		echo "WARNING: CONTAINER_MONGODB_PORT was not specified, so default will be used" >&2
 	# 		json=$json',"mongo:port":"27017"'
 	# 	else
-	# 		json=$json',"mongo:port":"'$CONTAINER_MONGODB_DB_PORT'"'
+	# 		json=$json',"mongo:port":"'$CONTAINER_MONGODB_PORT'"'
 	# 	fi
 
-	# 	if [ -z "$CONTAINER_MONGODB_DB_NAME" ] ; then
+	# 	if [ -z "$CONTAINER_MONGODB_NAME" ] ; then
 	# 		if [ "$CONTAINER_APP_NAME" ] ; then
-	# 			echo "WARNING: CONTAINER_MONGODB_DB_NAME was not specified, so '$CONTAINER_APP_NAME' will be used" >&2
+	# 			echo "WARNING: CONTAINER_MONGODB_NAME was not specified, so '$CONTAINER_APP_NAME' will be used" >&2
 	# 			json=$json',"mongo:database":"'$CONTAINER_APP_NAME'"'
 	# 		else
-	# 			echo "WARNING: CONTAINER_MONGODB_DB_NAME was not specified, so default 'nodebb' will be used" >&2
+	# 			echo "WARNING: CONTAINER_MONGODB_NAME was not specified, so default 'nodebb' will be used" >&2
 	# 			json=$json',"mongo:database":"nodebb"'
 	# 		fi
 	# 	else
-	# 		json=$json',"mongo:database":"'$CONTAINER_MONGODB_DB_NAME'"'
+	# 		json=$json',"mongo:database":"'$CONTAINER_MONGODB_NAME'"'
 	# 	fi
 
-	# 	if [ -z "$CONTAINER_MONGODB_DB_USERNAME" ] ; then
-	# 		echo "WARNING: CONTAINER_MONGODB_DB_USERNAME was not specified, which may prevent NodeBB from accessing database" >&2
+	# 	if [ -z "$CONTAINER_MONGODB_USERNAME" ] ; then
+	# 		echo "WARNING: CONTAINER_MONGODB_USERNAME was not specified, which may prevent NodeBB from accessing database" >&2
 	# 	else
-	# 		json=$json',"mongo:username":"'$CONTAINER_MONGODB_DB_USERNAME'"'
+	# 		json=$json',"mongo:username":"'$CONTAINER_MONGODB_USERNAME'"'
 	# 	fi
-	# 	if [ "$CONTAINER_MONGODB_DB_USERNAME" -a -z "$CONTAINER_MONGODB_DB_PASSWORD" ] ; then
-	# 		echo "WARNING: CONTAINER_MONGODB_DB_PASSWORD was not specified, which may prevent NodeBB from accessing database" >&2
+	# 	if [ "$CONTAINER_MONGODB_USERNAME" -a -z "$CONTAINER_MONGODB_PASSWORD" ] ; then
+	# 		echo "WARNING: CONTAINER_MONGODB_PASSWORD was not specified, which may prevent NodeBB from accessing database" >&2
 	# 	else
-	# 		json=$json',"mongo:password":"'$CONTAINER_MONGODB_DB_PASSWORD'"'
+	# 		json=$json',"mongo:password":"'$CONTAINER_MONGODB_PASSWORD'"'
 	# 	fi
 	# fi
 

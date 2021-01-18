@@ -447,8 +447,8 @@ function onbb_wait_until_db_ready () {
 
 	local target=""
 
-	if [ "${CONTAINER_MONGODB_DB_HOST}${CONTAINER_MONGODB_IP}" ] ; then
-		target="${CONTAINER_MONGODB_DB_HOST:-$CONTAINER_MONGODB_IP}:${CONTAINER_MONGODB_DB_PORT:-27017}"
+	if [ "${CONTAINER_MONGODB_HOST}${CONTAINER_MONGODB_IP}" ] ; then
+		target="${CONTAINER_MONGODB_HOST:-$CONTAINER_MONGODB_IP}:${CONTAINER_MONGODB_PORT:-27017}"
 	elif [ "${MONGOLAB_URI}" ] ; then
 		target=$(URL="${MONGOLAB_URI}" node -e 'const url=require("url");const u=url.parse(process.env.URL);const r=u.hostname+(u.port?":"+u.port:"");console.log(r);')
 	elif [ "${CONTAINER_POSTGRES_HOST}${CONTAINER_POSTGRES_PASSWORD}" ] ; then
