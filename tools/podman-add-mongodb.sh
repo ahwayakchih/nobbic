@@ -5,6 +5,7 @@
 
 set -e
 __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
+__APPDIR=$(dirname $__DIRNAME)
 
 POD="$POD"
 if [ -z "$POD" ] ; then
@@ -34,5 +35,17 @@ podman run -d --pod "$POD" --name "$CONTAINER" \
 	-e CONTAINER_DATA_DIR="/data/"\
 	"$MONGODB_IMAGE" >/dev/null || exit 1
 
+MONGODB_PORT=27017
+
+# Import from backup, if specified
+if [ ! -z "$RESTORE_FROM" ] && [ -f "${RESTORE_FROM}/mongodb.archive" ] ; then
+	podman run --rm --pod "$POD" -v "${__APPDIR}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:${MONGODB_PORT}" -t 20 >&2 || exit 1
+
+	containerEnv=$(podman inspect "$CONTAINER" --format='{{range .Config.Env}}{{.}}\n{{end}}')
+	MONGO_INITDB_DATABASE=$(echo "$containerEnv" | grep "MONGO_INITDB_DATABASE" | cut -d= -f2)
+
+	podman exec -i -u mongodb $CONTAINER sh -c 'exec mongorestore -d "'$MONGO_INITDB_DATABASE'" --archive' < "${RESTORE_FROM}/mongodb.archive" >&2 || exit 1
+fi
+
 	# '-e CONTAINER_MONGODB_USERNAME=nodebb -e CONTAINER_MONGODB_PASSWORD='$password
-echo "-e CONTAINER_MONGODB_HOST=localhost -e CONTAINER_MONGODB_PORT=27017 -e CONTAINER_MONGODB_NAME=$POD"
+echo "-e CONTAINER_MONGODB_HOST=localhost -e CONTAINER_MONGODB_PORT=$MONGODB_PORT -e CONTAINER_MONGODB_NAME=$POD"

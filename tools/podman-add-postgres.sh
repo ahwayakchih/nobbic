@@ -5,6 +5,7 @@
 
 set -e
 __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
+__APPDIR=$(dirname $__DIRNAME)
 
 POD="$POD"
 if [ -z "$POD" ] ; then
@@ -48,5 +49,13 @@ podman run -d --pod "$POD" --name "$CONTAINER" \
 	-e CONTAINER_DATA_DIR="$dataDir"\
 	"$POSTGRES_IMAGE" >/dev/null || exit 1
 
-echo '-e CONTAINER_POSTGRES_HOST=localhost -e CONTAINER_POSTGRES_PORT=5432 -e CONTAINER_POSTGRES_PASSWORD='$password\
+POSTGRES_PORT=5432
+
+# Import from backup, if specified
+if [ ! -z "$RESTORE_FROM" ] && [ -f "${RESTORE_FROM}/postgres.txt" ] ; then
+	podman run --rm --pod "$POD" -v "${__APPDIR}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:${POSTGRES_PORT}" -t 20 >&2 || exit 1
+	podman exec -i -u postgres "$CONTAINER" psql -U postgres -d $POD < "${RESTORE_FROM}/postgres.txt" >&2 || exit 1
+fi
+
+echo '-e CONTAINER_POSTGRES_HOST=localhost -e CONTAINER_POSTGRES_PORT='$POSTGRES_PORT' -e CONTAINER_POSTGRES_PASSWORD='$password\
 	'-e CONTAINER_POSTGRES_USER=postgres -e CONTAINER_POSTGRES_DB='$POD

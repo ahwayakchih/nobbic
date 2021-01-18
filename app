@@ -25,6 +25,7 @@ function showHelp () {
 	echo "build APP_NAME  - build pod with specified name"
 	echo "start APP_NAME  - start pod (build it if none exists) with specified name"
 	echo "backup APP_NAME [BACKUPS_DIR] [BACKUP_NAME] - create a backup containing data and setup info"
+	echo "restore APP_NAME [BACKUPS_DIR] [BACKUP_NAME] - restore from a previously created backup"
 	echo "stop APP_NAME   - stop pod"
 	echo "remove APP_NAME - stop pod, remove its containers and their data, remove the pod itself"
 	echo ""
@@ -64,10 +65,15 @@ addToPod() {
 	local fromName=$2
 	local toolPath=$3
 
+	local restoreFrom=${RESTORE_FROM}
+	if [ ! -z "$restoreFrom" ] && [ -d "$restoreFrom" ]; then
+		restoreFrom="RESTORE_FROM=${restoreFrom}"
+	fi
+
 	case "$fromName" in
-		1) POD="$podName" $toolPath;;
-		./*|/*) if [ -f "$fromName" ] ; then POD="$podName" $fromName; else echo "'$fromName' script not found">&2; fi ;;
-		*) POD="$podName" FROM_IMAGE="$fromName" $toolPath
+		1) eval "POD='$podName' $restoreFrom $toolPath";;
+		./*|/*) if [ -f "$fromName" ] ; then eval "POD='$podName' $restoreFrom $fromName"; else echo "'$fromName' script not found">&2; fi ;;
+		*) eval "POD='$podName' FROM_IMAGE='$fromName; $restoreFrom $toolPath"
 	esac
 }
 
@@ -158,6 +164,12 @@ function buildPod () {
 		-e CONTAINER_NODEJS_PORT=$webPort\
 		-e CONTAINER_WEBSOCKET_PORT=$wsPort\
 		$nodebbOptions $NODEBB_IMAGE || return 1
+
+	local BACKUP_DATA="${RESTORE_FROM}/nodebb.tar"
+	if [ ! -z "$RESTORE_FROM" ] && [ -f "$BACKUP_DATA" ] ; then
+		echo "Restoring NodeBB data from backup at $BACKUP_DATA"
+		podman exec -i "${podName}-nodebb" tar x -C / -v -f - < $BACKUP_DATA
+	fi
 }
 
 #
@@ -197,6 +209,24 @@ function backupPod () {
 	fi
 
 	APP_NAME="$podName" BACKUPS_DIR="$backupDir" BACKUP_NAME="$backupName" "${__DIRNAME}/tools/podman-backup.sh" || return 1
+}
+
+#
+# @param {string} podName
+# @param {string} backupsDir
+# @param {string} backupName
+#
+function restorePod () {
+	local podName=$1
+	local backupDir=$2
+	local backupName=$3
+
+	if [ -z "$podName" ] ; then
+		echo "ERROR: missing pod name" >&2
+		return 1
+	fi
+
+	APP_NAME="$podName" BACKUPS_DIR="$backupDir" BACKUP_NAME="$backupName" "${__DIRNAME}/tools/podman-restore.sh" || return 1
 }
 
 #
@@ -248,6 +278,11 @@ fi
 
 if [ "$action" = "backup" ] ; then
 	backupPod $(sanitizeAppName $2) "$3" "$4" || exit 1
+	exit 0
+fi
+
+if [ "$action" = "restore" ] ; then
+	restorePod $(sanitizeAppName $2) "$3" "$4" || exit 1
 	exit 0
 fi
 
