@@ -429,9 +429,7 @@ function onbb_wait_until_ready () {
 		seconds=120
 	fi
 
-	local milliseconds=$(echo "$seconds * 1000" | bc)
-
-	"${CONTAINER_REPO_DIR}.container/tools/wait-for.sh" localhost:${CONTAINER_NODEJS_PORT:-8080} -t $milliseconds || return 1
+	"${CONTAINER_REPO_DIR}.container/tools/wait-for.sh" localhost:${CONTAINER_NODEJS_PORT:-8080} -t $seconds || return 1
 }
 
 #
@@ -447,7 +445,6 @@ function onbb_wait_until_db_ready () {
 		seconds=120
 	fi
 
-	local milliseconds=$(echo "$seconds * 1000" | bc)
 	local target=""
 
 	if [ "${CONTAINER_MONGODB_DB_HOST}${CONTAINER_MONGODB_IP}" ] ; then
@@ -463,7 +460,7 @@ function onbb_wait_until_db_ready () {
 		return 1
 	fi
 
-	"${CONTAINER_REPO_DIR}.container/tools/wait-for.sh" ${target} -t $milliseconds || return 1
+	"${CONTAINER_REPO_DIR}.container/tools/wait-for.sh" ${target} -t $seconds || return 1
 }
 
 #
