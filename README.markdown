@@ -39,7 +39,6 @@ mountopt = ""
 
 ## TODO
 
-- `restore` from previously created backup
 - `upgrade` to specified version (or latest release)
 - optional, mini-test (puppeteer-based?) to run after start
 - support for podman options like cpu and ram limits
