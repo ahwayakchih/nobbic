@@ -6,3 +6,23 @@ source "${CONTAINER_REPO_DIR}.container/lib/onbb_utils.sh"
 echo "Waiting for database to start..."
 onbb_wait_until_db_ready 120 || (onbb_echo_result_of_start_failed ${CONTAINER_REPO_DIR}nodebb/logs/output.log && exit 1) || exit 1
 echo "Database seems to be ready, start can continue"
+
+# Run installation, if it was not installed before
+if [ ! -d "${CONTAINER_REPO_DIR}nodebb/node_modules" ] ; then
+	./.container/action_hooks/deploy | tee ${CONTAINER_REPO_DIR}logs/deploy.log || exit 1
+	# cd "${CONTAINER_REPO_DIR}nodebb"
+# else
+	# cd "${CONTAINER_REPO_DIR}nodebb"
+	# rebuild frontend stuff
+	# TODO: rebuilding every time is annoying waste of time, so check if rebuild may be needed.
+	#       compare package.json timestamp with build timestamp maybe?
+	# ${CONTAINER_REPO_DIR}nodebb/nodebb build || exit 1
+fi
+
+# Run upgrade, if previously installed version was different
+VERSION_CURRENT=$(onbb_get_nodebb_version)
+VERSION_PREVIOUS=$(cat "${CONTAINER_DATA_DIR}NODEBB_VERSION" || echo -n "")
+if [ "$VERSION_CURRENT" != "$VERSION_PREVIOUS" ] ; then
+	cd "${CONTAINER_REPO_DIR}nodebb"
+	${CONTAINER_REPO_DIR}nodebb/nodebb upgrade
+fi

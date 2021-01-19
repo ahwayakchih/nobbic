@@ -56,12 +56,16 @@ if [ ! -f "${fromName}/nodebb.env" ] ; then
 	exit 1
 fi
 
+# Allow to enforce version numbers
+FORCE_NODE_VERSION=$NODE_VERSION
+FORCE_NODEBB_VERSION=$NODEBB_VERSION
+
 # Get most of the setup variables from backed up NodeBB's environment
 source "${fromName}/nodebb.env"
 
 # Prepeare base environment variables
-cmd="NODE_VERSION=${NODE_VERSION}\
-	NODEBB_VERSION=${NODEBB_VERSION}\
+cmd="NODE_VERSION=${FORCE_NODE_VERSION:-$NODE_VERSION}\
+	NODEBB_VERSION=${FORCE_NODEBB_VERSION:-$NODEBB_VERSION}\
 	NODEBB_GIT='${NODEBB_GIT}'\
 	CONTAINER_NODEJS_PORT=${CONTAINER_NODEJS_PORT}\
 	CONTAINER_WEBSOCKET_PORT=${CONTAINER_WEBSOCKET_PORT}\
