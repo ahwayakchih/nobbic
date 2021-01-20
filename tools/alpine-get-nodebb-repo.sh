@@ -34,20 +34,21 @@ fi
 
 # Switch to specified version or latest release
 cd nodebb
-if [ "$NODEBB_VERSION" = "" ] ; then
+if [ -z "$NODEBB_VERSION" ] ; then
 	NODEBB_VERSION=${NODEBB_VERSION:-"tags/"$(git tag -l v* | cat | sort -V | tail -n 1)}
-elif [ $(git tag -l v* | grep "v$NODEBB_VERSION") ] ; then
+elif git tag -l v* | grep "v$NODEBB_VERSION"; then
 	NODEBB_VERSION="tags/v$NODEBB_VERSION"
 fi
 
 branchName=${NODEBB_VERSION/tags\//}
 isBranch=$(git branch -l | grep "$branchName" || echo "")
 
-if [ "$isBranch" != "" ] ; then
+if [ ! -z "$isBranch" ] ; then
 	git checkout "${branchName}" || exit 1
 else
 	git checkout ${NODEBB_VERSION} -b "$branchName" || exit 1
 fi
+
 # Extract currently checked out version number to a file for easy access
 echo ${branchName/v/} > /app/NODEBB_VERSION
 echo "$NODEBB_GIT" > /app/NODEBB_GIT
