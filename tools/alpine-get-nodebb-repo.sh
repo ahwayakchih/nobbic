@@ -35,7 +35,7 @@ fi
 # Switch to specified version or latest release
 cd nodebb
 if [ -z "$NODEBB_VERSION" ] || [ "$NODEBB_VERSION" = "latest" ] ; then
-	NODEBB_VERSION="tags/"$(git tag -l v* | cat | sort -V | tail -n 1)
+	NODEBB_VERSION="tags/"$(git tag -l v* | grep -v '\-[beta|rc]' | sort -V | tail -n 1)
 elif git tag -l v* | grep "v$NODEBB_VERSION"; then
 	NODEBB_VERSION="tags/v$NODEBB_VERSION"
 fi
