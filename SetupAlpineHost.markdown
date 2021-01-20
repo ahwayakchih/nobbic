@@ -7,8 +7,8 @@ This tutorial is mainly a compilation of 3 other documents:
 2. https://wiki.alpinelinux.org/wiki/Podman
 3. https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md
 
-It was written when Alpine Linux did not have podman in v3.12 repository, only in "edge" repository.
-Hopefully with next version it will be available in default repositories and with fixed configuration.
+It was written when **Alpine Linux** did not have podman in **v3.13** repository, only in "edge" repository.
+Hopefully with next version it will be available in default repositories.
 In the meantime, keep reading this "tutorial".
 
 ## Install Alpine Linux from ISO
@@ -33,19 +33,19 @@ You should see something like this (URLs may differ, but last two parts should b
 
 ```txt
 #/media/cdrom/apks
-http://dl-4.alpinelinux.org/alpine/v3.12/main
-#http://dl-4.alpinelinux.org/alpine/v3.12/community
+http://dl-4.alpinelinux.org/alpine/v3.13/main
+#http://dl-4.alpinelinux.org/alpine/v3.13/community
 #http://dl-4.alpinelinux.org/alpine/edge/main
 #http://dl-4.alpinelinux.org/alpine/edge/community
 #http://dl-4.alpinelinux.org/alpine/edge/testing
 ```
 
-Comment out lines with "v3.12" and uncomment "edge" lines, so it looks more like this:
+Comment out lines with "v3.13" and uncomment "edge" lines, so it looks more like this:
 
 ```txt
 #/media/cdrom/apks
-#http://dl-4.alpinelinux.org/alpine/v3.12/main
-#http://dl-4.alpinelinux.org/alpine/v3.12/community
+#http://dl-4.alpinelinux.org/alpine/v3.13/main
+#http://dl-4.alpinelinux.org/alpine/v3.13/community
 http://dl-4.alpinelinux.org/alpine/edge/main
 http://dl-4.alpinelinux.org/alpine/edge/community
 http://dl-4.alpinelinux.org/alpine/edge/testing
@@ -134,7 +134,7 @@ Edit config file for podman "service":
 nano /etc/conf.d/podman
 ```
 
-Change `podman_user` to regular user name, like this:
+Change `podman_user` value to a regular user name, like this:
 
 ```txt
 podman_user = "username"
