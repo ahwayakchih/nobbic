@@ -34,7 +34,7 @@ if [ -z "$NODE_VERSION" ] ; then
 fi
 
 NODEBB_VERSION="$NODEBB_VERSION"
-if [ -z "$NODEBB_VERSION" ] ; then
+if [ -z "$NODEBB_VERSION" ] || [ "$NODEBB_VERSION" = "latest" ] ; then
     NODEBB_VERSION=$(podman run --rm -v $NODEBB_REPO_VOLUME:/app:ro docker.io/alpine cat /app/NODEBB_VERSION)
     if [ -z "$NODEBB_VERSION" ] ; then
         echo "ERROR: could not determine current NODEBB_VERSION" >&2

@@ -18,7 +18,8 @@ if ! podman pod exists ${APP_NAME} ; then
 fi
 
 if [ -z "$NODEBB_VERSION" ] ; then
-    echo "WARNING: NODEBB_VERSION was not specified, so uprade will try latest released version" >&2
+    echo "WARNING: NODEBB_VERSION was not specified, so upgrade will try latest released version" >&2
+    NODEBB_VERSION="latest"
 fi
 
 if [ -z "$NODE_VERSION" ] ; then
