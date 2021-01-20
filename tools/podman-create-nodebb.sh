@@ -24,20 +24,26 @@ podman run --replace --rm --name ${APP_NAME}-nodebb-downloader\
     -v $NODEBB_REPO_VOLUME:/app\
     docker.io/alpine /bin/sh /tools/alpine-get-nodebb-repo.sh
 
-NODE_VERSION="$NODE_VERSION"
-if [ -z "$NODE_VERSION" ] ; then
-    NODE_VERSION=$(podman run --rm -v $NODEBB_REPO_VOLUME:/app:ro docker.io/alpine cat /app/NODE_VERSION)
-    if [ -z "$NODE_VERSION" ] ; then
-        echo "ERROR: could not determine required NODE_VERSION" >&2
-        exit 1
-    fi
-fi
-
 NODEBB_VERSION="$NODEBB_VERSION"
 if [ -z "$NODEBB_VERSION" ] || [ "$NODEBB_VERSION" = "latest" ] ; then
     NODEBB_VERSION=$(podman run --rm -v $NODEBB_REPO_VOLUME:/app:ro docker.io/alpine cat /app/NODEBB_VERSION)
     if [ -z "$NODEBB_VERSION" ] ; then
         echo "ERROR: could not determine current NODEBB_VERSION" >&2
+        exit 1
+    fi
+    # Make sure minimal required Node.js version is matched
+    REQUIRED_NODE_VERSION=$(podman run --rm -v $NODEBB_REPO_VOLUME:/app:ro docker.io/alpine cat /app/NODE_VERSION)
+    HIGHER_NODE_VERSION=$(echo -e "${REQUIRED_NODE_VERSION}\n${NODE_VERSION}" | sort -V | tail -n 1)
+    if [ ! -z "$NODE_VERSION" ] && [ "$NODE_VERSION" != "$HIGHER_NODE_VERSION" ] ; then
+        NODE_VERSION=$REQUIRED_NODE_VERSION
+    fi
+fi
+
+NODE_VERSION="$NODE_VERSION"
+if [ -z "$NODE_VERSION" ] ; then
+    NODE_VERSION=$(podman run --rm -v $NODEBB_REPO_VOLUME:/app:ro docker.io/alpine cat /app/NODE_VERSION)
+    if [ -z "$NODE_VERSION" ] ; then
+        echo "ERROR: could not determine required NODE_VERSION" >&2
         exit 1
     fi
 fi
