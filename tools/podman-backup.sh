@@ -25,11 +25,12 @@ fi
 
 BACKUP_NAME="$BACKUP_NAME"
 if [ -z "$BACKUP_NAME" ] ; then
-	BACKUP_NAME=$(date -u +%Y-%m-%dT%H-%M-%S)
+	NOW=$(date -u +%Y-%m-%dT%H-%M-%S)
+	BACKUP_NAME="${APP_NAME}_${NOW}"
 	echo "WARNING: no BACKUP_NAME specified, defaulting to '$BACKUP_NAME'" >&2
 fi
 
-targetName="${BACKUPS_DIR}/${APP_NAME}_${BACKUP_NAME}"
+targetName="${BACKUPS_DIR}/${BACKUP_NAME}"
 mkdir -p "$targetName"
 
 isRunning=$(podman pod ps --filter status=running --filter name="$APP_NAME" -q)
