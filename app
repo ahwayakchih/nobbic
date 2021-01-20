@@ -25,6 +25,7 @@ function showHelp () {
 	echo "build APP_NAME  - build pod with specified name"
 	echo "start APP_NAME  - start pod (build it if none exists) with specified name"
 	echo "backup APP_NAME [BACKUPS_DIR] [BACKUP_NAME] - create a backup containing data and setup info"
+	echo "upgrade APP_NAME - upgrade NodeBB version"
 	echo "restore APP_NAME [BACKUPS_DIR] [BACKUP_NAME] - restore from a previously created backup"
 	echo "stop APP_NAME   - stop pod"
 	echo "remove APP_NAME - stop pod, remove its containers and their data, remove the pod itself"
@@ -213,6 +214,20 @@ function backupPod () {
 
 #
 # @param {string} podName
+#
+function upgradePod () {
+	local podName=$1
+
+	if [ -z "$podName" ] ; then
+		echo "ERROR: missing pod name" >&2
+		return 1
+	fi
+
+	APP_NAME="$podName" "${__DIRNAME}/tools/podman-upgrade.sh" || return 1
+}
+
+#
+# @param {string} podName
 # @param {string} backupsDir
 # @param {string} backupName
 #
@@ -278,6 +293,11 @@ fi
 
 if [ "$action" = "backup" ] ; then
 	backupPod $(sanitizeAppName $2) "$3" "$4" || exit 1
+	exit 0
+fi
+
+if [ "$action" = "upgrade" ] ; then
+	upgradePod $(sanitizeAppName $2) || exit 1
 	exit 0
 fi
 
