@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # WARNING: This script has to be run OUTSIDE container.
 #          It's meant to build new image, based on one of official Node.js Alpine-based images.

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # WARNING: This script has to be run OUTSIDE container.
 #          It's meant to add Redis to the specified pod.
