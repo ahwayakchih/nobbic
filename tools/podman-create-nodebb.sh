@@ -31,21 +31,22 @@ if [ -z "$NODEBB_VERSION" ] || [ "$NODEBB_VERSION" = "latest" ] ; then
         echo "ERROR: could not determine current NODEBB_VERSION" >&2
         exit 1
     fi
-    # Make sure minimal required Node.js version is matched
-    REQUIRED_NODE_VERSION=$(podman run --rm -v $NODEBB_REPO_VOLUME:/app:ro docker.io/alpine cat /app/NODE_VERSION)
+fi
+
+# Make sure minimal required Node.js version is matched
+REQUIRED_NODE_VERSION=$(podman run --rm -v $NODEBB_REPO_VOLUME:/app:ro docker.io/alpine cat /app/NODE_VERSION)
+if [ -z "$NODE_VERSION" ] ; then
+    NODE_VERSION=$REQUIRED_NODE_VERSION
+else
     HIGHER_NODE_VERSION=$(echo -e "${REQUIRED_NODE_VERSION}\n${NODE_VERSION}" | sort -V | tail -n 1)
-    if [ ! -z "$NODE_VERSION" ] && [ "$NODE_VERSION" != "$HIGHER_NODE_VERSION" ] ; then
+    if [ "$NODE_VERSION" != "$HIGHER_NODE_VERSION" ] ; then
         NODE_VERSION=$REQUIRED_NODE_VERSION
     fi
 fi
 
-NODE_VERSION="$NODE_VERSION"
 if [ -z "$NODE_VERSION" ] ; then
-    NODE_VERSION=$(podman run --rm -v $NODEBB_REPO_VOLUME:/app:ro docker.io/alpine cat /app/NODE_VERSION)
-    if [ -z "$NODE_VERSION" ] ; then
-        echo "ERROR: could not determine required NODE_VERSION" >&2
-        exit 1
-    fi
+    echo "ERROR: could not determine required NODE_VERSION" >&2
+    exit 1
 fi
 
 NODEBB_GIT="$NODEBB_GIT"
