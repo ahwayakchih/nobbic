@@ -2,6 +2,7 @@
 
 action=$1
 __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
+source ${__DIRNAME}/tools/common.sh
 
 #
 # @param {string} appName

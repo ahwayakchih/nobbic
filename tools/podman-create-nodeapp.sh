@@ -3,8 +3,8 @@
 # WARNING: This script has to be run OUTSIDE container.
 #          It's meant to build new image, based on one of official Node.js Alpine-based images.
 
-set -e
 __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
+source ${__DIRNAME}/common.sh
 
 if [ -z "$NODE_VERSION" ] ; then
     echo "ERROR: NODE_VERSION not specified" >&2

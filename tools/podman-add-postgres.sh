@@ -3,8 +3,8 @@
 # WARNING: This script has to be run OUTSIDE container.
 #          It's meant to add PostgreSQL to the specified pod.
 
-set -e
 __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
+source ${__DIRNAME}/common.sh
 __APPDIR=$(dirname $__DIRNAME)
 
 POD="$POD"
@@ -38,7 +38,9 @@ fi
 dataDir=$(podman inspect "$POSTGRES_IMAGE" --format='{{range .Config.Env}}{{.}}\n{{end}}'| grep PGDATA | cut -d= -f2)
 
 # Generate random password for database access
-password=`tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1 | fold -w4 | paste -sd\- -`
+# Ignore exit code 141 which hapens in case of writing to pipe that was closed, which is our case (read urandom until enough data is gathered),
+# by using trick from https://stackoverflow.com/a/33026977/6352710, i.e., `|| test $? -eq 141` part.
+password=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1 | fold -w4 | paste -sd\- - || test $? -eq 141)
 
 	# Specyfing custom user name seem to prevent us from accessing db:
 	# "NodeBB could not connect to your PostgreSQL database. PostgreSQL returned the following error: role "custom_user" does not exist"

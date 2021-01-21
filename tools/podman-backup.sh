@@ -3,8 +3,8 @@
 # WARNING: This script has to be run OUTSIDE container.
 #          It's meant to create backup of containers' data.
 
-set -e
 __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
+source ${__DIRNAME}/common.sh
 
 APP_NAME="$APP_NAME"
 if [ -z "$APP_NAME" ] ; then

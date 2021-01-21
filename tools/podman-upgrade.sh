@@ -3,8 +3,8 @@
 # WARNING: This script has to be run OUTSIDE of container.
 #          It's meant to upgrade NodeBB version.
 
-set -e
 __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
+source ${__DIRNAME}/common.sh
 __APP=$(dirname "$__DIRNAME")"/app"
 
 if [ -z "$APP_NAME" ] ; then

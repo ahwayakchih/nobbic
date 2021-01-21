@@ -3,8 +3,8 @@
 # WARNING: This script has to be run OUTSIDE container.
 #          It's meant to add MongoDB to the specified pod.
 
-set -e
 __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
+source ${__DIRNAME}/common.sh
 __APPDIR=$(dirname $__DIRNAME)
 
 POD="$POD"
