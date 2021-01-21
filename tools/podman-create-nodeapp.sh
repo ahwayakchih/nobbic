@@ -22,6 +22,11 @@ if podman image exists ${APP_NAME}:${NODE_VERSION} ; then
 	exit 0
 fi
 
-podman run --replace --name ${APP_NAME}-node-build -v ${__DIRNAME}:/tools:ro docker.io/node:${NODE_VERSION}-alpine /bin/sh /tools/alpine-reconfigure-node.sh\
-    && podman commit -c CMD=/bin/sh -c USER=node -c WORKDIR=/app ${APP_NAME}-node-build ${APP_NAME}:${NODE_VERSION}\
-    && podman rm ${APP_NAME}-node-build
+podman run --replace --name build-${APP_NAME} -v ${__DIRNAME}:/tools:ro docker.io/node:${NODE_VERSION}-alpine /bin/sh /tools/alpine-reconfigure-node.sh\
+    && podman commit -c CMD=/bin/sh -c USER=node -c WORKDIR=/app build-${APP_NAME} ${APP_NAME}:${NODE_VERSION}\
+    && podman rm build-${APP_NAME}
+
+INSTALLED_NODE_VERSION=$(podman run --rm ${APP_NAME}:${NODE_VERSION} node --version)
+if [ "v${NODE_VERSION}" != "$INSTALLED_NODE_VERSION" ] ; then
+	podman tag ${APP_NAME}:${NODE_VERSION} ${APP_NAME}:${INSTALLED_NODE_VERSION/v/}
+fi

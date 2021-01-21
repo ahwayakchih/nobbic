@@ -17,7 +17,7 @@ NODEBB_REPO_VOLUME="${APP_NAME}-nodebb-repo"
 # Clone NodeBB repo to separate volume, so we don't have to do full clone again next time
 # and so we can extract which NODE_VERSION selected NODEBB_VERSION depends on.
 echo "Preparing NodeBB repo in volume $NODEBB_REPO_VOLUME"
-podman run --replace --rm --name ${APP_NAME}-nodebb-downloader\
+podman run --replace --rm --name nodebb-downloader\
     -e NODEBB_GIT=$NODEBB_GIT\
     -e NODEBB_VERSION="$NODEBB_VERSION"\
     -v ${__DIRNAME}:/tools:ro\
@@ -59,21 +59,24 @@ if [ -z "$NODEBB_GIT" ] ; then
 fi
 
 echo "Preparing Node.js v$NODE_VERSION image for NodeBB $NODEBB_VERSION"
-NODE_VERSION=$NODE_VERSION APP_NAME=${APP_NAME}-node ./tools/podman-create-nodeapp.sh
+NODE_VERSION=$NODE_VERSION APP_NAME=nodebb-node ./tools/podman-create-nodeapp.sh
 
-echo "Preparing NodeBB $NODEBB_VERSION image for $APP_NAME"
-IMAGE_NAME=${APP_NAME}-nodebb:${NODE_VERSION}-${NODEBB_VERSION}
+INSTALLED_NODE_VERSION=$(podman run --rm nodebb-node:${NODE_VERSION} node --version)
+NODE_VERSION=${INSTALLED_NODE_VERSION/v/}
+
+echo "Preparing NodeBB $NODEBB_VERSION (using Node.js v$NODE_VERSION) image for $APP_NAME"
+IMAGE_NAME=nodebb:${NODE_VERSION}-${NODEBB_VERSION}
 if podman image exists $IMAGE_NAME ; then
     echo "Skipping building image which already exists"
     # TODO: support some kind of "force-rebuild" switch?
 else
-    podman run --replace --name ${APP_NAME}-nodebb-build\
+    podman run --replace --name build-nodebb\
         -e NODEBB_GIT=$NODEBB_GIT\
         -e NODEBB_VERSION=$NODEBB_VERSION\
         -u root\
         -v ${__DIRNAME}/../:/containerizer:ro\
         -v $NODEBB_REPO_VOLUME:/repo:ro\
-        ${APP_NAME}-node:${NODE_VERSION} /bin/sh /containerizer/tools/alpine-prepare-nodebb-image.sh
+        nodebb-node:${NODE_VERSION} /bin/sh /containerizer/tools/alpine-prepare-nodebb-image.sh
     podman commit\
         -c "ENV=CONTAINER_APP_NAME=${APP_NAME}"\
         -c "ENV=NODEBB_GIT=${NODEBB_GIT}"\
@@ -85,8 +88,8 @@ else
         -c 'USER node'\
         -c 'WORKDIR /app'\
         -c 'CMD ["/bin/bash", "-l", "./.container/entrypoint.sh"]'\
-        ${APP_NAME}-nodebb-build $IMAGE_NAME
-    podman rm ${APP_NAME}-nodebb-build
+        build-nodebb $IMAGE_NAME
+    podman rm build-nodebb
 fi
 
 echo "Image $IMAGE_NAME is ready"
