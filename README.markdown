@@ -12,12 +12,24 @@ This document needs A LOT of work, but for now:
 All it requires to start is a `bash` shell and `podman`.
 
 **Podman** should be at least **v2.2.1** and **[configured for running rootless](https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md)**.
+Simplest way to test whole thing is to [install Alpine Linux (with podman)](./docs/SetupPodmanOnAlpineHost.markdown) in a virtual machine (like QEMU, VirtualBox or VMWare).
 
 Project was tested ONLY in rootless mode, with configuration in `~/.config/containers/containers.conf`, changed from defaults to:
 
 ```
 runtime = "crun"
 ```
+
+## Cleanup
+
+To remove everything from podman, simply run:
+
+```sh
+podman system prune -a
+podman volume prune
+```
+
+Sometimes it may not work, for whatever reason, in which case check [PodmanCleanup](./docs/PodmanCleanup.markdown) doc.
 
 ## TODO
 
