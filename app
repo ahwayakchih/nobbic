@@ -73,9 +73,9 @@ addToPod() {
 	fi
 
 	case "$fromName" in
-		1) echo "$options $toolPath" | xargs env;;
-		./*|/*) if [ -f "$fromName" ] ; then echo "$options $fromName" | xargs env; else echo "'$fromName' script not found">&2; fi ;;
-		*) echo "$options FROM_IMAGE=$fromName $toolPath" | xargs env;;
+		1) env $(echo "$options" | xargs) "$toolPath";;
+		./*|/*) if [ -f "$fromName" ] ; then env $(echo "$options" | xargs) "$fromName"; else echo "'$fromName' script not found">&2; fi ;;
+		*) env $(echo "$options FROM_IMAGE=$fromName" | xargs) "$toolPath";;
 	esac
 }
 

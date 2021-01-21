@@ -90,4 +90,4 @@ cmd="RESTORE_FROM='${fromName}'	${cmd}"
 
 # Alpine/Busybox's env does not support "-S" option (to split single string full of variable declarations).
 # That's why we need to echo them through xargs, to call env with args separated properly and in correct order.
-echo "$cmd ${__APP} start ${APP_NAME}" | xargs env
+env $(echo "$cmd" | xargs) ${__APP} start ${APP_NAME}
