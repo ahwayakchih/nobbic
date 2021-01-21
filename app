@@ -67,15 +67,15 @@ addToPod() {
 	local fromName=$2
 	local toolPath=$3
 
-	local restoreFrom=${RESTORE_FROM}
-	if [ ! -z "$restoreFrom" ] && [ -d "$restoreFrom" ]; then
-		restoreFrom="RESTORE_FROM=${restoreFrom}"
+	local options="POD=$podName"
+	if [ ! -z "$RESTORE_FROM" ] && [ -d "$RESTORE_FROM" ]; then
+		options="$options RESTORE_FROM=${RESTORE_FROM}"
 	fi
 
 	case "$fromName" in
-		1) env -S "POD='$podName' $restoreFrom" "$toolPath";;
-		./*|/*) if [ -f "$fromName" ] ; then env -S "POD='$podName' $restoreFrom" "$fromName"; else echo "'$fromName' script not found">&2; fi ;;
-		*) env -S "POD='$podName' FROM_IMAGE='$fromName' $restoreFrom" "$toolPath";;
+		1) echo "$options $toolPath" | xargs env;;
+		./*|/*) if [ -f "$fromName" ] ; then echo "$options $fromName" | xargs env; else echo "'$fromName' script not found">&2; fi ;;
+		*) echo "$options FROM_IMAGE=$fromName $toolPath" | xargs env;;
 	esac
 }
 
