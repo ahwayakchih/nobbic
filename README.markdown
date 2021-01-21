@@ -29,7 +29,7 @@ podman system prune -a
 podman volume prune
 ```
 
-Sometimes it may not work, for whatever reason, in which case check [PodmanCleanup](./docs/PodmanCleanup.markdown) doc.
+Sometimes it may not work, for whatever reason, in which case read [docs/PodmanCleanup](./docs/PodmanCleanup.markdown).
 
 ## TODO
 
