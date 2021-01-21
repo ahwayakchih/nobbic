@@ -70,8 +70,8 @@ cmd="NODE_VERSION=${FORCE_NODE_VERSION:-$NODE_VERSION}\
 	CONTAINER_NODEJS_PORT=${CONTAINER_NODEJS_PORT}\
 	CONTAINER_WEBSOCKET_PORT=${CONTAINER_WEBSOCKET_PORT}\
 	CONTAINER_APP_DNS_ALIAS=${CONTAINER_APP_DNS_ALIAS}\
-	${__APP} start ${APP_NAME}
 	"
+
 # Check which database(s) to use
 if [ ! -z "$CONTAINER_POSTGRES_PORT" ] && [ -f "${fromName}/container-postgres.json" ] ; then
 	# TODO: get container image name and pass it instead of "1"
@@ -86,6 +86,6 @@ if [ ! -z "$CONTAINER_REDIS_PORT" ] && [ -f "${fromName}/container-redis.json" ]
 	cmd="APP_ADD_REDIS=1 ${cmd}"
 fi
 
-cmd="RESTORE_FROM='${fromName}' ${cmd}"
+cmd="RESTORE_FROM='${fromName}'	${cmd}"
 
-eval $cmd
+env -S "$cmd" ${__APP} start ${APP_NAME}

@@ -72,9 +72,9 @@ addToPod() {
 	fi
 
 	case "$fromName" in
-		1) eval "POD='$podName' $restoreFrom $toolPath";;
-		./*|/*) if [ -f "$fromName" ] ; then eval "POD='$podName' $restoreFrom $fromName"; else echo "'$fromName' script not found">&2; fi ;;
-		*) eval "POD='$podName' FROM_IMAGE='$fromName; $restoreFrom $toolPath"
+		1) env -S "POD='$podName' $restoreFrom" "$toolPath";;
+		./*|/*) if [ -f "$fromName" ] ; then env -S "POD='$podName' $restoreFrom" "$fromName"; else echo "'$fromName' script not found">&2; fi ;;
+		*) env -S "POD='$podName' FROM_IMAGE='$fromName' $restoreFrom" "$toolPath";;
 	esac
 }
 
