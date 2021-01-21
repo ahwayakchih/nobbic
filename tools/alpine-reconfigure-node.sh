@@ -18,6 +18,11 @@ apk add --no-cache \
     python2 \
     git
 
+# Prepare "local" node_modules with proper ownership
+mkdir -p /app/node_modules \
+    && chmod -R 755 /app \
+    && chown -R node:node /app
+
 # Switch to `node` user
 su node
 
@@ -28,8 +33,3 @@ npm config set package-lock false
 mkdir ~/.npm-global\
 	&& npm config set prefix '~/.npm-global'\
 	&& echo "export PATH=~/.npm-global/bin:\$PATH" > ~/.profile
-
-# Prepare "local" node_modules with proper ownership
-mkdir -p /app/node_modules \
-    && chmod -R 755 /app \
-    && chown -R node:node /app
