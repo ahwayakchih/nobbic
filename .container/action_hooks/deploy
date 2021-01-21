@@ -184,12 +184,6 @@ function onbb_deploy () {
 		return 1
 	fi
 
-	# NodeBB does not come with package.json.
-	# It auto-populates it and auto-installs dependencies on first run.
-	# So we call "dummy-run", to make it install `nconf` which we use
-	# in our `container-app.js`.
-	(cd nodebb && ./nodebb --help && cd ..) || return 1
-
 	# Get version number
 	local version=$(onbb_get_nodebb_version)
 

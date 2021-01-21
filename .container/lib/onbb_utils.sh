@@ -295,10 +295,23 @@ function onbb_setup_environment () {
 	export NODEBB_ADMIN_EMAIL="$email"
 
 	# Make sure, that our `onbb` module is installed and has all dependencies met
-	cd .container/lib/onbb || echo "Could not find onbb module"
-	npm prune --production
-	npm install --production || echo "Could not install onbb module"
-	cd ../../../
+	# cd .container/lib/onbb || echo "Could not find onbb module"
+	# npm prune --production
+	# npm install --production || echo "Could not install onbb module"
+	# cd ../../../
+
+	# Make sure package.json is there and installed, so our custom app.js can work ok before NodeBB is installed
+	if [ ! -f nodebb/package.json ] ; then
+		echo "Installing dependencies"
+		cd nodebb
+		cp -a install/package.json ./package.json || return 1
+		if [ "$NODE_ENV" != "development" ] ; then
+			npm install --production || return 1
+		else
+			npm install || return 1
+		fi
+		cd ../
+	fi
 
 	# Override app.js
 	# We have to move original and replace it with our "wrapper"
