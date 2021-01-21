@@ -192,7 +192,7 @@ function startPod () {
 	# Issue is closed, but on podman v2.2.1 problem seems to exist
 	podman pod restart "$podName" || return 1
 
-	podman attach --no-stdin --sig-proxy=false "${podName}-nodebb"
+	podman attach --no-stdin --sig-proxy=false "${podName}-nodebb" || return 0
 }
 
 #
