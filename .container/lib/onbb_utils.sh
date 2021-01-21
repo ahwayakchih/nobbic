@@ -302,13 +302,16 @@ function onbb_setup_environment () {
 
 	# Make sure package.json is there and installed, so our custom app.js can work ok before NodeBB is installed
 	if [ ! -f nodebb/package.json ] ; then
+		cp -a nodebb/install/package.json nodebb/package.json
+	fi
+
+	if [ ! -d nodebb/node_modules/nconf ] ; then
 		echo "Installing dependencies"
 		cd nodebb
-		cp -a install/package.json ./package.json || return 1
 		if [ "$NODE_ENV" != "development" ] ; then
-			npm install --production || return 1
+			npm install --production
 		else
-			npm install || return 1
+			npm install
 		fi
 		cd ../
 	fi
