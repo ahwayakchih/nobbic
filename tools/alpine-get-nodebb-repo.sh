@@ -9,7 +9,7 @@ NODEBB_GIT=${NODEBB_GIT:-https://github.com/NodeBB/NodeBB.git}
 NODEBB_VERSION=${NODEBB_VERSION:-}
 
 # Add `git` so we can clone repo and `jq` to extract required NODE_VERSION for specified NODEBB_VERSION
-(git --version && jq --version)>/dev/null || apk add --no-cache \
+(git --version 2>/dev/null && jq --version 2>/dev/null) || apk add --no-cache \
 	git\
 	jq
 
