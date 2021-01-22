@@ -5,6 +5,7 @@
 
 __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 source ${__DIRNAME}/common.sh
+__APPDIR=$(dirname $__DIRNAME)
 
 CONTAINER="$CONTAINER"
 if [ -z "$CONTAINER" ] ; then
@@ -36,7 +37,9 @@ fi
 
 containerEnv=$(podman inspect "$CONTAINER" --format='{{range .Config.Env}}{{.}}\n{{end}}')
 POSTGRES_DB=$(echo "$containerEnv" | grep "POSTGRES_DB" | cut -d= -f2)
+POSTGRES_HOSTNAME=$(echo "$containerEnv" | grep "HOSTNAME" | cut -d= -f2)
 
+podman run --rm --pod "$POSTGRES_HOSTNAME" -v "${__APPDIR}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:5432" -t 30 >&2 || exit 1
 podman exec -t -u postgres $CONTAINER /bin/bash -c 'pg_dump -d "'$POSTGRES_DB'"' > "${targetName}.txt"
 
 if [ -z "$isRunning" ] ; then

@@ -5,6 +5,7 @@
 
 __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 source ${__DIRNAME}/common.sh
+__APPDIR=$(dirname $__DIRNAME)
 
 CONTAINER="$CONTAINER"
 if [ -z "$CONTAINER" ] ; then
@@ -36,7 +37,9 @@ fi
 
 containerEnv=$(podman inspect "$CONTAINER" --format='{{range .Config.Env}}{{.}}\n{{end}}')
 MONGO_INITDB_DATABASE=$(echo "$containerEnv" | grep "MONGO_INITDB_DATABASE" | cut -d= -f2)
+MONGODB_HOSTNAME=$(echo "$containerEnv" | grep "HOSTNAME" | cut -d= -f2)
 
+podman run --rm --pod "$MONGODB_HOSTNAME" -v "${__APPDIR}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:27017" -t 30 >&2 || exit 1
 podman exec -u mongodb $CONTAINER sh -c 'exec mongodump -d "'$MONGO_INITDB_DATABASE'" --archive' > "${targetName}.archive"
 
 if [ -z "$isRunning" ] ; then
