@@ -48,7 +48,7 @@ function showHelp () {
 	echo "You can enforce different version by setting NODE_VERSION environment variable."
 	echo ""
 	echo "You can set also CONTAINER_NODEJS_PORT and CONTAINER_WEBSOCKET_PORT values to port numbers you want pod to listen to."
-	echo "They default to 8080 and 8000 respectively."
+	echo "They both default to 8080."
 	echo ""
 	echo "For example: CONTAINER_APP_DNS_ALIAS=localhost APP_ADD_MONGODB=1 ./app start my-forum"
 	echo "It will create pod that includes MongoDB based on Ubuntu bionic (default) and NodeBB v1.15.5 (default), and then run it with Node.js v10 container (minimum required by NodeBB v1.15.5)."
