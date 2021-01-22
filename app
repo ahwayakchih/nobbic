@@ -168,7 +168,6 @@ function buildPod () {
 		$nodebbOptions $NODEBB_IMAGE || return 1
 
 	local BACKUP_DATA="${RESTORE_FROM}/nodebb.tar"
-	echo "Found NodeBB backup at $BACKUP_DATA"
 	if [ ! -z "$RESTORE_FROM" ] && [ -f "$BACKUP_DATA" ] ; then
 		echo -n "Copying $BACKUP_DATA to NodeBB container... "
 		podman cp "$BACKUP_DATA" ${podName}-nodebb:/app/nodebb.tar || (echo "failed" && exit 1) || return 1
