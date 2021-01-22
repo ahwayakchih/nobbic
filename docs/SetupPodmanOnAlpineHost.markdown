@@ -190,7 +190,7 @@ runtime = "crun"
 
 Save changes and exit editor.
 
-If you want, you can change some other options through `HOME/.config/containers/storage.conf` file.
+If you want, you can change some other options through `$HOME/.config/containers/storage.conf` file.
 Default file can be downloaded from `https://raw.githubusercontent.com/containers/storage/master/storage.conf`.
 
 That's all! Well... almost.
