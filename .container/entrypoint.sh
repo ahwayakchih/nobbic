@@ -8,7 +8,7 @@ ${CONTAINER_REPO_DIR}.container/action_hooks/pre_start || exit 1
 cd "${CONTAINER_REPO_DIR}nodebb"
 
 # start process detached from script
-daemon=false silent=false ${CONTAINER_REPO_DIR}nodebb/nodebb start -l &
+daemon=false silent=false ./nodebb start -l &
 
 # remember process ID
 PID=$!

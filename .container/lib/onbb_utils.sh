@@ -391,11 +391,11 @@ function onbb_wait_until_stopped () {
 	local seconds=$1
 	local graceful=$2
 
-	if [ "$seconds" = "" ] ; then
+	if [ -z "$seconds" ] ; then
 		seconds=2
 	fi
 
-	if [ "$graceful" = "" ] ; then
+	if [ -z "$graceful" ] ; then
 		graceful="yes"
 	fi
 
@@ -403,7 +403,7 @@ function onbb_wait_until_stopped () {
 	local PID=`pgrep -x node -o`
 
 	# Return early if it stopped already
-	if [ "$PID" = "" ] ; then
+	if [ -z "$PID" ] ; then
 		return 0
 	fi
 
@@ -440,7 +440,7 @@ function onbb_wait_until_stopped () {
 function onbb_wait_until_ready () {
 	local seconds=$1
 
-	if [ "$seconds" = "" ] ; then
+	if [ -z "$seconds" ] ; then
 		# 2 minutes
 		seconds=120
 	fi
