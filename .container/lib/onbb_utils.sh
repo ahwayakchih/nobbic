@@ -300,6 +300,15 @@ function onbb_setup_environment () {
 	# npm install --production || echo "Could not install onbb module"
 	# cd ../../../
 
+	# Restore data, if available
+	if [ -f nodebb.tar ] ; then
+		echo "Restoring /data from nodebb.tar archive"
+		tar x -C / -v -f - < nodebb.tar && rm nodebb.tar
+		if [ -f nodebb.tar ] ; then
+			echo "Could not restore NodeBB backup"
+		fi
+	fi
+
 	# Make sure package.json is there and installed, so our custom app.js can work ok before NodeBB is installed
 	if [ ! -f nodebb/package.json ] ; then
 		cp -a nodebb/install/package.json nodebb/package.json

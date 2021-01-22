@@ -55,9 +55,7 @@ POSTGRES_PORT=5432
 
 # Import from backup, if specified
 if [ ! -z "$RESTORE_FROM" ] && [ -f "${RESTORE_FROM}/postgres.txt" ] ; then
-	echo "WARNING: restoring is currently broken, sorry! Will be fixed ASAP" >&2
-	# podman run --rm --pod "$POD" -v "${__APPDIR}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:${POSTGRES_PORT}" -t 20 >&2 || exit 1
-	# podman exec -i -u postgres "$CONTAINER" psql -U postgres -d $POD < "${RESTORE_FROM}/postgres.txt" >&2 || exit 1
+	podman cp "${RESTORE_FROM}/postgres.txt" ${CONTAINER}:/docker-entrypoint-initdb.d/restore-${POD}.sql
 fi
 
 echo '-e CONTAINER_POSTGRES_HOST=localhost -e CONTAINER_POSTGRES_PORT='$POSTGRES_PORT' -e CONTAINER_POSTGRES_PASSWORD='$password\

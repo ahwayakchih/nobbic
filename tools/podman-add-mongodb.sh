@@ -39,13 +39,8 @@ MONGODB_PORT=27017
 
 # Import from backup, if specified
 if [ ! -z "$RESTORE_FROM" ] && [ -f "${RESTORE_FROM}/mongodb.archive" ] ; then
-	echo "WARNING: restoring is currently broken, sorry! Will be fixed ASAP" >&2
-	# podman run --rm --pod "$POD" -v "${__APPDIR}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:${MONGODB_PORT}" -t 20 >&2 || exit 1
-
-	# containerEnv=$(podman inspect "$CONTAINER" --format='{{range .Config.Env}}{{.}}\n{{end}}')
-	# MONGO_INITDB_DATABASE=$(echo "$containerEnv" | grep "MONGO_INITDB_DATABASE" | cut -d= -f2)
-
-	# podman exec -i -u mongodb $CONTAINER sh -c 'exec mongorestore -d "'$MONGO_INITDB_DATABASE'" --archive' < "${RESTORE_FROM}/mongodb.archive" >&2 || exit 1
+	podman cp "${RESTORE_FROM}/mongodb.archive" ${CONTAINER}:/docker-entrypoint-initdb.d/restore-${POD}.archive
+	podman cp "${__DIRNAME}/mongodb-restore-archive.sh" ${CONTAINER}:/docker-entrypoint-initdb.d/restore-archive.sh
 fi
 
 	# '-e CONTAINER_MONGODB_USERNAME=nodebb -e CONTAINER_MONGODB_PASSWORD='$password
