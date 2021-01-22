@@ -24,5 +24,7 @@ podman volume prune
 Finally, remove all images:
 
 ```sh
-podman rm -a
+podman rmi -a
 ```
+
+If any of the commands errors out and cannot remove stuff, try adding `--force`, e.g., `podman rm -a --force`.
