@@ -58,5 +58,5 @@ if [ ! -z "$RESTORE_FROM" ] && [ -f "${RESTORE_FROM}/postgres.txt" ] ; then
 	podman cp "${RESTORE_FROM}/postgres.txt" ${CONTAINER}:/docker-entrypoint-initdb.d/restore-${POD}.sql
 fi
 
-echo '-e CONTAINER_POSTGRES_HOST='$POD' -e CONTAINER_POSTGRES_PORT='$POSTGRES_PORT' -e CONTAINER_POSTGRES_PASSWORD='$password\
+echo '-e CONTAINER_POSTGRES_HOST=localhost -e CONTAINER_POSTGRES_PORT='$POSTGRES_PORT' -e CONTAINER_POSTGRES_PASSWORD='$password\
 	'-e CONTAINER_POSTGRES_USER=postgres -e CONTAINER_POSTGRES_DB='$POD
