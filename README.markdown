@@ -33,6 +33,9 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
 
 ## TODO
 
+- clear situation with logs (some are not written, they are in 3 different places, etc...),
+  maybe drop creating log files and simply depend on `podman logs`?
+- clear situation with NodeBB /data - package.json is not link, but a copy, others are linked, etc...
 - optional, mini-test (puppeteer-based?) to run after start
 - support for podman options like cpu and ram limits
 - setting up restart options (unless-stopped by default?)
