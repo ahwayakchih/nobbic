@@ -162,15 +162,16 @@ function buildPod () {
 	fi
 
 	# Add NodeBB container
-	podman run -d --pod "$podName" --name "${podName}-nodebb"\
+	podman create --pod "$podName" --name "${podName}-nodebb"\
 		-e CONTAINER_NODEJS_PORT=$webPort\
 		-e CONTAINER_WEBSOCKET_PORT=$wsPort\
 		$nodebbOptions $NODEBB_IMAGE || return 1
 
 	local BACKUP_DATA="${RESTORE_FROM}/nodebb.tar"
 	if [ ! -z "$RESTORE_FROM" ] && [ -f "$BACKUP_DATA" ] ; then
-		echo "Restoring NodeBB data from backup at $BACKUP_DATA"
-		podman exec -i "${podName}-nodebb" tar x -C / -v -f - < $BACKUP_DATA
+		echo "WARNING: restoring is currently broken, sorry! Will be fixed ASAP" >&2
+		# echo "Restoring NodeBB data from backup at $BACKUP_DATA"
+		# podman exec -i "${podName}-nodebb" tar x -C / -v -f - < $BACKUP_DATA
 	fi
 }
 
@@ -185,12 +186,32 @@ function startPod () {
 		return 1
 	fi
 
-	podman pod exists "$podName" || buildPod "$podName" || return 1
+	local existed=$(podman pod exists "$podName" && echo exists);
+	test "$existed" || buildPod "$podName" || return 1
 
-	echo "Starting '$podName' pod..."
-	# Use `restart` instead of `start` because of https://github.com/containers/podman/issues/7103
-	# Issue is closed, but on podman v2.2.1 problem seems to exist
-	podman pod restart "$podName" || return 1
+	if test "$existed" ; then
+		WAIT_FOR_PORT=$(podman inspect "${podName}-nodebb" --format="{{range .Config.Env}}{{.}}\n{{end}}" | grep CONTAINER_NODEJS_PORT | cut -d= -f2)
+
+		echo "Restarting '$podName' pod..."
+		podman pod start "$podName" || return 1
+		# Use `restart` right after `start` because of ports not being accessible from outside after stop+start.
+		# See: https://github.com/containers/podman/issues/7103 - issue is closed, but on Arch with podman v2.2.1
+		# problem seems to still exist.
+		# podman pod restart "$podName" || return 1
+		(
+			echo "Waiting for $podName port $WAIT_FOR_PORT to be ready inside container"
+			podman exec nhl-nodebb /app/.container/tools/wait-for.sh 127.0.0.1:$WAIT_FOR_PORT -t 120 || exit 1
+			sleep 1
+			echo "Waiting for $podName port $WAIT_FOR_PORT to be accessible from outside of container"
+			${__DIRNAME}/.container/tools/wait-for.sh localhost:${WAIT_FOR_PORT} -t 20 && echo "NodeBB should be accessible now" && exit 0
+			echo "WARNING: Looks like podman on this system is buggy and needs restart, not just start. Restarting..."
+			podman pod restart "$podName"
+			# TODO: reattach to nodebb stdout?
+		)&
+	else
+		echo "Starting '$podName' pod..."
+		podman pod start "$podName" || return 1
+	fi
 
 	podman attach --no-stdin --sig-proxy=false "${podName}-nodebb" || return 0
 }
@@ -271,10 +292,10 @@ function removePod () {
 		return 1
 	fi
 
-	echo "Removing '$podName' pod..."
-	podman pod stop "$podName" && podman pod rm "$podName" && return 0
+	stopPod $podName || return 1
 
-	return 1
+	echo "Removing '$podName' pod..."
+	podman pod rm "$podName" || return 1
 }
 
 if [ -z "$action" ] || [ "$action" = "help" ] ; then

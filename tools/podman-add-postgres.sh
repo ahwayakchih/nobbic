@@ -45,7 +45,7 @@ password=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1 | fold -w4 |
 	# Specyfing custom user name seem to prevent us from accessing db:
 	# "NodeBB could not connect to your PostgreSQL database. PostgreSQL returned the following error: role "custom_user" does not exist"
 	# -e POSTGRES_USER="$POD"\
-podman run -d --pod "$POD" --name "$CONTAINER" \
+podman create --pod "$POD" --name "$CONTAINER" \
 	-e POSTGRES_PASSWORD="$password"\
 	-e POSTGRES_DB="$POD"\
 	-e CONTAINER_DATA_DIR="$dataDir"\
@@ -55,8 +55,9 @@ POSTGRES_PORT=5432
 
 # Import from backup, if specified
 if [ ! -z "$RESTORE_FROM" ] && [ -f "${RESTORE_FROM}/postgres.txt" ] ; then
-	podman run --rm --pod "$POD" -v "${__APPDIR}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:${POSTGRES_PORT}" -t 20 >&2 || exit 1
-	podman exec -i -u postgres "$CONTAINER" psql -U postgres -d $POD < "${RESTORE_FROM}/postgres.txt" >&2 || exit 1
+	echo "WARNING: restoring is currently broken, sorry! Will be fixed ASAP" >&2
+	# podman run --rm --pod "$POD" -v "${__APPDIR}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:${POSTGRES_PORT}" -t 20 >&2 || exit 1
+	# podman exec -i -u postgres "$CONTAINER" psql -U postgres -d $POD < "${RESTORE_FROM}/postgres.txt" >&2 || exit 1
 fi
 
 echo '-e CONTAINER_POSTGRES_HOST=localhost -e CONTAINER_POSTGRES_PORT='$POSTGRES_PORT' -e CONTAINER_POSTGRES_PASSWORD='$password\
