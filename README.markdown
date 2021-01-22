@@ -33,6 +33,7 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
 
 ## TODO
 
+- support installations with Redis as the only database (enable data persistence in Redis)
 - clear situation with logs (some are not written, they are in 3 different places, etc...),
   maybe drop creating log files and simply depend on `podman logs`?
 - clear situation with NodeBB /data - package.json is not link, but a copy, others are linked, etc...
