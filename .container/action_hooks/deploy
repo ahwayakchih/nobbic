@@ -127,8 +127,18 @@ function onbb_setup_nodebb () {
 	cd ${CONTAINER_REPO_DIR}nodebb
 
 	# Run setup and redirect output to file, so we can search it later
+	# Older versions of NodeBB do not support --skip-build,
+	# but at least --series should be supported (see below why we want that)
 	local logfile=$(onbb_get_logfile "container-nodebb-setup.log")
-	node app --setup "$json" 2>&1 | tee $logfile
+	node app --skip-build --series --setup "$json" 2>&1 | tee $logfile
+
+	# Activate plugins
+	for plugin in cd ${CONTAINER_REPO_DIR}.container/plugins/*; do
+		./nodebb activate $(basename "$plugin") 2>&1 | tee -a $logfile
+	done
+
+	# Run build sequentially, to prevent errors about too many files opened, etc...
+	./nodebb build --series 2>&1 | tee -a $logfile
 
 	# Success marker
 	local failed=1
@@ -162,11 +172,6 @@ function onbb_setup_nodebb () {
 			onbb_echo_result_of_setup_failed $logfile
 		fi
 	fi
-
-	# activate plugins
-	for plugin in cd ${CONTAINER_REPO_DIR}.container/plugins/*; do
-		./nodebb activate $(basename "$plugin")
-	done
 
 	# Switch back to previous directory
 	cd "$d"
