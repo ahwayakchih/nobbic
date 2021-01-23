@@ -1,19 +1,19 @@
-var net   = require('net');
-var fs    = require('fs');
+const net   = require('net');
+const fs    = require('fs');
 
 // These are installed by NodeBB, so we do not need to install them
-var nconf = require('nconf');
-var async = require('async');
+const nconf = require.main.require('nconf');
+const async = require.main.require('async');
 
 // Our stuff
-var CommandServer = require('./onbb/CommandServer');
+const CommandServer = require('./CommandServer');
 
 /**
  * Our custom commands.
  *
  * @type {CommandsMap}
  */
-var COMMANDS = {};
+const COMMANDS = {};
 
 /**
  * Generate reset code for user with given e-mail address.
@@ -27,8 +27,8 @@ COMMANDS.resetPassword = function resetPassword (done, email) {
 	}
 
 	// NodeBB stuff
-	var User      = require(process.env.CONTAINER_REPO_DIR + 'nodebb/src/user');
-	var UserReset = require(process.env.CONTAINER_REPO_DIR + 'nodebb/src/user/reset');
+	const User      = require.main.require('./src/user');
+	const UserReset = require.main.require('./src/user/reset');
 
 	async.waterfall([
 		function(next) {
@@ -47,7 +47,7 @@ COMMANDS.resetPassword = function resetPassword (done, email) {
 };
 
 /**
- * Create and start CommandsServer.
+ * Create CommandsServer and start it after webserver starts listening.
  * Listen on `onbb-[NodeBB port number].sock` by default.
  *
  * Server will close automatically when process is killed.
@@ -56,27 +56,24 @@ COMMANDS.resetPassword = function resetPassword (done, email) {
  *              so it must be called from the same process that
  *              started NodeBB's webserver.
  *
- * @param {string|Object} address
- * @param {Function}      [callback]
  * @return {CommandServer}
  */
-function onbb_start_command_server (address, callback) {
-	var server = new CommandServer({commands: COMMANDS});
+function onNodeBBReady () {
+	const server = new CommandServer({commands: COMMANDS});
+
+	// NodeBB stuff
+	const webserver = require.main.require('./src/webserver');
 
 	// Wait for NodeBB webserver to start listening
-	process.on('listening', () => {
+	webserver.server.on('listening', () => {
 		if (server.listening) {
 			return;
 		}
 
-		if (!address) {
-			// NodeBB stuff
-			var webserver = require(process.env.CONTAINER_REPO_DIR + 'nodebb/src/webserver');
-			var nodebbAddress = webserver.server.address();
-			address = 'onbb-' + (nodebbAddress.port || nodebbAddress) + '.sock';
-		}
+		var nodebbAddress = webserver.server.address();
+		address = 'nbb-cmd-' + (nodebbAddress.port || nodebbAddress) + '.sock';
 
-		server.start(address, callback);
+		server.start(address);
 	});
 
 	process.on('SIGTERM', server.stop.bind(server));
@@ -88,4 +85,4 @@ function onbb_start_command_server (address, callback) {
 /*
  * Exports
  */
-module.exports.onbb_start_command_server = onbb_start_command_server;
+module.exports.onNodeBBReady = onNodeBBReady;

@@ -1,0 +1,32 @@
+{
+  "name": "nodebb-plugin-command-sock",
+  "version": "0.1.0",
+  "description": "Listens through unix socket for simple, predefined commands",
+  "main": "main.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha --bail --reporter spec --recursive"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ahwayakchih/containerized-nodebb.git"
+  },
+  "keywords": [
+    "openshift",
+    "nodebb"
+  ],
+  "author": "Marcin Konicki (https://ahwayakchih.neoni.net)",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/ahwayakchih/containerized-nodebb/issues"
+  },
+  "homepage": "https://github.com/ahwayakchih/containerized-nodebb#readme",
+  "devDependencies": {
+    "mocha": "^2.4.5"
+  },
+  "nbbpm": {
+    "compatibility": "^1.12.1"
+  }
+}

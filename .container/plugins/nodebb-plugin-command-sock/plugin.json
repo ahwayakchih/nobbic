@@ -1,0 +1,10 @@
+{
+	"id": "nodebb-plugin-command-sock",
+	"url": "https://github.com/ahwayakchih/openshift-nodebb",
+	"library": "main.js",
+	"hooks": [
+		{
+			"hook": "action:nodebb.ready", "method": "onNodeBBReady"
+		}
+	]
+}
