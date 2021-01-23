@@ -137,9 +137,6 @@ testSSL(IP, PORT, FQDN, function onTestSSLResult (err) {
 	testSSL = null;
 	IP = PORT = FQDN = null;
 
-	// TODO: Does not work, as process is different for webserver than main app
-	// require('/app/.container/lib/onbb_utils.js').onbb_start_command_server();
-
 	// Continue booting NodeBB
 	setImmediate(require.bind(null, './_app.js'));
 });
