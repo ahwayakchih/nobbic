@@ -325,6 +325,14 @@ function onbb_setup_environment () {
 		cd ../
 	fi
 
+	for plugin in ${CONTAINER_REPO_DIR}.container/plugins/*; do
+		cd "$plugin"
+		npm link
+		cd "${CONTAINER_REPO_DIR}/nodebb"
+		npm link $(basename "$plugin")
+	done
+	cd "$CONTAINER_REPO_DIR"
+
 	# Override app.js
 	# We have to move original and replace it with our "wrapper"
 	# because NodeBB calls hardcoded "app.js" in some cases
@@ -492,9 +500,9 @@ function onbb_wait_until_db_ready () {
 # Execute command on NodeBB server.
 #
 function onbb_exec_command () {
-	local server=`ls "${CONTAINER_REPO_DIR}nodebb" | grep -m 1 'onbb-[0-9]*.sock'`
+	local server=`ls "${CONTAINER_REPO_DIR}nodebb" | grep -m 1 'nbb-cmd-[0-9]*.sock'`
 
-	if [ $server = "" ] ; then
+	if [ -z $server ] ; then
 		>&2 echo "No server found"
 		return 1
 	fi
