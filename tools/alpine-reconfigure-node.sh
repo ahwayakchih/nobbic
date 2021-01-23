@@ -23,13 +23,15 @@ mkdir -p /app/node_modules \
     && chmod -R 755 /app \
     && chown -R node:node /app
 
-# Switch to `node` user
-su node
+# Setup global node_modules so `npm -g example-module` works OK
+# npm config set prefix '/home/node/.npm-global'\
+mkdir /home/node/.npm-global\
+    && echo "prefix=/home/node/.npm-global" > /home/node/.npmrc\
+    && echo "export PATH=/home/node/.npm-global/bin:\$PATH" > /home/node/.profile
 
 # No need to fight with locks in container
-npm config set package-lock false
+# npm config set package-lock false
+echo "package-lock=false" >> /home/node/.npmrc
 
-# Setup global node_modules so `npm -g example-module` works OK
-mkdir ~/.npm-global\
-	&& npm config set prefix '~/.npm-global'\
-	&& echo "export PATH=~/.npm-global/bin:\$PATH" > ~/.profile
+# Fix ownership
+chown node:node /home/node/.npm-global /home/node/.npmrc /home/node/.profile
