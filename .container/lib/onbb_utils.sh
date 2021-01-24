@@ -278,6 +278,11 @@ function onbb_setup_environment () {
 	local d=`pwd`
 	cd "$CONTAINER_REPO_DIR"
 
+	local NODEBB_DATA_DIR="${CONTAINER_DATA_DIR}nodebb"
+
+	# Make sure there is persistent data directory
+	mkdir -p "$NODEBB_DATA_DIR"
+
 	# Make sure NODEBB_FQDN is set
 	local fqdn=$(onbb_setup_fqdn)
 	if [ -z "$fqdn" ] ; then
@@ -311,7 +316,11 @@ function onbb_setup_environment () {
 
 	# Make sure package.json is there and installed, so our custom app.js can work ok before NodeBB is installed
 	if [ ! -f nodebb/package.json ] ; then
-		cp -a nodebb/install/package.json nodebb/package.json
+		if [ -f "$NODEBB_DATA_DIR/package.json" ] ; then
+			cp -a "$NODEBB_DATA_DIR/package.json" nodebb/package.json
+		else
+			cp -a nodebb/install/package.json nodebb/package.json
+		fi
 	fi
 
 	if [ ! -d nodebb/node_modules/nconf ] ; then
@@ -348,11 +357,6 @@ function onbb_setup_environment () {
 			cp -a "$containerApp" nodebb/app.js
 		fi
 	fi
-
-	local NODEBB_DATA_DIR="${CONTAINER_DATA_DIR}nodebb"
-
-	# Make sure there is persistent data directory
-	mkdir -p "$NODEBB_DATA_DIR"
 
 	local target
 	local current
