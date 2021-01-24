@@ -200,7 +200,7 @@ function startPod () {
 		# podman pod restart "$podName" || return 1
 		(
 			echo "Waiting for $podName port $WAIT_FOR_PORT to be ready inside container"
-			podman exec nhl-nodebb /app/.container/tools/wait-for.sh 127.0.0.1:$WAIT_FOR_PORT -t 120 || exit 1
+			podman exec "${podName}-nodebb" /app/.container/tools/wait-for.sh 127.0.0.1:$WAIT_FOR_PORT -t 120 || exit 1
 			sleep 1
 			echo "Waiting for $podName port $WAIT_FOR_PORT to be accessible from outside of container"
 			${__DIRNAME}/.container/tools/wait-for.sh localhost:${WAIT_FOR_PORT} -t 20 && echo "NodeBB should be accessible now" && exit 0
