@@ -33,6 +33,8 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
 
 ## TODO
 
+- option to specify additional plugins when creating instance, so they are installed and
+  activated from the start.
 - support installations with Redis as the only database (enable data persistence in Redis)
 - clear situation with logs (some are not written, they are in 3 different places, etc...),
   maybe drop creating log files and simply depend on `podman logs`?
