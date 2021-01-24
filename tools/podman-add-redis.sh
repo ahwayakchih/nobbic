@@ -30,4 +30,4 @@ REDIS_IMAGE=${FROM_IMAGE:-docker.io/redis:alpine3.12}
 podman create --pod "$POD" --name "$CONTAINER" \
 	"$REDIS_IMAGE" >/dev/null || exit 1
 
-echo '-e CONTAINER_REDIS_HOST=localhost -e CONTAINER_REDIS_PORT=27017'
+echo '-e CONTAINER_REDIS_HOST=localhost -e CONTAINER_REDIS_PORT=6379'
