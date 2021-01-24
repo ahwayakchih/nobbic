@@ -134,11 +134,11 @@ function onbb_setup_nodebb () {
 
 	# Activate plugins
 	for plugin in cd ${CONTAINER_REPO_DIR}.container/plugins/*; do
-		./nodebb activate $(basename "$plugin") 2>&1 | tee -a $logfile
+		node app --activate $(basename "$plugin") 2>&1 | tee -a $logfile
 	done
 
 	# Run build sequentially, to prevent errors about too many files opened, etc...
-	./nodebb build --series 2>&1 | tee -a $logfile
+	node app --series --build 2>&1 | tee -a $logfile
 
 	# Success marker
 	local failed=1
