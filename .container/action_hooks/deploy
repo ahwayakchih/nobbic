@@ -139,8 +139,14 @@ function onbb_setup_nodebb () {
 		fi
 	done
 
-	# Run build sequentially, to prevent errors about too many files opened, etc...
-	node app --series --build 2>&1 | tee -a $logfile
+	# So far our custom plugins do not require rebuild, so call build
+	# only if it was not done yet, i.e., we're deploying version that does
+	# support `--skip-build` option.
+	local assetsDone=$(cat $logfile | grep "Asset compilation successful")
+	if [ -z "$assetsDone" ] ; then
+		# Run build sequentially, to prevent errors about too many files opened, etc...
+		node app --series --build 2>&1 | tee -a $logfile
+	fi
 
 	# Success marker
 	local failed=1
