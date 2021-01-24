@@ -334,11 +334,13 @@ function onbb_setup_environment () {
 		cd ../
 	fi
 
-	for plugin in ${CONTAINER_REPO_DIR}.container/plugins/*; do
-		cd "$plugin"
-		npm link
-		cd "${CONTAINER_REPO_DIR}/nodebb"
-		npm link $(basename "$plugin")
+	for plugin in ${CONTAINER_REPO_DIR}.container/plugins/nodebb-plugin-*; do
+		if [ -d "$plugin" ] ; then
+			cd "$plugin"
+			npm link
+			cd "${CONTAINER_REPO_DIR}/nodebb"
+			npm link $(basename "$plugin")
+		fi
 	done
 	cd "$CONTAINER_REPO_DIR"
 

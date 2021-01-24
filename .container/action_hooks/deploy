@@ -133,8 +133,10 @@ function onbb_setup_nodebb () {
 	node app --skip-build --series --setup "$json" 2>&1 | tee $logfile
 
 	# Activate plugins
-	for plugin in cd ${CONTAINER_REPO_DIR}.container/plugins/*; do
-		node app --activate $(basename "$plugin") 2>&1 | tee -a $logfile
+	for plugin in cd ${CONTAINER_REPO_DIR}.container/plugins/nodebb-plugin-*; do
+		if [ -d "$plugin" ] ; then
+			node app --activate $(basename "$plugin") 2>&1 | tee -a $logfile
+		fi
 	done
 
 	# Run build sequentially, to prevent errors about too many files opened, etc...
