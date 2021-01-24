@@ -1,6 +1,6 @@
 {
 	"id": "nodebb-plugin-command-sock",
-	"url": "https://github.com/ahwayakchih/openshift-nodebb",
+	"url": "https://github.com/ahwayakchih/containerized-nodebb",
 	"library": "main.js",
 	"hooks": [
 		{
