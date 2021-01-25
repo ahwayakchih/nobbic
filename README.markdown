@@ -33,6 +33,7 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
 
 ## TODO
 
+- fix running with MongoDB on Alpine Linux in qemu (Mongo container seems to timeout, or maybe NodeBB container cannot access it?)
 - option for NodeBB to keep building assets in "series" mode
 - option to specify additional plugins when creating instance, so they are installed and
   activated from the start.
