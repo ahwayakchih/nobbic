@@ -19,9 +19,10 @@ var path  = require('path');
  * @param {!Function} callback   Will call with error or null as first argument
  */
 function testSSL (ip, port, hostname, callback) {
-	// OpenShift terminates SSL and passes request through regular HTTP.
-	// So we need to setup HTTP server, and call it through HTTPS.
-	var header = 'X-OpenShift-NodeBB-Test';
+	// If something terminates SSL and passes requests through a regular HTTP,
+	// NodeBB should be listening for HTTP, not HTTPS.
+	// So we setup a HTTP server, and call it through HTTPS, to see if that's the case.
+	var header = 'X-Containerized-NodeBB-Test';
 	var token = "" + Math.random();
 
 	var server = http.createServer(function (req, res) {
