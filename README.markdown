@@ -33,6 +33,7 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
 
 ## TODO
 
+- option for NodeBB to keep building assets in "series" mode
 - option to specify additional plugins when creating instance, so they are installed and
   activated from the start.
 - support installations with Redis as the only database (enable data persistence in Redis)
