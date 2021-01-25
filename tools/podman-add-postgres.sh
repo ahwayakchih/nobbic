@@ -24,6 +24,7 @@ if [ -z "$CONTAINER" ] ; then
 fi
 
 POSTGRES_IMAGE=${FROM_IMAGE:-docker.io/postgres:alpine}
+POSTGRES_ENV=$(get_env_values_for CONTAINER_ENV_POSTGRES_ POSTGRES_)$(get_env_values_for CONTAINER_ENV_PG_ PG)
 
 # Make sure image is available before we inspect it
 if ! podman image exists "$POSTGRES_IMAGE" >/dev/null ; then
@@ -49,7 +50,7 @@ podman create --pod "$POD" --name "$CONTAINER" \
 	-e POSTGRES_PASSWORD="$password"\
 	-e POSTGRES_DB="$POD"\
 	-e CONTAINER_DATA_DIR="$dataDir"\
-	"$POSTGRES_IMAGE" >/dev/null || exit 1
+	$POSTGRES_ENV "$POSTGRES_IMAGE" >/dev/null || exit 1
 
 POSTGRES_PORT=5432
 

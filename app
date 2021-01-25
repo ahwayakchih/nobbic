@@ -55,6 +55,15 @@ function showHelp () {
 	echo ""
 	echo "Another example: NODEBB_VERSION=1.12.1 CONTAINER_APP_DNS_ALIAS=localhost APP_ADD_POSTGRES=1 ./app start my-forum"
 	echo "It will create pod with NodeBB v1.12.1 that uses PostgreSQL as database engine and sets its URL to localhost:8080 (default port) and websockets to localhost:8000 (default)"
+	echo ""
+	echo "You can set any additional environment variables for specific containers using CONTAINER_ENV_ prefix."
+	echo "CONTAINER_ENV_NODE_* variables will be set as NODE_* in nodebb container."
+	echo "CONTAINER_ENV_NODEBB_* variables will be set as NODEBB_* in nodebb container."
+	echo "CONTAINER_ENV_MONGODB_* variables will be set as * in nodebb container."
+	echo "CONTAINER_ENV_POSTGRES_* variables will be set as POSTGRES_* in nodebb container."
+	echo "CONTAINER_ENV_PG_* variables will be set as PG* in nodebb container."
+	echo "CONTAINER_ENV_REDIS_* variables will be set as * in nodebb container."
+	echo ""
 }
 
 #
@@ -132,7 +141,8 @@ function buildPod () {
 	# Add "data" container, to be shared by database, nodebb, etc...
 	# podman create --pod "$podName" --name "${podName}-data" -v /data docker.io/busybox:musl || return 1
 
-	local addNodeBBOptions=""
+	nodebbOptions="$nodebbOptions "$(get_env_values_for CONTAINER_ENV_NODEBB_ NODEBB_)$(get_env_values_for CONTAINER_ENV_NODE_ NODE_)
+
 	if [ ! -z "$APP_ADD_MONGODB" ] ; then
 		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_MONGODB "${__DIRNAME}/tools/podman-add-mongodb.sh")
 		if [ -z "$addNodeBBOptions" ] ; then

@@ -23,11 +23,12 @@ if [ -z "$CONTAINER" ] ; then
 fi
 
 REDIS_IMAGE=${FROM_IMAGE:-docker.io/redis:alpine3.12}
+REDIS_ENV=$(get_env_values_for CONTAINER_ENV_REDIS_ "")
 
 # We do not set CONTAINER_DATA_DIR, because, for now, Redis is used only for temporary data
 # and does not persist data between restarts.
 
 podman create --pod "$POD" --name "$CONTAINER" \
-	"$REDIS_IMAGE" >/dev/null || exit 1
+	$REDIS_ENV "$REDIS_IMAGE" >/dev/null || exit 1
 
 echo '-e CONTAINER_REDIS_HOST=localhost -e CONTAINER_REDIS_PORT=6379'

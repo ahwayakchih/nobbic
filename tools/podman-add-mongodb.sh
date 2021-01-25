@@ -24,6 +24,7 @@ if [ -z "$CONTAINER" ] ; then
 fi
 
 MONGODB_IMAGE=${FROM_IMAGE:-docker.io/mongo:bionic}
+MONGODB_ENV=$(get_env_values_for CONTAINER_ENV_MONGODB_ "")
 
 # TODO: Setting up password does not seem to work (there are some errors while trying to connect) with official image
 # local password=`tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1 | fold -w4 | paste -sd\- -`
@@ -33,7 +34,7 @@ MONGODB_IMAGE=${FROM_IMAGE:-docker.io/mongo:bionic}
 podman create --pod "$POD" --name "$CONTAINER" \
 	-e MONGO_INITDB_DATABASE="$POD" \
 	-e CONTAINER_DATA_DIR="/data/"\
-	"$MONGODB_IMAGE" >/dev/null || exit 1
+	$MONGODB_ENV "$MONGODB_IMAGE" >/dev/null || exit 1
 
 MONGODB_PORT=27017
 

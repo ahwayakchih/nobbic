@@ -12,3 +12,18 @@ on_error() {
     exit $LASTERR
 }
 trap 'on_error ${LINENO} ${?}' ERR
+
+# @param {string} from  e.g., CONTAINER_ENV_MONGODB_
+# @param {string} to  e.g., MONGO_, or empty string to remove whole prefix
+get_env_values_for() {
+	# Ignore errors
+	values=$(env | grep "$1" || echo "")
+	if [ -z "$values" ] ; then
+		# Return early without error
+		return
+	fi
+
+	for v in $values; do
+		echo -n "-e "$(echo "$v" | cut -d= -f1 | sed "s/^${1}/${2}/")'="'$(echo "$v" | cut -d= -f2)'" '
+	done
+}
