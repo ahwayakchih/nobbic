@@ -8,7 +8,7 @@ on_error() {
     JOB="$0"              # job name
     LASTLINE="$1"         # line of error occurrence
     LASTERR="$2"          # error code
-    echo "ERROR: ${JOB}, on line #${LASTLINE}, exited with code ${LASTERR}"
+    echo "ERROR: ${JOB}, on line #${LASTLINE}, exited with code ${LASTERR}" >&2
     exit $LASTERR
 }
 trap 'on_error ${LINENO} ${?}' ERR
