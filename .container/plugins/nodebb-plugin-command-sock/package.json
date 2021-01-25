@@ -14,7 +14,7 @@
     "url": "git+https://github.com/ahwayakchih/containerized-nodebb.git"
   },
   "keywords": [
-    "openshift",
+    "commands",
     "nodebb"
   ],
   "author": "Marcin Konicki (https://ahwayakchih.neoni.net)",
