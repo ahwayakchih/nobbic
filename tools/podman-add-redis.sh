@@ -3,6 +3,13 @@
 # WARNING: This script has to be run OUTSIDE container.
 #          It's meant to add Redis to the specified pod.
 
+# Remember our stdout, so we can bring it back later
+exec 4>&1
+
+# Redirect stdout to stderr, just in case something slips through
+# so it will not break our result.
+exec 1>&2
+
 __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 source ${__DIRNAME}/common.sh
 
@@ -42,4 +49,8 @@ PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS $PODMAN_CREATE_ARGS_REDIS"
 podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS \
 	$REDIS_ENV "$REDIS_IMAGE" >/dev/null || exit 1
 
+# Restore stdout and close 4 that was storing its file descriptor
+exec 1>&4-
+
+# Output result
 echo '-e CONTAINER_REDIS_HOST=localhost -e CONTAINER_REDIS_PORT='$REDIS_PORT

@@ -3,9 +3,15 @@
 # WARNING: This script has to be run OUTSIDE container.
 #          It's meant to add MongoDB to the specified pod.
 
+# Remember our stdout, so we can bring it back later
+exec 4>&1
+
+# Redirect stdout to stderr, just in case something slips through
+# so it will not break our result.
+exec 1>&2
+
 __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 source ${__DIRNAME}/common.sh
-__APPDIR=$(dirname $__DIRNAME)
 
 POD="$POD"
 if [ -z "$POD" ] ; then
@@ -53,6 +59,11 @@ if [ ! -z "$RESTORE_FROM" ] && [ -f "${RESTORE_FROM}/mongodb.archive" ] ; then
 	podman cp "${RESTORE_FROM}/mongodb.archive" ${CONTAINER}:/docker-entrypoint-initdb.d/restore-${POD}.archive >/dev/null || exit 1
 	podman cp "${__DIRNAME}/mongodb-restore-archive.sh" ${CONTAINER}:/docker-entrypoint-initdb.d/restore-archive.sh >/dev/null || exit 1
 fi
+
+# Restore stdout and close 4 that was storing its file descriptor
+exec 1>&4-
+
+# Output result
 
 	# '-e CONTAINER_MONGODB_USERNAME=nodebb -e CONTAINER_MONGODB_PASSWORD='$password
 echo "-e CONTAINER_MONGODB_HOST=localhost -e CONTAINER_MONGODB_PORT=$MONGODB_PORT -e CONTAINER_MONGODB_NAME=$POD"
