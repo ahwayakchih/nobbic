@@ -75,7 +75,11 @@ function showHelp () {
 	echo "PODMAN_CREATE_ARGS_POSTGRES variable for PostgreSQL database container,"
 	echo "PODMAN_CREATE_ARGS_REDIS variable for Redis database container."
 	echo ""
-
+	echo "When database container is created, its port number is automaticaly read from image. In case of more than one port being exposed by database image, you can override its value through environment variable:"
+	echo "CONTAINER_MONGODB_PORT for MongoDB datase,"
+	echo "CONTAINER_POSTGRES_PORT for PostgreSQL datase,"
+	echo "CONTAINER_REDIS_PORT for Redis datase."
+	echo ""
 }
 
 #

@@ -27,6 +27,13 @@ POSTGRES_IMAGE=${FROM_IMAGE:-docker.io/postgres:alpine}
 if ! podman image exists "$POSTGRES_IMAGE" ; then
 	podman pull $PODMAN_PULL_ARGS_POSTGRES "$POSTGRES_IMAGE" || exit 1
 fi
+
+POSTGRES_PORT=${CONTAINER_POSTGRES_PORT:-$(podman inspect $POSTGRES_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1)}
+if [ -z "$POSTGRES_PORT" ] ; then
+	POSTGRES_PORT=5432
+	echo "WARNING: could not find port number exposed by $POSTGRES_IMAGE, defaulting to $POSTGRES_PORT" >&2
+fi
+
 POSTGRES_ENV=$(get_env_values_for CONTAINER_ENV_POSTGRES_ POSTGRES_)$(get_env_values_for CONTAINER_ENV_PG_ PG)
 
 # Make sure image is available before we inspect it
@@ -54,8 +61,6 @@ podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS_POSTGRES \
 	-e POSTGRES_DB="$POD"\
 	-e CONTAINER_DATA_DIR="$dataDir"\
 	$POSTGRES_ENV "$POSTGRES_IMAGE" >/dev/null || exit 1
-
-POSTGRES_PORT=5432
 
 # Import from backup, if specified
 if [ ! -z "$RESTORE_FROM" ] && [ -f "${RESTORE_FROM}/postgres.txt" ] ; then

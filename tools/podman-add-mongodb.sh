@@ -27,6 +27,13 @@ MONGODB_IMAGE=${FROM_IMAGE:-docker.io/mongo:bionic}
 if ! podman image exists "$MONGODB_IMAGE" ; then
 	podman pull $PODMAN_PULL_ARGS_MONGODB "$MONGODB_IMAGE" || exit 1
 fi
+
+MONGODB_PORT=${CONTAINER_MONGODB_PORT:-$(podman inspect $MONGODB_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1)}
+if [ -z "$MONGODB_PORT" ] ; then
+	MONGODB_PORT=27017
+	echo "WARNING: could not find port number exposed by $MONGODB_IMAGE, defaulting to $MONGODB_PORT" >&2
+fi
+
 MONGODB_ENV=$(get_env_values_for CONTAINER_ENV_MONGODB_ "")
 
 # TODO: Setting up password does not seem to work (there are some errors while trying to connect) with official image
@@ -38,8 +45,6 @@ podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS_MONGODB \
 	-e MONGO_INITDB_DATABASE="$POD" \
 	-e CONTAINER_DATA_DIR="/data/"\
 	$MONGODB_ENV "$MONGODB_IMAGE" >/dev/null || exit 1
-
-MONGODB_PORT=27017
 
 # Import from backup, if specified
 if [ ! -z "$RESTORE_FROM" ] && [ -f "${RESTORE_FROM}/mongodb.archive" ] ; then
