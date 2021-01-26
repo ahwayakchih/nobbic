@@ -30,6 +30,7 @@ function showHelp () {
 	echo "restore APP_NAME [BACKUPS_DIR] [BACKUP_NAME] - restore from a previously created backup"
 	echo "stop APP_NAME   - stop pod"
 	echo "remove APP_NAME - stop pod, remove its containers and their data, remove the pod itself"
+	echo "cleanup [nodebb|node] - remove images built for NodeBB containers, removing 'node' containers, will also remove all nodebb images"
 	echo ""
 	echo "When building, you can specify database images to use for pod containers by setting environment variables:"
 	echo "APP_ADD_MONGODB  - set it to 1 to use default 'bionic' image, or set image name, e.g., docker.io/mongo:4.4.2-bionic"
@@ -324,6 +325,29 @@ function removePod () {
 	podman pod rm "$podName" || return 1
 }
 
+#
+# @param {string} imageType
+#
+function cleanupImages () {
+	local imageType=$1
+
+	if [ -z "$imageType" ] ; then
+		echo "ERROR: missing which images to remove" >&2
+		return 1
+	fi
+
+	if [ "$imageType" = "nodebb" ] ; then
+		# Select only nodebb images, not nodebb-node
+		podman images --format "{{.Repository}}:{{.Tag}}" | grep localhost/nodebb | grep -v localhost/nodebb-node | xargs podman rmi -f
+		return 0
+	fi
+
+	# Both `nodebb` and `node` remove NodeBB images
+	podman images --format "{{.Repository}}:{{.Tag}}" | grep localhost/nodebb | xargs podman rmi -f
+	return 0
+}
+
+
 if [ -z "$action" ] || [ "$action" = "help" ] ; then
 	showHelp
 	exit 0
@@ -361,6 +385,11 @@ fi
 
 if [ "$action" = "remove" ] ; then
 	removePod $(sanitizeAppName $2) || exit 1
+	exit 0
+fi
+
+if [ "$action" = "cleanup" ] ; then
+	cleanupImages $2 || exit 1
 	exit 0
 fi
 
