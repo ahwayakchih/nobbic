@@ -64,6 +64,13 @@ function showHelp () {
 	echo "CONTAINER_ENV_PG_* variables will be set as PG* in nodebb container."
 	echo "CONTAINER_ENV_REDIS_* variables will be set as * in nodebb container."
 	echo ""
+	echo "You can pass additional arguments to podman commands used for creation of containers (check: podman create --help) through separate environment variables:"
+	echo "PODMAN_CREATE_ARGS_NODEBB variable for NodeBB container,"
+	echo "PODMAN_CREATE_ARGS_MONGODB variable for MongoDB database container,"
+	echo "PODMAN_CREATE_ARGS_POSTGRES variable for PostgreSQL database container,"
+	echo "PODMAN_CREATE_ARGS_REDIS variable for Redis database container."
+	echo ""
+
 }
 
 #
@@ -172,7 +179,7 @@ function buildPod () {
 	fi
 
 	# Add NodeBB container
-	podman create --pod "$podName" --name "${podName}-nodebb"\
+	podman create --pod "$podName" --name "${podName}-nodebb" $PODMAN_CREATE_ARGS_NODEBB \
 		-e CONTAINER_NODEJS_PORT=$webPort\
 		-e CONTAINER_WEBSOCKET_PORT=$wsPort\
 		$nodebbOptions $NODEBB_IMAGE || return 1

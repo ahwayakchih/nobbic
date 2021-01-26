@@ -31,7 +31,7 @@ MONGODB_ENV=$(get_env_values_for CONTAINER_ENV_MONGODB_ "")
 
 	# -e ${APP_SET_MONGODB_ENV_USER}="$podName" \
 	# -e ${APP_SET_MONGODB_ENV_PASSWORD}="$password" \
-podman create --pod "$POD" --name "$CONTAINER" \
+podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS_MONGODB \
 	-e MONGO_INITDB_DATABASE="$POD" \
 	-e CONTAINER_DATA_DIR="/data/"\
 	$MONGODB_ENV "$MONGODB_IMAGE" >/dev/null || exit 1

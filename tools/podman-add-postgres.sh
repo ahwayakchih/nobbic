@@ -46,7 +46,7 @@ password=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1 | fold -w4 |
 	# Specyfing custom user name seem to prevent us from accessing db:
 	# "NodeBB could not connect to your PostgreSQL database. PostgreSQL returned the following error: role "custom_user" does not exist"
 	# -e POSTGRES_USER="$POD"\
-podman create --pod "$POD" --name "$CONTAINER" \
+podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS_POSTGRES \
 	-e POSTGRES_PASSWORD="$password"\
 	-e POSTGRES_DB="$POD"\
 	-e CONTAINER_DATA_DIR="$dataDir"\
