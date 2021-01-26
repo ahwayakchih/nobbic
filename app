@@ -58,7 +58,7 @@ function showHelp () {
 	echo ""
 	echo "Before container is created, specified (or default) images are pulled from repository (check: podman pull --help). You can pass additional arguments to pull command through environment variables:"
 	echo "PODMAN_PULL_ARGS_MONGODB variable is used when pulling image for MongoDB database container,"
-	echo "PODMAN_PULL_ARGS_POSTGRE variable is used when pulling image for PostgreSQL database container,"
+	echo "PODMAN_PULL_ARGS_POSTGRES variable is used when pulling image for PostgreSQL database container,"
 	echo "PODMAN_PULL_ARGS_REDIS variable is used when pulling image for Redis database container."
 	echo ""
 	echo "You can set any additional environment variables for specific containers using CONTAINER_ENV_ prefix."
