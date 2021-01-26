@@ -39,9 +39,11 @@ MONGODB_ENV=$(get_env_values_for CONTAINER_ENV_MONGODB_ "")
 # TODO: Setting up password does not seem to work (there are some errors while trying to connect) with official image
 # local password=`tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1 | fold -w4 | paste -sd\- -`
 
+PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS $PODMAN_CREATE_ARGS_MONGODB"
+
 	# -e ${APP_SET_MONGODB_ENV_USER}="$podName" \
 	# -e ${APP_SET_MONGODB_ENV_PASSWORD}="$password" \
-podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS_MONGODB \
+podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS \
 	-e MONGO_INITDB_DATABASE="$POD" \
 	-e CONTAINER_DATA_DIR="/data/"\
 	$MONGODB_ENV "$MONGODB_IMAGE" >/dev/null || exit 1

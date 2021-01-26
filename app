@@ -4,6 +4,12 @@ action=$1
 __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 source ${__DIRNAME}/tools/common.sh
 
+CONTAINERIZED_NODEBB_VERSION=0.5.0
+CONTAINERIZED_NODEBB_LABEL=containerized.nodebb
+
+PODMAN_ARG_LABEL="--label ${CONTAINERIZED_NODEBB_LABEL}=${CONTAINERIZED_NODEBB_VERSION}"
+PODMAN_CREATE_ARGS="$PODMAN_ARG_LABEL $PODMAN_CREATE_ARGS"
+
 #
 # @param {string} appName
 #
@@ -75,6 +81,7 @@ function showHelp () {
 	echo "PODMAN_CREATE_ARGS_MONGODB variable for MongoDB database container,"
 	echo "PODMAN_CREATE_ARGS_POSTGRES variable for PostgreSQL database container,"
 	echo "PODMAN_CREATE_ARGS_REDIS variable for Redis database container."
+	echo "You can also set PODMAN_CREATE_ARGS environment variable, to pass the same additional arguments to all podman create commands."
 	echo ""
 	echo "When database container is created, its port number is automaticaly read from image. In case of more than one port being exposed by database image, you can override its value through environment variable:"
 	echo "CONTAINER_MONGODB_PORT for MongoDB datase,"
@@ -99,9 +106,9 @@ addToPod() {
 	fi
 
 	case "$fromName" in
-		1) env $(echo "$options" | xargs) "$toolPath";;
-		./*|/*) if [ -f "$fromName" ] ; then env $(echo "$options" | xargs) "$fromName"; else echo "'$fromName' script not found">&2; fi ;;
-		*) env $(echo "$options FROM_IMAGE=$fromName" | xargs) "$toolPath";;
+		1) env $(echo "$options" | xargs) PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS" "$toolPath";;
+		./*|/*) if [ -f "$fromName" ] ; then env $(echo "$options" | xargs) PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS" "$fromName"; else echo "'$fromName' script not found">&2; fi ;;
+		*) env $(echo "$options FROM_IMAGE=$fromName" | xargs) PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS" "$toolPath";;
 	esac
 }
 
@@ -153,7 +160,9 @@ function buildPod () {
 		podOptions="$podOptions -p $wsPort:$wsPort"
 	fi
 
-	podman pod create -n "$podName" $podOptions --add-host=localhost:127.0.0.1 --hostname="$podName" || return 1
+	podman pod create -n "$podName" $podOptions \
+		$PODMAN_ARG_LABEL \
+		--add-host=localhost:127.0.0.1 --hostname="$podName" || return 1
 
 	# Add "data" container, to be shared by database, nodebb, etc...
 	# podman create --pod "$podName" --name "${podName}-data" -v /data docker.io/busybox:musl || return 1
@@ -335,6 +344,11 @@ function cleanupImages () {
 		echo "ERROR: missing which images to remove" >&2
 		return 1
 	fi
+
+	# Remove all pods first
+	for pod in $(podman pod ls --filter label=containerized.nodebb --format '{{.Name}}') ; do
+		removePod "$pod"
+	done
 
 	if [ "$imageType" = "nodebb" ] ; then
 		# Select only nodebb images, not nodebb-node

@@ -50,10 +50,12 @@ dataDir=$(podman inspect "$POSTGRES_IMAGE" --format='{{range .Config.Env}}{{.}}\
 # by using trick from https://stackoverflow.com/a/33026977/6352710, i.e., `|| test $? -eq 141` part.
 password=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1 | fold -w4 | paste -sd\- - || test $? -eq 141)
 
+PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS $PODMAN_CREATE_ARGS_POSTGRES"
+
 	# Specyfing custom user name seem to prevent us from accessing db:
 	# "NodeBB could not connect to your PostgreSQL database. PostgreSQL returned the following error: role "custom_user" does not exist"
 	# -e POSTGRES_USER="$POD"\
-podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS_POSTGRES \
+podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS \
 	-e POSTGRES_PASSWORD="$password"\
 	-e POSTGRES_DB="$POD"\
 	-e CONTAINER_DATA_DIR="$dataDir"\

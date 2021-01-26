@@ -35,10 +35,11 @@ fi
 
 REDIS_ENV=$(get_env_values_for CONTAINER_ENV_REDIS_ "")
 
+PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS $PODMAN_CREATE_ARGS_REDIS"
+
 # We do not set CONTAINER_DATA_DIR, because, for now, Redis is used only for temporary data
 # and does not persist data between restarts.
-
-podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS_REDIS \
+podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS \
 	$REDIS_ENV "$REDIS_IMAGE" >/dev/null || exit 1
 
 echo '-e CONTAINER_REDIS_HOST=localhost -e CONTAINER_REDIS_PORT='$REDIS_PORT
