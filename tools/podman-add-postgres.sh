@@ -28,7 +28,7 @@ if ! podman image exists "$POSTGRES_IMAGE" ; then
 	podman pull $PODMAN_PULL_ARGS_POSTGRES "$POSTGRES_IMAGE" || exit 1
 fi
 
-POSTGRES_PORT=${CONTAINER_POSTGRES_PORT:-$(podman inspect $POSTGRES_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1)}
+POSTGRES_PORT=${CONTAINER_POSTGRES_PORT:-$(podman inspect $POSTGRES_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
 if [ -z "$POSTGRES_PORT" ] ; then
 	POSTGRES_PORT=5432
 	echo "WARNING: could not find port number exposed by $POSTGRES_IMAGE, defaulting to $POSTGRES_PORT" >&2
@@ -46,7 +46,7 @@ fi
 
 # Get PGDATA from env used by default by official PostgreSQL images.
 # We'll set CONTAINER_DATA_DIR to the same value, so backups know what to archive.
-dataDir=$(podman inspect "$POSTGRES_IMAGE" --format='{{range .Config.Env}}{{.}}\n{{end}}'| grep PGDATA | cut -d= -f2)
+dataDir=$(podman inspect "$POSTGRES_IMAGE" --format='{{range .Config.Env}}{{.}}\n{{end}}'| grep PGDATA | cut -d= -f2 || echo "")
 
 # Generate random password for database access
 # Ignore exit code 141 which hapens in case of writing to pipe that was closed, which is our case (read urandom until enough data is gathered),
