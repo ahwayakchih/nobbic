@@ -24,7 +24,7 @@ fi
 
 REDIS_IMAGE=${FROM_IMAGE:-docker.io/redis:alpine3.12}
 if ! podman image exists "$REDIS_IMAGE" ; then
-	podman pull $PODMAN_PULL_ARGS_REDIS "$REDIS_IMAGE" || exit 1
+	podman pull $PODMAN_PULL_ARGS_REDIS "$REDIS_IMAGE" >/dev/null || exit 1
 fi
 
 REDIS_PORT=${CONTAINER_REDIS_PORT:-$(podman inspect $REDIS_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}

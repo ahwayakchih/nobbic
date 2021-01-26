@@ -25,7 +25,7 @@ fi
 
 MONGODB_IMAGE=${FROM_IMAGE:-docker.io/mongo:bionic}
 if ! podman image exists "$MONGODB_IMAGE" ; then
-	podman pull $PODMAN_PULL_ARGS_MONGODB "$MONGODB_IMAGE" || exit 1
+	podman pull $PODMAN_PULL_ARGS_MONGODB "$MONGODB_IMAGE" >/dev/null || exit 1
 fi
 
 MONGODB_PORT=${CONTAINER_MONGODB_PORT:-$(podman inspect $MONGODB_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
