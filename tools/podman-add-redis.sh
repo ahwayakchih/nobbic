@@ -23,6 +23,9 @@ if [ -z "$CONTAINER" ] ; then
 fi
 
 REDIS_IMAGE=${FROM_IMAGE:-docker.io/redis:alpine3.12}
+if ! podman image exists "$REDIS_IMAGE" ; then
+	podman pull $PODMAN_PULL_ARGS_REDIS "$REDIS_IMAGE" || exit 1
+fi
 REDIS_ENV=$(get_env_values_for CONTAINER_ENV_REDIS_ "")
 
 # We do not set CONTAINER_DATA_DIR, because, for now, Redis is used only for temporary data

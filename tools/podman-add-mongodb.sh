@@ -24,6 +24,9 @@ if [ -z "$CONTAINER" ] ; then
 fi
 
 MONGODB_IMAGE=${FROM_IMAGE:-docker.io/mongo:bionic}
+if ! podman image exists "$MONGODB_IMAGE" ; then
+	podman pull $PODMAN_PULL_ARGS_MONGODB "$MONGODB_IMAGE" || exit 1
+fi
 MONGODB_ENV=$(get_env_values_for CONTAINER_ENV_MONGODB_ "")
 
 # TODO: Setting up password does not seem to work (there are some errors while trying to connect) with official image

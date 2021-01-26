@@ -24,6 +24,9 @@ if [ -z "$CONTAINER" ] ; then
 fi
 
 POSTGRES_IMAGE=${FROM_IMAGE:-docker.io/postgres:alpine}
+if ! podman image exists "$POSTGRES_IMAGE" ; then
+	podman pull $PODMAN_PULL_ARGS_POSTGRES "$POSTGRES_IMAGE" || exit 1
+fi
 POSTGRES_ENV=$(get_env_values_for CONTAINER_ENV_POSTGRES_ POSTGRES_)$(get_env_values_for CONTAINER_ENV_PG_ PG)
 
 # Make sure image is available before we inspect it
