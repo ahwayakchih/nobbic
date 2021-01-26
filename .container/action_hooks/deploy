@@ -127,8 +127,9 @@ function onbb_setup_nodebb () {
 	cd ${CONTAINER_REPO_DIR}nodebb
 
 	# Run setup and redirect output to file, so we can search it later
-	# Older versions of NodeBB do not support --skip-build,
-	# but at least --series should be supported (see below why we want that)
+	# Versions of NodeBB older than v1.13.3 do not support `--skip-build`,
+	# but at least --series is supported.
+	# We want to run build sequentially, to prevent possible errors about too many files opened.
 	local logfile=$(onbb_get_logfile "container-nodebb-setup.log")
 	node app --skip-build --series --setup "$json" 2>&1 | tee $logfile
 
@@ -140,11 +141,10 @@ function onbb_setup_nodebb () {
 	done
 
 	# So far our custom plugins do not require rebuild, so call build
-	# only if it was not done yet, i.e., we're deploying version that does
-	# support `--skip-build` option.
+	# only if it was not done yet.
 	local assetsDone=$(cat $logfile | grep "Asset compilation successful")
 	if [ -z "$assetsDone" ] ; then
-		# Run build sequentially, to prevent errors about too many files opened, etc...
+		# Run build sequentially, to prevent possible errors about too many files opened.
 		node app --series --build 2>&1 | tee -a $logfile
 	fi
 
