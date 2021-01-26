@@ -24,10 +24,15 @@ if [ -z "$CONTAINER" ] ; then
 fi
 
 POSTGRES_IMAGE=${FROM_IMAGE:-docker.io/postgres:alpine}
-if ! podman image exists "$POSTGRES_IMAGE" ; then
-	podman pull $PODMAN_PULL_ARGS_POSTGRES "$POSTGRES_IMAGE" || exit 1
+# Make sure image is available before we inspect it
+if ! podman image exists "$POSTGRES_IMAGE" >/dev/null ; then
+	if ! podman pull $PODMAN_PULL_ARGS_POSTGRES "$POSTGRES_IMAGE" >/dev/null ; then
+		echo "ERROR: could not find '$POSTGRES_IMAGE'" >&2
+		exit 1
+	fi
 fi
 
+# Get postgres port
 POSTGRES_PORT=${CONTAINER_POSTGRES_PORT:-$(podman inspect $POSTGRES_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
 if [ -z "$POSTGRES_PORT" ] ; then
 	POSTGRES_PORT=5432
@@ -35,14 +40,6 @@ if [ -z "$POSTGRES_PORT" ] ; then
 fi
 
 POSTGRES_ENV=$(get_env_values_for CONTAINER_ENV_POSTGRES_ POSTGRES_)$(get_env_values_for CONTAINER_ENV_PG_ PG)
-
-# Make sure image is available before we inspect it
-if ! podman image exists "$POSTGRES_IMAGE" >/dev/null ; then
-	if ! podman pull "$POSTGRES_IMAGE" >/dev/null ; then
-		echo "ERROR: could not find '$POSTGRES_IMAGE'" >&2
-		exit 1
-	fi
-fi
 
 # Get PGDATA from env used by default by official PostgreSQL images.
 # We'll set CONTAINER_DATA_DIR to the same value, so backups know what to archive.
@@ -64,7 +61,7 @@ podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS_POSTGRES \
 
 # Import from backup, if specified
 if [ ! -z "$RESTORE_FROM" ] && [ -f "${RESTORE_FROM}/postgres.txt" ] ; then
-	podman cp "${RESTORE_FROM}/postgres.txt" ${CONTAINER}:/docker-entrypoint-initdb.d/restore-${POD}.sql
+	podman cp "${RESTORE_FROM}/postgres.txt" ${CONTAINER}:/docker-entrypoint-initdb.d/restore-${POD}.sql >/dev/null || exit 1
 fi
 
 echo '-e CONTAINER_POSTGRES_HOST=localhost -e CONTAINER_POSTGRES_PORT='$POSTGRES_PORT' -e CONTAINER_POSTGRES_PASSWORD='$password\
