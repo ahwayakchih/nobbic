@@ -234,7 +234,7 @@ function startPod () {
 		podman pod start "$podName" || return 1
 		# Use `restart` right after `start` because of ports not being accessible from outside after stop+start.
 		# See: https://github.com/containers/podman/issues/7103 - issue is closed, but on Arch with podman v2.2.1
-		# problem seems to still exist.
+		# and cgroups v1 problem seems to still exist. With cgroups v2 it works ok.
 		# podman pod restart "$podName" || return 1
 		(
 			echo "Waiting for $podName port $WAIT_FOR_PORT to be ready inside container"
