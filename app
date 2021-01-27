@@ -356,7 +356,7 @@ function stopPod () {
 	fi
 
 	echo "Stopping '$podName' pod..."
-	podman pod stop "$podName" || return 1
+	podman pod stop -t 10 "$podName" || return 1
 }
 
 #
