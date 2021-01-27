@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 # trigger pre start hook
 ${CONTAINER_REPO_DIR}.container/action_hooks/pre_start || exit 1
 
@@ -31,3 +29,6 @@ trap - TERM INT
 # wait for process to exit after signal delegation
 wait $PID
 EXIT_STATUS=$?
+
+# cleanup pidfile
+rm "${CONTAINER_REPO_DIR}nodebb/pidfile"
