@@ -1,0 +1,81 @@
+#!/bin/bash
+
+source "${CONTAINER_REPO_DIR}.container/lib/onbb_utils.sh"
+
+#
+# Run NodeBB upgrade
+#
+function onbb_upgrade_nodebb () {
+	# Remember current working directory and switch to repo directory
+	local d=`pwd`
+	cd ${CONTAINER_REPO_DIR}nodebb
+
+	# Run upgrade and redirect output to file, so we can search it later
+	local logfile=$(onbb_get_logfile "container-nodebb-upgrade.log")
+	./nodebb upgrade |& tee $logfile
+
+	# Activate plugins
+	for plugin in cd ${CONTAINER_REPO_DIR}.container/plugins/nodebb-plugin-*; do
+		if [ -d "$plugin" ] ; then
+			./nodebb activate $(basename "$plugin") |& tee -a $logfile
+		fi
+	done
+
+	# So far our custom plugins do not require rebuild, so call build
+	# only if it was not done yet.
+	local assetsDone=$(cat $logfile | grep "Asset compilation successful")
+	if [ -z "$assetsDone" ] ; then
+		# Run build sequentially, to prevent possible errors about too many files opened.
+		./nodebb build --series |& tee -a $logfile
+	fi
+
+	# Success marker
+	local failed=1
+
+	# Check result by looking for specific text
+	# Would be better if NodeBB's setup would exit with code
+	# but it does not, so we use this fragile workaround.
+	if cat $logfile | grep -q "NodeBB Upgrade Complete" ; then
+		# Success
+		failed=0
+
+		# Finished upgrade (admin user already existed)
+		onbb_echo_result_of_setup_success
+
+		# Remove log file
+		rm $logfile
+	else
+		if cat $logfile | grep -q "Error occurred during upgrade\|NodeBB Setup Aborted\|Error: listen EADDRINUSE" ; then
+			# Failed
+			onbb_echo_result_of_setup_failed $logfile "There was a problem completing NodeBB upgrade."
+		else
+			# Possibly failed
+			onbb_echo_result_of_setup_failed $logfile
+		fi
+	fi
+
+	# Switch back to previous directory
+	cd "$d"
+
+	# Return error when failed
+	if [ $failed -eq 1 ] ; then
+		return 1
+	fi
+}
+
+#
+# Prepare everything and run setup
+#
+function onbb_upgrade () {
+	# Get version number
+	local version=$(onbb_get_nodebb_version)
+
+	echo "Upgrading NodeBB to $version"
+
+	onbb_setup_sourcecode $version || return 1
+	onbb_setup_environment || return 1
+	onbb_upgrade_nodebb || return 1
+}
+
+# Exit with error if something went wrong - that will prevent rest of the upgrade process from erroring even more.
+onbb_upgrade || exit 1

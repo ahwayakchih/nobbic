@@ -131,12 +131,13 @@ function onbb_setup_nodebb () {
 	# but at least --series is supported.
 	# We want to run build sequentially, to prevent possible errors about too many files opened.
 	local logfile=$(onbb_get_logfile "container-nodebb-setup.log")
-	node app --skip-build --series --setup "$json" 2>&1 | tee $logfile
+	local skipBuild=$(onbb_test_nodebb_version "1.13.3" && echo "--skip-build" || echo "")
+	series=true ./nodebb setup $skipBuild "$json" |& tee $logfile
 
 	# Activate plugins
 	for plugin in cd ${CONTAINER_REPO_DIR}.container/plugins/nodebb-plugin-*; do
 		if [ -d "$plugin" ] ; then
-			node app --activate $(basename "$plugin") 2>&1 | tee -a $logfile
+			./nodebb activate $(basename "$plugin") |& tee -a $logfile
 		fi
 	done
 
@@ -145,7 +146,7 @@ function onbb_setup_nodebb () {
 	local assetsDone=$(cat $logfile | grep "Asset compilation successful")
 	if [ -z "$assetsDone" ] ; then
 		# Run build sequentially, to prevent possible errors about too many files opened.
-		node app --series --build 2>&1 | tee -a $logfile
+		./nodebb build --series |& tee -a $logfile
 	fi
 
 	# Success marker

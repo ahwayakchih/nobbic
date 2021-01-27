@@ -1,11 +1,15 @@
 /*
- * This file is a wrapper around original app.js from NodeBB.
+ * This file is a wrapper around original js file from NodeBB, e.g., app.js.
  * It sets up config overrides using values from container environment,
- * and then requires original app.js (now renamed to _app.js) to let
- * NodeBB continue it's magic.
+ * and then requires original file (now prefixed with underscore, e.g., _app.js)
+ * to let NodeBB continue it's magic.
  */
 var nconf = require('nconf');
 var url   = require('url');
+var path  = require('path');
+
+// Require colors, because when update is called not through cli/index, it will crash
+require('colors');
 
 var testSSL = require('/app/.container/tools/test-ssl.js');
 
@@ -137,6 +141,6 @@ testSSL(IP, PORT, FQDN, function onTestSSLResult (err) {
 	testSSL = null;
 	IP = PORT = FQDN = null;
 
-	// Continue booting NodeBB
-	setImmediate(require.bind(null, './_app.js'));
+	// Continue to whatever file was meant to be started.
+	setImmediate(require.bind(null, './_' + path.basename(module.filename)));
 });

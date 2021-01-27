@@ -26,6 +26,28 @@ function onbb_get_nodebb_version () {
 }
 
 #
+# Test if NodeBB version is equal or higher than the one specified
+#
+# @param {string} minVersion
+#
+function onbb_test_nodebb_version () {
+	local minVersion=$1
+	local currentVersion=$(onbb_get_nodebb_version || echo "")
+
+	if [ "$minVersion" = "$currentVersion" ] ; then
+		echo equal
+		return 0
+	fi
+
+	local higherVersion=$(echo -e "$minVersion\n$currentVersion" | sort -V | tail -n 1)
+	if [ "$higherVersion" != "$minVersion" ] ; then
+		return 0
+	fi
+
+	return 1
+}
+
+#
 # Echo URL found in config.json
 #
 function onbb_get_url_from_config () {
@@ -305,19 +327,11 @@ function onbb_setup_environment () {
 	# npm install --production || echo "Could not install onbb module"
 	# cd ../../../
 
-	# Restore data, if available
-	if [ -f nodebb.tar ] ; then
-		echo "Restoring /data from nodebb.tar archive"
-		tar x -C / -v -f - < nodebb.tar && rm nodebb.tar
-		if [ -f nodebb.tar ] ; then
-			echo "Could not restore NodeBB backup"
-		fi
-	fi
-
 	# Make sure package.json is there and installed, so our custom app.js can work ok before NodeBB is installed
 	if [ ! -f nodebb/package.json ] ; then
 		if [ -f "$NODEBB_DATA_DIR/package.json" ] ; then
-			cp -a "$NODEBB_DATA_DIR/package.json" nodebb/package.json
+			# Use default package.json, but merge dependencies from backuped one
+			jq -s --indent 4 '.[1] * {"dependencies": (.[0].dependencies * .[1].dependencies)}' "$NODEBB_DATA_DIR/package.json" nodebb/install/package.json > nodebb/package.json
 		else
 			cp -a nodebb/install/package.json nodebb/package.json
 		fi
@@ -357,6 +371,15 @@ function onbb_setup_environment () {
 				mv nodebb/app.js nodebb/_app.js
 			fi
 			cp -a "$containerApp" nodebb/app.js
+		fi
+		
+		echo "Overriding src/cli/index.js"
+		local needUpdate=$(diff "$containerApp" "nodebb/src/cli/index.js" || false)
+		if [ "$needUpdate" ] ; then
+			if [ ! -f nodebb/src/cli/_index.js ] ; then
+				mv nodebb/src/cli/index.js nodebb/src/cli/_index.js
+			fi
+			cp -a "$containerApp" nodebb/src/cli/index.js
 		fi
 	fi
 
