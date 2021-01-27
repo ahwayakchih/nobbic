@@ -31,6 +31,8 @@ function showHelp () {
 	echo "help - show this info"
 	echo "build APP_NAME  - build pod with specified name"
 	echo "start APP_NAME  - start pod (build it if none exists) with specified name"
+	echo "bash APP_NAME   - enter bash command line inside NodeBB container"
+	echo "exec APP_NAME COMMAND [ARG...]  - run command inside NodeBB container"
 	echo "backup APP_NAME [BACKUPS_DIR] [BACKUP_NAME] - create a backup containing data and setup info"
 	echo "upgrade APP_NAME - upgrade NodeBB version"
 	echo "restore APP_NAME [BACKUPS_DIR] [BACKUP_NAME] - restore from a previously created backup"
@@ -254,6 +256,46 @@ function startPod () {
 
 #
 # @param {string} podName
+#
+function enterBash () {
+	local podName=$1
+
+	if [ -z "$podName" ] ; then
+		echo "ERROR: missing pod name" >&2
+		return 1
+	fi
+
+	if ! podman pod exists "$podName" ; then
+		echo "ERROR: could not find pod '$podName'" >&2
+		return 1
+	fi
+
+	podman exec -it ${podName}-nodebb /bin/bash || return $?
+}
+
+#
+# @param {string} podName
+# @param {string} command
+# @param {string} arg...
+#
+function runCommand () {
+	local podName=$1
+
+	if [ -z "$podName" ] ; then
+		echo "ERROR: missing pod name" >&2
+		return 1
+	fi
+
+	if ! podman pod exists "$podName" ; then
+		echo "ERROR: could not find pod '$podName'" >&2
+		return 1
+	fi
+
+	podman exec ${podName}-nodebb /bin/bash -c "source .container/lib/onbb_utils.sh; $(shift 1; echo $@)" || return $?
+}
+
+#
+# @param {string} podName
 # @param {string} backupsDir
 # @param {string} backupName
 #
@@ -374,6 +416,16 @@ fi
 
 if [ "$action" = "start" ] ; then
 	startPod $(sanitizeAppName $2) || exit 1
+	exit 0
+fi
+
+if [ "$action" = "bash" ] ; then
+	enterBash $(sanitizeAppName $2) || exit $?
+	exit 0
+fi
+
+if [ "$action" = "exec" ] ; then
+	runCommand $(sanitizeAppName $2) $(shift 2; echo $@) || exit $?
 	exit 0
 fi
 
