@@ -37,8 +37,6 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
 - option to specify additional plugins when creating instance, so they are installed and
   activated from the start.
 - support installations with Redis as the only database (enable data persistence in Redis, backup & restore)
-- clear situation with logs (some are not written, they are in 3 different places, etc...),
-  maybe drop creating log files and simply depend on `podman logs`?
 - clear situation with NodeBB /data - package.json is not link, but a copy, others are linked, etc...
 - add musl-locales to Postgres (and other?) images: https://github.com/docker-library/postgres/issues/501
 - optional, mini-test (puppeteer-based?) to run after start
