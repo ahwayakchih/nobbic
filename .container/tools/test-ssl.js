@@ -41,6 +41,8 @@ function testSSL (ip, port, hostname, callback) {
 		cleanup = null;
 	};
 
+	server.on('error', cleanup);
+
 	server.listen(port, ip || null, null, function onListening () {
 		https.get('https://' + hostname, function (res) {
 			res.on('data', function () {});
