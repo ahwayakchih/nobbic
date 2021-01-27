@@ -499,7 +499,10 @@ function onbb_wait_until_db_ready () {
 		return 1
 	fi
 
-	"${CONTAINER_REPO_DIR}.container/tools/wait-for.sh" ${target} -t $seconds || return 1
+	echo "Waiting for DB at ${target} to be ready" >&2
+	"${CONTAINER_REPO_DIR}.container/tools/wait-for.sh" ${target} -t $seconds -l \
+		|| (echo "WARNING: could not reach database port, checking if anything is listening on that port" >&2 && netstat -tulnp | grep 2701 && echo "WARNIG: looks like it is listening, allow for risky continuation" >&2) \
+		|| return 1
 }
 
 #

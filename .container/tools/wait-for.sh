@@ -4,6 +4,7 @@
 
 TIMEOUT=15
 QUIET=0
+LOCAL=0
 
 echoerr() {
   if [ "$QUIET" -ne 1 ]; then printf "%s\n" "$*" 1>&2; fi
@@ -16,19 +17,28 @@ Usage:
   $cmdname host:port [-t timeout] [-- command args]
   -q | --quiet                        Do not output any status messages
   -t TIMEOUT | --timeout=timeout      Timeout in seconds, zero for no timeout
+  -l | --local                        Allow using netstat to check too, just in case nc does not work
   -- COMMAND ARGS                     Execute command with args after the test finishes
 USAGE
   exit "$exitcode"
 }
 
 wait_for() {
- if ! command -v nc >/dev/null; then
+  if ! command -v nc >/dev/null; then
     echoerr 'nc command is missing!'
     exit 1
   fi
 
+  if [ "$HOST" != "localhost" ] && [ "$HOST" != "127.0.0.1" ]; then
+    LOCAL=0
+  elif test $LOCAL -ne 0; then
+    if ! command -v netstat >/dev/null; then
+      LOCAL=0
+    fi
+  fi
+
   for i in `seq $TIMEOUT` ; do
-    nc -z "$HOST" "$PORT" > /dev/null 2>&1
+    (nc -z "$HOST" "$PORT" > /dev/null 2>&1 || (test $LOCAL -ne 0 && netstat -tuln | grep ":$PORT " > /dev/null 2>&1))
     
     result=$?
     if [ $result -eq 0 ] ; then
@@ -62,6 +72,10 @@ do
     ;;
     --timeout=*)
     TIMEOUT="${1#*=}"
+    shift 1
+    ;;
+    -l | --local)
+    LOCAL=1
     shift 1
     ;;
     --)
