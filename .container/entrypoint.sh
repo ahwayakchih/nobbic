@@ -5,10 +5,12 @@ ${CONTAINER_REPO_DIR}.container/action_hooks/pre_start || exit 1
 
 cd "${CONTAINER_REPO_DIR}nodebb"
 
+exec &> >(tee -a "${CONTAINER_REPO_DIR}nodebb/logs/output.log")
+
 # start process detached from script
 # no daemon, so we can control when it stops
-# silent, so it writes to logs/output.log (otherwise NodeBB stops writing to log files)
-daemon=false silent=true ./nodebb start &
+# no silent, so `podman logs` can be useful, but copy output to log file because NodeBB does not write there when not silent
+daemon=false silent=false ./nodebb start &
 
 # remember process ID
 PID=$!
