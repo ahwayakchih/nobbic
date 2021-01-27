@@ -355,6 +355,10 @@ function stopPod () {
 		return 1
 	fi
 
+	# Try to prevent possible errors, by stopping NodeBB first
+	echo -n "Stopping NodeBB of '$podName' pod... "
+	(podman stop -t 10 ${podName}-nodebb >/dev/null && echo "OK") || return 1
+
 	echo "Stopping '$podName' pod..."
 	podman pod stop -t 10 "$podName" || return 1
 }
