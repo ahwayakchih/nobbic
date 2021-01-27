@@ -60,7 +60,7 @@ function showHelp () {
 	echo "They both default to 8080."
 	echo ""
 	echo "For example: CONTAINER_APP_DNS_ALIAS=localhost APP_ADD_MONGODB=1 ./app start my-forum"
-	echo "It will create pod that includes MongoDB based on Ubuntu bionic (default) and NodeBB v1.15.5 (default), and then run it with Node.js v10 container (minimum required by NodeBB v1.15.5)."
+	echo "It will create pod that includes MongoDB based on Ubuntu bionic (default) and NodeBB latest (default), and then run it with Node.js v10 container (minimum required by NodeBB v1.15.5)."
 	echo ""
 	echo "Another example: NODEBB_VERSION=1.12.1 CONTAINER_APP_DNS_ALIAS=localhost APP_ADD_POSTGRES=1 ./app start my-forum"
 	echo "It will create pod with NodeBB v1.12.1 that uses PostgreSQL as database engine and sets its URL to localhost:8080 (default port) and websockets to localhost:8000 (default)"
