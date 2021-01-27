@@ -23,6 +23,7 @@ runtime = "crun"
 ## Compatibility
 
 It was tested with various versions of NodeBB between (and including) v1.12.1 and v1.16.2.
+Depending on NodeBB version, it was tested with Node.js versions 8, 10 and 15.
 
 It was tested and is known to work with following database images from docker.io:
 
