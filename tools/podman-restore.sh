@@ -61,6 +61,7 @@ FORCE_NODE_VERSION=$NODE_VERSION
 FORCE_NODEBB_VERSION=$NODEBB_VERSION
 
 # Get most of the setup variables from backed up NodeBB's environment
+# TODO: use `env` instead of `source` for security!
 source "${fromName}/nodebb.env"
 
 # Prepeare base environment variables
