@@ -12,6 +12,7 @@ exec 1>&2
 
 __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 source ${__DIRNAME}/common.sh
+__APPDIR=$(dirname $__DIRNAME)
 
 POD="$POD"
 if [ -z "$POD" ] ; then
@@ -44,10 +45,25 @@ REDIS_ENV=$(get_env_values_for CONTAINER_ENV_REDIS_ "")
 
 PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS $PODMAN_CREATE_ARGS_REDIS"
 
-# We do not set CONTAINER_DATA_DIR, because, for now, Redis is used only for temporary data
-# and does not persist data between restarts.
 podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS \
 	$REDIS_ENV "$REDIS_IMAGE" >/dev/null || exit 1
+
+# Import from backup, if specified
+if [ ! -z "$RESTORE_FROM" ] ; then
+	# Since we may be trying to restore data to some different redis image, with different setup,
+	# it would be good to get data dir from its config. And to do that, we would need to have it running.
+	# But starting added container, seems to hangs whole script, and starting new one with same command
+	# then waiting for db to be ready... too much code for one stupid value.
+	# TODO: find good solution, or simply ecourage writing custom scripts for redis.
+
+	REDIS_DATA_DIR="/data"
+	for f in ${RESTORE_FROM}/redis-* ; do
+		name=$(basename $f)
+		name=${name/redis-/}
+		echo "Restoring data from ${f} to ${CONTAINER}:${REDIS_DATA_DIR}/${name}" >&2
+		podman cp "$f" ${CONTAINER}:${REDIS_DATA_DIR}/${name} >&2 || echo "ERROR: could not restore data for Redis" >&2
+	done
+fi
 
 # Restore stdout and close 4 that was storing its file descriptor
 exec 1>&4-
