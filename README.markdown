@@ -59,6 +59,13 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
 
 ## TODO
 
+- stop replacing app.js and src/cli/index.js, run config generator instead before calling nodebb in entrypoint.sh.
+  we're not running in changing environment (old OpenShift v2) any more, environment variables in containers are
+  immutable. To change them, one has to hack it, or simply re-create container. So there's no real need to override
+  data in nconf dynamically.
+  Also, it would help users to apply known solutions, if they could simply edit config.js.
+  And currently our code does not support different port numbers in case of NodeBB cluster (when NodeBB workers are
+  run with switched process.env.port for each of them).
 - option for NodeBB to keep building assets in "series" mode
 - option to specify additional plugins when creating instance, so they are installed and
   activated from the start.
