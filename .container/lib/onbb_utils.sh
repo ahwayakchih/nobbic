@@ -26,6 +26,13 @@ function onbb_get_nodebb_version () {
 }
 
 #
+# Echo URL found in config.json
+#
+function onbb_get_url_from_config () {
+	jq -je '.url' "${CONTAINER_REPO_DIR}nodebb/config.json" || return 1
+}
+
+#
 # Test if NodeBB version is equal or higher than the one specified
 #
 # @param {string} minVersion
@@ -45,13 +52,6 @@ function onbb_test_nodebb_version () {
 	fi
 
 	return 1
-}
-
-#
-# Echo URL found in config.json
-#
-function onbb_get_url_from_config () {
-	jq -je '.url' "${CONTAINER_REPO_DIR}nodebb/config.json" || return 1
 }
 
 #
