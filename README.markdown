@@ -59,6 +59,7 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
 
 ## TODO
 
+- when url in config does not contain port number, redirect after login is broken
 - stop replacing app.js and src/cli/index.js, run config generator instead before calling nodebb in entrypoint.sh.
   we're not running in changing environment (old OpenShift v2) any more, environment variables in containers are
   immutable. To change them, one has to hack it, or simply re-create container. So there's no real need to override
@@ -75,3 +76,4 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
 - write proper README content
 - show README content in `./app help`?
 - add nginx container
+- add support for specifying more than one app name at the same time for build, start, upgrade and stop?
