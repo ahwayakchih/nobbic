@@ -21,7 +21,13 @@ fi
 # Run upgrade, if previously installed version was different
 VERSION_CURRENT=$(onbb_get_nodebb_version)
 VERSION_PREVIOUS=$(cat "${CONTAINER_DATA_DIR}NODEBB_VERSION" 2>/dev/null || echo -n "")
-echo "NodeBB is at v${VERSION_CURRENT}, was at v${VERSION_PREVIOUS}"
+
+echo -n "NodeBB is at v${VERSION_CURRENT}"
+if [ ! -z "$VERSION_PREVIOUS" ] ; then
+	echo -n ", it was at v${VERSION_PREVIOUS}"
+fi
+echo ""
+
 if [ ! -z "$VERSION_PREVIOUS" ] && [ "$VERSION_CURRENT" != "$VERSION_PREVIOUS" ] ; then
 	./.container/action_hooks/upgrade |& tee ${CONTAINER_REPO_DIR}logs/upgrade.log || exit 1
 elif [ ! -d "${CONTAINER_REPO_DIR}nodebb/node_modules" ] ; then
