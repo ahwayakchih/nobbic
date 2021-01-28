@@ -39,7 +39,14 @@ containerEnv=$(podman inspect "$CONTAINER" --format='{{range .Config.Env}}{{.}}\
 MONGO_INITDB_DATABASE=$(echo "$containerEnv" | grep "MONGO_INITDB_DATABASE" | cut -d= -f2)
 MONGODB_HOSTNAME=$(echo "$containerEnv" | grep "HOSTNAME" | cut -d= -f2)
 
-podman run --rm --pod "$MONGODB_HOSTNAME" -v "${__APPDIR}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:27017" -t 30 >&2 || exit 1
+MONGODB_IMAGE=$(podman inspect "$CONTAINER" --format='{{.ImageName}}')
+MONGODB_PORT=${CONTAINER_MONGODB_PORT:-$(podman inspect $MONGODB_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
+if [ -z "$MONGODB_PORT" ] ; then
+	MONGODB_PORT=27017
+	echo "WARNING: could not find port number exposed by $MONGODB_IMAGE, defaulting to $MONGODB_PORT" >&2
+fi
+
+podman run --rm --pod "$MONGODB_HOSTNAME" -v "${__APPDIR}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:${MONGODB_PORT}" -t 30 >&2 || exit 1
 podman exec -u mongodb $CONTAINER sh -c 'exec mongodump -d "'$MONGO_INITDB_DATABASE'" --archive' > "${targetName}.archive"
 
 if [ -z "$isRunning" ] ; then
