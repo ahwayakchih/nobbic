@@ -46,9 +46,11 @@ for container in $(podman pod inspect "$APP_NAME" --format='{{range .Containers}
 	if [ -f "$toolName" ] ; then
 		CONTAINER=$container BACKUP_TO_FILE="${targetName}/${backupBasename}" "$toolName" || true
 	else
-		dataDir=$(podman inspect "$container" --format='{{range .Config.Env}}{{.}}\n{{end}}'| grep CONTAINER_DATA_DIR | cut -d= -f2)
+		dataDir=$(podman inspect "$container" --format='{{range .Config.Env}}{{.}}\n{{end}}'| grep CONTAINER_DATA_DIR | cut -d= -f2 || echo "")
 		if [ ! -z "$dataDir" ] ; then
 			podman run --rm --volumes-from $container:ro -v $targetName:/backup docker.io/alpine tar cvf "/backup/${backupBasename}.tar" "$dataDir"
+		else
+			echo "WARNING: Could not find CONTAINER_DATA_DIR value for container '$container'" >&2
 		fi
 	fi
 	podman inspect "$container" > "${targetName}/container-${backupBasename}.json"
