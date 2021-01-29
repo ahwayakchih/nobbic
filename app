@@ -48,6 +48,8 @@ function showHelp () {
 	echo "Keep in mind that support for PostgreSQL was added in v1.10.x."
 	echo ""
 	echo "You can set NODEBB_VERSION to select which version of the forum to run. By default, latest release will be used."
+	echo "By default, 'nodebb-repo' name will be used for volume containing clone of NodeBB git repository. It will be shared by all apps (DO NOT create/restore/upgrade them concurrently!)."
+	echo "You can create separate volume for application by setting NODEBB_REPO_VOLUME environment variable with some unique name as its value."
 	echo ""
 	echo "Set NODEBB_GIT to URL of git repository of NodeBB forum."
 	echo "Official repo will be used by default, but you can specify other, e.g., with your custom modifications."
