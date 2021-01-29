@@ -47,6 +47,9 @@ function showHelp () {
 	echo "You can specify two: one of MongoDB or PostgreSQL and Redis, to make NodeBB use Redis for session storage only."
 	echo "Keep in mind that support for PostgreSQL was added in v1.10.x."
 	echo ""
+	echo "Similarly you can add local NPM mirror, which may be helpful when you're testing various configurations, or simply running more than one forum:"
+	echo "APP_ADD_NPM      - set it to 1 to use default 'verdaccio/verdaccio:latest' image, or set image name, e.g., docker.io/verdaccio/verdaccio:5.x"
+	echo ""
 	echo "You can set NODEBB_VERSION to select which version of the forum to run. By default, latest release will be used."
 	echo "By default, 'nodebb-repo' name will be used for volume containing clone of NodeBB git repository. It will be shared by all apps (DO NOT create/restore/upgrade them concurrently!)."
 	echo "You can create separate volume for application by setting NODEBB_REPO_VOLUME environment variable with some unique name as its value."
@@ -71,6 +74,7 @@ function showHelp () {
 	echo "PODMAN_PULL_ARGS_MONGODB variable is used when pulling image for MongoDB database container,"
 	echo "PODMAN_PULL_ARGS_POSTGRES variable is used when pulling image for PostgreSQL database container,"
 	echo "PODMAN_PULL_ARGS_REDIS variable is used when pulling image for Redis database container."
+	echo "PODMAN_PULL_ARGS_NPM variable is used when pulling image for NPM mirror container."
 	echo ""
 	echo "You can set any additional environment variables for specific containers using CONTAINER_ENV_ prefix."
 	echo "CONTAINER_ENV_NODE_* variables will be set as NODE_* in nodebb container."
@@ -79,18 +83,21 @@ function showHelp () {
 	echo "CONTAINER_ENV_POSTGRES_* variables will be set as POSTGRES_* in postgres container."
 	echo "CONTAINER_ENV_PG_* variables will be set as PG* in postgres container."
 	echo "CONTAINER_ENV_REDIS_* variables will be set as * in redis container."
+	echo "CONTAINER_ENV_NPM_* variables will be set as * in npm container."
 	echo ""
 	echo "You can pass additional arguments to podman commands used for creation of containers (check: podman create --help) through separate environment variables:"
 	echo "PODMAN_CREATE_ARGS_NODEBB variable for NodeBB container,"
 	echo "PODMAN_CREATE_ARGS_MONGODB variable for MongoDB database container,"
 	echo "PODMAN_CREATE_ARGS_POSTGRES variable for PostgreSQL database container,"
 	echo "PODMAN_CREATE_ARGS_REDIS variable for Redis database container."
+	echo "PODMAN_CREATE_ARGS_NPM variable for NPM mirror container."
 	echo "You can also set PODMAN_CREATE_ARGS environment variable, to pass the same additional arguments to all podman create commands."
 	echo ""
-	echo "When database container is created, its port number is automaticaly read from image. In case of more than one port being exposed by database image, you can override its value through environment variable:"
+	echo "When container is created, its port number is automaticaly read from image. In case of more than one port being exposed by that image, you can override its value through environment variable:"
 	echo "CONTAINER_MONGODB_PORT for MongoDB container,"
 	echo "CONTAINER_POSTGRES_PORT for PostgreSQL container,"
 	echo "CONTAINER_REDIS_PORT for Redis container."
+	echo "CONTAINER_NPM_PORT for NPM container."
 	echo ""
 }
 
@@ -191,6 +198,14 @@ function buildPod () {
 
 	if [ ! -z "$APP_ADD_POSTGRES" ] ; then
 		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_POSTGRES "${__DIRNAME}/tools/podman-add-postgres.sh")
+		if [ -z "$addNodeBBOptions" ] ; then
+			return 1
+		fi
+		nodebbOptions="$nodebbOptions $addNodeBBOptions"
+	fi
+
+	if [ ! -z "$APP_ADD_NPM" ] ; then
+		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_NPM "${__DIRNAME}/tools/podman-add-npm.sh")
 		if [ -z "$addNodeBBOptions" ] ; then
 			return 1
 		fi
