@@ -59,7 +59,7 @@ if [ -z "$NODEBB_GIT" ] ; then
 fi
 
 echo "Preparing Node.js v$NODE_VERSION image for NodeBB $NODEBB_VERSION"
-NODE_VERSION=$NODE_VERSION APP_NAME=nodebb-node ./tools/podman-create-nodeapp.sh
+env APP_NAME=nodebb-node NODE_VERSION=$NODE_VERSION ./tools/podman-create-nodeapp.sh
 
 INSTALLED_NODE_VERSION=$(podman run --rm nodebb-node:${NODE_VERSION} node --version)
 NODE_VERSION=${INSTALLED_NODE_VERSION/v/}

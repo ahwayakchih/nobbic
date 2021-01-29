@@ -4,11 +4,11 @@ action=$1
 __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 source ${__DIRNAME}/tools/common.sh
 
-CONTAINERIZED_NODEBB_VERSION=0.5.0
-CONTAINERIZED_NODEBB_LABEL=containerized.nodebb
+export CONTAINERIZED_NODEBB_VERSION=0.5.0
+export CONTAINERIZED_NODEBB_LABEL=containerized.nodebb
 
-PODMAN_ARG_LABEL="--label ${CONTAINERIZED_NODEBB_LABEL}=${CONTAINERIZED_NODEBB_VERSION}"
-PODMAN_CREATE_ARGS="$PODMAN_ARG_LABEL $PODMAN_CREATE_ARGS"
+export PODMAN_ARG_LABEL="--label ${CONTAINERIZED_NODEBB_LABEL}=${CONTAINERIZED_NODEBB_VERSION}"
+export PODMAN_CREATE_ARGS="$PODMAN_ARG_LABEL $PODMAN_CREATE_ARGS"
 
 #
 # @param {string} appName
@@ -110,9 +110,9 @@ addToPod() {
 	fi
 
 	case "$fromName" in
-		1) env $(echo "$options" | xargs) PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS" "$toolPath";;
-		./*|/*) if [ -f "$fromName" ] ; then env $(echo "$options" | xargs) PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS" "$fromName"; else echo "'$fromName' script not found">&2; fi ;;
-		*) env $(echo "$options FROM_IMAGE=$fromName" | xargs) PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS" "$toolPath";;
+		1) env $(echo "$options" | xargs) "$toolPath";;
+		./*|/*) if [ -f "$fromName" ] ; then env $(echo "$options" | xargs) "$fromName"; else echo "'$fromName' script not found">&2; fi ;;
+		*) env $(echo "$options FROM_IMAGE=$fromName" | xargs) "$toolPath";;
 	esac
 }
 
