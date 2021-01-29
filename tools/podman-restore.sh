@@ -76,15 +76,15 @@ cmd="NODE_VERSION=${FORCE_NODE_VERSION:-$NODE_VERSION}\
 # Check which database(s) to use
 if [ ! -z "$CONTAINER_POSTGRES_PORT" ] && [ -f "${fromName}/container-postgres.json" ] ; then
 	# TODO: get container image name and pass it instead of "1"
-	cmd="APP_ADD_POSTGRES=1 ${cmd}"
+	cmd="APP_ADD_POSTGRES=${APP_ADD_POSTGRES:-1} ${cmd}"
 elif [ ! -z "$CONTAINER_MONGODB_PORT" ] && [ -f "${fromName}/container-mongodb.json" ] ; then
 	# TODO: get container image name and pass it instead of "1"
-	cmd="APP_ADD_MONGODB=1 ${cmd}"
+	cmd="APP_ADD_MONGODB=${APP_ADD_MONGODB:-1} ${cmd}"
 fi
 
 if [ ! -z "$CONTAINER_REDIS_PORT" ] && [ -f "${fromName}/container-redis.json" ] ; then
 	# TODO: get container image name and pass it instead of "1"
-	cmd="APP_ADD_REDIS=1 ${cmd}"
+	cmd="APP_ADD_REDIS=${APP_ADD_REDIS:-1} ${cmd}"
 fi
 
 cmd="RESTORE_FROM='${fromName}'	${cmd}"

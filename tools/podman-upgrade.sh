@@ -33,5 +33,5 @@ ${__APP} stop $APP_NAME || exit 1
 ${__APP} backup $APP_NAME /tmp "$BACKUP_NAME" || exit 1
 # TODO: when podman supports renaming, create something like APP-upgrade first, test and if all ok, remove old and rename new pod and containers
 ${__APP} remove $APP_NAME || exit 1
-NODE_VERSION="$NODE_VERSION" NODEBB_VERSION="$NODEBB_VERSION" ${__APP} restore $APP_NAME "/tmp/${BACKUP_NAME}" || ${__APP} restore $APP_NAME "/tmp/${BACKUP_NAME}" || exit 1
+env NODE_VERSION="$NODE_VERSION" NODEBB_VERSION="$NODEBB_VERSION" ${__APP} restore $APP_NAME "/tmp/${BACKUP_NAME}" || ${__APP} restore $APP_NAME "/tmp/${BACKUP_NAME}" || exit 1
 rm -rf "/tmp/${BACKUP_NAME}">/dev/null || true
