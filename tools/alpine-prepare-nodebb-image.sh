@@ -18,7 +18,7 @@ cp -aT /repo/nodebb/. /app/nodebb
 ln -s "${CONTAINER_REPO_DIR}nodebb/node_modules" "${CONTAINER_REPO_DIR}.container/lib/node_modules" || true
 
 # Make sure we switched to correct repo version, just in case of some race condition between builders
-NODEBB_GIT="$NODEBB_GIT" NODEBB_VERSION="$NODEBB_VERSION" /containerizer/tools/alpine-get-nodebb-repo.sh
+env NODEBB_GIT="$NODEBB_GIT" NODEBB_VERSION="$NODEBB_VERSION" /containerizer/tools/alpine-get-nodebb-repo.sh
 
 chown -R node:node /app
 

@@ -134,7 +134,7 @@ function buildPod () {
 
 	# Prepare NodeBB image
 	local imageNameFile=$(mktemp)
-	IMAGE_NAME_FILE="$imageNameFile" APP_NAME="$podName" NODE_VERSION="$NODE_VERSION" NODEBB_VERSION="$NODEBB_VERSION" NODEBB_GIT="$NODEBB_GIT" tools/podman-create-nodebb.sh || return 1
+	env IMAGE_NAME_FILE="$imageNameFile" APP_NAME="$podName" tools/podman-create-nodebb.sh || return 1
 	local NODEBB_IMAGE=$(cat "$imageNameFile")
 	rm "$imageNameFile"
 	if [ -z "$NODEBB_IMAGE" ] ; then

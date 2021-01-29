@@ -12,7 +12,7 @@ if [ -z "$APP_NAME" ] ; then
     APP_NAME="nodebb"
 fi
 
-NODEBB_REPO_VOLUME="${APP_NAME}-nodebb-repo"
+NODEBB_REPO_VOLUME=${NODEBB_REPO_VOLUME:-nodebb-repo}
 
 # Clone NodeBB repo to separate volume, so we don't have to do full clone again next time
 # and so we can extract which NODE_VERSION selected NODEBB_VERSION depends on.
