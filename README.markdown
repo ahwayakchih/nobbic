@@ -77,3 +77,5 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
 - show README content in `./app help`?
 - add nginx container
 - add support for specifying more than one app name at the same time for build, start, upgrade and stop?
+- add command to send online users a message, e.g., "forum will close in 2 minutes, we will be backn in about 10 minutes"
+- wait X time before closing forum, so users can save whatever they were working on
