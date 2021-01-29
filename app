@@ -230,7 +230,7 @@ function startPod () {
 	test "$existed" || buildPod "$podName" || return 1
 
 	if test "$existed" ; then
-		WAIT_FOR_PORT=$(podman inspect "${podName}-nodebb" --format="{{range .Config.Env}}{{.}}\n{{end}}" | grep CONTAINER_NODEJS_PORT | cut -d= -f2)
+		WAIT_FOR_PORT=$(podman container inspect "${podName}-nodebb" --format="{{range .Config.Env}}{{.}}\n{{end}}" | grep CONTAINER_NODEJS_PORT | cut -d= -f2)
 
 		echo "Restarting '$podName' pod..."
 		podman pod start "$podName" || return 1
