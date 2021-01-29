@@ -38,7 +38,7 @@ function showHelp () {
 	echo "restore APP_NAME [BACKUPS_DIR] [BACKUP_NAME] - restore from a previously created backup"
 	echo "stop APP_NAME   - stop pod"
 	echo "remove APP_NAME - stop pod, remove its containers and their data, remove the pod itself"
-	echo "cleanup [nodebb|node] - remove images built for NodeBB containers, removing 'node' containers, will also remove all nodebb images"
+	echo "cleanup [nodebb|node|repo] - remove all pods, containers and images built for NodeBB containers, removing 'node' images, will also remove all nodebb images. 'repo' removes only the image used for downloading repo"
 	echo ""
 	echo "When building, you can specify database images to use for pod containers by setting environment variables:"
 	echo "APP_ADD_MONGODB  - set it to 1 to use default 'bionic' image, or set image name, e.g., docker.io/mongo:4.4.2-bionic"
@@ -398,9 +398,16 @@ function cleanupImages () {
 		removePod "$pod"
 	done
 
+	if [ "$imageType" = "repo" ] ; then
+		# Select only repo downloader image and repo volume
+		podman images --format "{{.Repository}}:{{.Tag}}" | grep localhost/nodebb-repo | xargs podman rmi -f
+		podman volume rm nodebb-repo
+		return 0
+	fi
+
 	if [ "$imageType" = "nodebb" ] ; then
 		# Select only nodebb images, not nodebb-node
-		podman images --format "{{.Repository}}:{{.Tag}}" | grep localhost/nodebb | grep -v localhost/nodebb-node | xargs podman rmi -f
+		podman images --format "{{.Repository}}:{{.Tag}}" | grep localhost/nodebb | grep -v localhost/nodebb- | xargs podman rmi -f
 		return 0
 	fi
 

@@ -13,18 +13,18 @@ if [ -z "$APP_NAME" ] ; then
 fi
 
 NODEBB_REPO_VOLUME=${NODEBB_REPO_VOLUME:-nodebb-repo}
+NODEBB_REPO_DOWNLOADER="${NODEBB_REPO_VOLUME}-downloader"
 
 # Clone NodeBB repo to separate volume, so we don't have to do full clone again next time
 # and so we can extract which NODE_VERSION selected NODEBB_VERSION depends on.
-echo "Preparing NodeBB repo in volume $NODEBB_REPO_VOLUME"
+env ${__DIRNAME}/podman-create-repoapp.sh
+
 podman run --replace --rm --name nodebb-downloader\
     -e NODEBB_GIT=$NODEBB_GIT\
     -e NODEBB_VERSION="$NODEBB_VERSION"\
-    -v ${__DIRNAME}:/tools:ro\
     -v $NODEBB_REPO_VOLUME:/app\
-    docker.io/alpine /bin/sh /tools/alpine-get-nodebb-repo.sh
+    nodebb-repo
 
-NODEBB_VERSION="$NODEBB_VERSION"
 if [ -z "$NODEBB_VERSION" ] || [ "$NODEBB_VERSION" = "latest" ] ; then
     NODEBB_VERSION=$(podman run --rm -v $NODEBB_REPO_VOLUME:/app:ro docker.io/alpine cat /app/NODEBB_VERSION)
     if [ -z "$NODEBB_VERSION" ] ; then
@@ -49,7 +49,6 @@ if [ -z "$NODE_VERSION" ] ; then
     exit 1
 fi
 
-NODEBB_GIT="$NODEBB_GIT"
 if [ -z "$NODEBB_GIT" ] ; then
     NODEBB_GIT=$(podman run --rm -v $NODEBB_REPO_VOLUME:/app:ro docker.io/alpine cat /app/NODEBB_GIT)
     if [ -z "$NODEBB_GIT" ] ; then
