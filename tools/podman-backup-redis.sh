@@ -43,7 +43,9 @@ if [ -z "$REDIS_PORT" ] ; then
 fi
 
 REDIS_HOSTNAME=$(podman inspect "$CONTAINER" --format='{{range .Config.Env}}{{.}}\n{{end}}' | grep "HOSTNAME" | cut -d= -f2)
-podman run --rm --pod "$REDIS_HOSTNAME" -v "${__APPDIR}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:${REDIS_PORT}" -t 30 >&2 || exit 1
+podman run --rm --pod "$REDIS_HOSTNAME" -v "${__APPDIR}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:${REDIS_PORT}" -t 30 >&2\
+	|| (echo "ERROR: timeout while waiting for database to be ready" >&2 && exit 1)\
+	|| exit 1
 
 function redis () {
 	local cmd="redis-cli --raw $@"

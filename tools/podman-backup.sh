@@ -36,7 +36,7 @@ mkdir -p "$targetName"
 isRunning=$(podman pod ps --filter status=running --filter name="$APP_NAME" -q)
 
 if [ ! -z "$isRunning" ] ; then
-	echo -n "'$APP_NAME' is running, it will be stopped for the duration of making data backups... "
+	echo "'$APP_NAME' is running, it will be stopped for the duration of making data backups... "
 	${__DIRNAME}/../app stop "$APP_NAME" || exit 1
 fi
 
@@ -44,22 +44,22 @@ for container in $(podman pod inspect "$APP_NAME" --format='{{range .Containers}
 	backupBasename=${container/$APP_NAME-/}
 	toolName="${__DIRNAME}/podman-backup-${backupBasename}.sh"
 	if [ -f "$toolName" ] ; then
-		CONTAINER=$container BACKUP_TO_FILE="${targetName}/${backupBasename}" "$toolName" || true
+		CONTAINER=$container BACKUP_TO_FILE="${targetName}/${backupBasename}" "$toolName" || (echo "WARNING: backup of ${backupBasename} failed!" >&2)
 	else
 		dataDir=$(podman inspect "$container" --format='{{range .Config.Env}}{{.}}\n{{end}}'| grep CONTAINER_DATA_DIR | cut -d= -f2 || echo "")
 		if [ ! -z "$dataDir" ] ; then
-			podman run --rm --volumes-from $container:ro -v $targetName:/backup docker.io/alpine tar cvf "/backup/${backupBasename}.tar" "$dataDir"
+			podman run --rm --volumes-from $container:ro -v $targetName:/backup docker.io/alpine tar cvf "/backup/${backupBasename}.tar" "$dataDir" || (echo "WARNING: failed to archive data directory of ${backupBasename}!" >&2)
 		else
-			echo "WARNING: Could not find CONTAINER_DATA_DIR value for container '$container'" >&2
+			echo "WARNING: Could not find CONTAINER_DATA_DIR value for container '$container'!" >&2
 		fi
 	fi
-	podman inspect "$container" > "${targetName}/container-${backupBasename}.json"
+	podman inspect "$container" > "${targetName}/container-${backupBasename}.json" || (echo "ERROR: failed to export information about ${backupBasename} container!" >&2)
 done
 
-podman pod inspect "$APP_NAME" > "${targetName}/pod.json"
+podman pod inspect "$APP_NAME" > "${targetName}/pod.json" || (echo "ERROR: failed to export information about ${APP_NAME} pod!" >&2)
 
 if [ ! -z "$isRunning" ] ; then
-	echo -n "Backup done, restarting '$APP_NAME' now..."
+	echo "Backup process finished, restarting '$APP_NAME' now..."
 	${__DIRNAME}/../app start "$APP_NAME"
 else
 	${__DIRNAME}/../app stop "$APP_NAME"
