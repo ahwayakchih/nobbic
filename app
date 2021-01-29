@@ -208,7 +208,7 @@ function buildPod () {
 	local BACKUP_DATA="${RESTORE_FROM}/nodebb.tar"
 	if [ ! -z "$RESTORE_FROM" ] && [ -f "$BACKUP_DATA" ] ; then
 		echo -n "Copying $BACKUP_DATA to NodeBB container... "
-		podman cp "$BACKUP_DATA" ${podName}-nodebb:/app/nodebb.tar || (echo "failed" && exit 1) || return 1
+		podman cp "$BACKUP_DATA" ${podName}-nodebb:/app/nodebb-$(basename "$RESTORE_FROM").tar || (echo "failed" && exit 1) || return 1
 		echo "done"
 	fi
 }

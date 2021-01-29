@@ -9,14 +9,15 @@ echo "Database seems to be ready, start can continue"
 
 
 # Restore data, if available
-if [ -f "${CONTAINER_REPO_DIR}nodebb.tar" ] ; then
-	echo "Restoring /data from ${CONTAINER_REPO_DIR}nodebb.tar archive"
-	tar x -C / -v -f - < "${CONTAINER_REPO_DIR}nodebb.tar" && rm "${CONTAINER_REPO_DIR}nodebb.tar"
-	if [ -f "${CONTAINER_REPO_DIR}nodebb.tar" ] ; then
-		echo "ERROR: Could not cleanup after restore" >&2
+for archive in ${CONTAINER_REPO_DIR}nodebb-*.tar ; do
+	test -f "$archive" || continue
+	echo "Restoring /data from $archive archive"
+	tar x -C / -v -f - < "$archive" && rm "$archive"
+	if [ -f "$archive" ] ; then
+		echo "ERROR: Could not cleanup $archive" >&2
 		exit 1
 	fi
-fi
+done
 
 # Run upgrade, if previously installed version was different
 VERSION_CURRENT=$(onbb_get_nodebb_version)
