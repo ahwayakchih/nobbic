@@ -73,18 +73,22 @@ cmd="NODE_VERSION=${FORCE_NODE_VERSION:-$NODE_VERSION}\
 	CONTAINER_APP_DNS_ALIAS=${CONTAINER_APP_DNS_ALIAS}\
 	"
 
+get_image_name () {
+	cat "$1" | grep ImageName | sed 's/^.*ImageName.*:\s*"//' | sed 's/".*$//' || echo "1"
+}
+
 # Check which database(s) to use
 if [ ! -z "$CONTAINER_POSTGRES_PORT" ] && [ -f "${fromName}/container-postgres.json" ] ; then
-	# TODO: get container image name and pass it instead of "1"
-	cmd="APP_ADD_POSTGRES=${APP_ADD_POSTGRES:-1} ${cmd}"
+	oldImage=$(get_image_name "${fromName}/container-postgres.json")
+	cmd="APP_ADD_POSTGRES=${APP_ADD_POSTGRES:-$oldImage} ${cmd}"
 elif [ ! -z "$CONTAINER_MONGODB_PORT" ] && [ -f "${fromName}/container-mongodb.json" ] ; then
-	# TODO: get container image name and pass it instead of "1"
-	cmd="APP_ADD_MONGODB=${APP_ADD_MONGODB:-1} ${cmd}"
+	oldImage=$(get_image_name "${fromName}/container-mongodb.json")
+	cmd="APP_ADD_MONGODB=${APP_ADD_MONGODB:-$oldImage} ${cmd}"
 fi
 
 if [ ! -z "$CONTAINER_REDIS_PORT" ] && [ -f "${fromName}/container-redis.json" ] ; then
-	# TODO: get container image name and pass it instead of "1"
-	cmd="APP_ADD_REDIS=${APP_ADD_REDIS:-1} ${cmd}"
+	oldImage=$(get_image_name "${fromName}/container-redis.json")
+	cmd="APP_ADD_REDIS=${APP_ADD_REDIS:-$oldImage} ${cmd}"
 fi
 
 cmd="RESTORE_FROM='${fromName}'	${cmd}"
