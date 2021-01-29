@@ -35,11 +35,12 @@ mkdir -p /app/node_modules \
 # npm config set prefix '/home/node/.npm-global'\
 mkdir /home/node/.npm-global\
     && echo "prefix=/home/node/.npm-global" > /home/node/.npmrc\
-    && echo "export PATH=/home/node/.npm-global/bin:\$PATH" > /home/node/.profile
+    && echo "export PATH=/home/node/.npm-global/bin:\$PATH" > /etc/profile.d/npm-global.sh\
+    && cp /etc/profile.d/npm-global.sh /home/node/.bashrc
 
 # No need to fight with locks in container
 # npm config set package-lock false
 echo "package-lock=false" >> /home/node/.npmrc
 
 # Fix ownership
-chown node:node /home/node/.npm-global /home/node/.npmrc /home/node/.profile
+chown node:node /home/node/.npm-global /home/node/.npmrc /home/node/.bashrc
