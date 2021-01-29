@@ -17,11 +17,5 @@ cp -aT /repo/nodebb/. /app/nodebb
 # Make sure we switched to correct repo version, just in case of some race condition between builders
 env NODEBB_GIT="$NODEBB_GIT" NODEBB_VERSION="$NODEBB_VERSION" /containerizer/tools/alpine-get-nodebb-repo.sh
 
+# Make sure `node` user owns newly copied files
 chown -R node:node /app
-
-# `bash` for our scripts, `patch` for applying patches, `bind-tools` for dig (to check public IP)
-# `jq`  and `git` should already be installed by alpine-get-nodebb-repo.sh script
-apk add --no-cache\
-	bash\
-	patch\
-	bind-tools
