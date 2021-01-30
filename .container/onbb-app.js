@@ -122,6 +122,8 @@ testSSL(IP, PORT, FQDN, function onTestSSLResult (err) {
 		config.database = config.database || 'redis';
 		config.redis = config.redis || {};
 
+		config.redis.database = process.env.CONTAINER_REDIS_DB || 0;
+
 		if (process.env.CONTAINER_REDIS_HOST) {
 			config.redis.host = process.env.CONTAINER_REDIS_HOST;
 		}
