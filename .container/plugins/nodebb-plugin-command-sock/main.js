@@ -16,6 +16,15 @@ const CommandServer = require('./CommandServer');
 const COMMANDS = {};
 
 /**
+ * Dump current config object.
+ *
+ * @type {CommandHandler}
+ */
+COMMANDS.config = function config (done) {
+	done(null, JSON.stringify(nconf.get()));
+};
+
+/**
  * Generate reset code for user with given e-mail address.
  *
  * @type {CommandHandler}
