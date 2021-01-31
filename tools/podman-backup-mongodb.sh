@@ -46,7 +46,8 @@ if [ -z "$MONGODB_PORT" ] ; then
 	echo "WARNING: could not find port number exposed by $MONGODB_IMAGE, defaulting to $MONGODB_PORT" >&2
 fi
 
-podman run --rm --pod "$MONGODB_HOSTNAME" -v "${__APPDIR}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:${MONGODB_PORT}" -t 30 >&2\
+echo "Waiting for MongoDB from '$MONGODB_HOSTNAME' to be available on port $MONGODB_PORT..."
+podman run --rm --pod "$MONGODB_HOSTNAME" -v "${__APPDIR}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:${MONGODB_PORT}" -t 30 -l >&2\
 	|| (echo "ERROR: timeout while waiting for database to be ready" >&2 && exit 1)\
 	|| exit 1
 podman exec -u mongodb $CONTAINER sh -c 'exec mongodump -d "'$MONGO_INITDB_DATABASE'" --archive' > "${targetName}.archive"
