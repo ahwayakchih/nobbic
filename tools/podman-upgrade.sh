@@ -30,7 +30,7 @@ NOW=$(date -u +%Y-%m-%dT%H-%M-%S)
 BACKUP_NAME="${APP_NAME}_${NOW}"
 
 ${__APP} stop $APP_NAME || exit 1
-${__APP} backup $APP_NAME /tmp "$BACKUP_NAME" || exit 1
+${__APP} backup $APP_NAME /tmp "$BACKUP_NAME" || (${__APP} start $APP_NAME && exit 1) || exit 1
 # TODO: when podman supports renaming, create something like APP-upgrade first, test and if all ok, remove old and rename new pod and containers
 ${__APP} remove $APP_NAME || exit 1
 env NODE_VERSION="$NODE_VERSION" NODEBB_VERSION="$NODEBB_VERSION" ${__APP} restore $APP_NAME "/tmp/${BACKUP_NAME}" || ${__APP} restore $APP_NAME "/tmp/${BACKUP_NAME}" || exit 1
