@@ -23,7 +23,7 @@ if [ -z "$NODEBB_VERSION" ] ; then
 fi
 
 if [ -z "$NODE_VERSION" ] ; then
-    echo "WARNING: NODE_VERSION was not specified, so uprade will use minimal Node.js version required by NodeBB" >&2
+    echo "WARNING: NODE_VERSION was not specified, so upgrade will use minimal Node.js version required by NodeBB" >&2
 fi
 
 NOW=$(date -u +%Y-%m-%dT%H-%M-%S)
