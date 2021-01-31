@@ -8,13 +8,11 @@ source ${__DIRNAME}/common.sh
 
 APP_NAME="$APP_NAME"
 if [ -z "$APP_NAME" ] ; then
-    echo "ERROR: APP_NAME must be specified for backuper to know what data to backup" >&2
-    exit 1
+    fail "ERROR: APP_NAME must be specified for backuper to know what data to backup"
 fi
 
 if ! podman pod exists ${APP_NAME} ; then
-	echo "ERROR: backuper could not find pod '${APP_NAME}'" >&2
-	exit 1
+	fail "ERROR: backuper could not find pod '${APP_NAME}'"
 fi
 
 BACKUPS_DIR="$BACKUPS_DIR"
@@ -37,30 +35,27 @@ isRunning=$(podman pod ps --filter status=running --filter name="$APP_NAME" -q)
 
 if [ ! -z "$isRunning" ] ; then
 	echo "'$APP_NAME' is running, it will be stopped for the duration of making data backups... "
-	${__DIRNAME}/../app stop "$APP_NAME" || exit 1
+	${__DIRNAME}/../app stop "$APP_NAME" || fail "Could not stop '$APP_NAME' pod"
+	trap "echo 'Backup process finished, restarting $APP_NAME now...' && ${__DIRNAME}/../app start '$APP_NAME'" EXIT
+else
+	# Make sure whole pod will remain stopped
+	trap "${__DIRNAME}/../app stop '$APP_NAME'" EXIT
 fi
 
 for container in $(podman pod inspect "$APP_NAME" --format='{{range .Containers}}{{.Name}}\n{{end}}' | grep "^${APP_NAME}-") ; do
 	backupBasename=${container/$APP_NAME-/}
 	toolName="${__DIRNAME}/podman-backup-${backupBasename}.sh"
 	if [ -f "$toolName" ] ; then
-		CONTAINER=$container BACKUP_TO_FILE="${targetName}/${backupBasename}" "$toolName" || (echo "WARNING: backup of ${backupBasename} failed!" >&2)
+		CONTAINER=$container BACKUP_TO_FILE="${targetName}/${backupBasename}" "$toolName" || fail "ERROR: backup of ${backupBasename} failed!"
 	else
 		dataDir=$(podman inspect "$container" --format='{{range .Config.Env}}{{.}}\n{{end}}'| grep CONTAINER_DATA_DIR | cut -d= -f2 || echo "")
 		if [ ! -z "$dataDir" ] ; then
-			podman run --rm --volumes-from $container:ro -v $targetName:/backup docker.io/alpine tar cvf "/backup/${backupBasename}.tar" "$dataDir" || (echo "WARNING: failed to archive data directory of ${backupBasename}!" >&2)
+			podman run --rm --volumes-from $container:ro -v $targetName:/backup docker.io/alpine tar cvf "/backup/${backupBasename}.tar" "$dataDir" || fail "ERROR: failed to archive data directory of ${backupBasename}!"
 		else
-			echo "WARNING: Could not find CONTAINER_DATA_DIR value for container '$container'!" >&2
+			fail "ERROR: Could not find CONTAINER_DATA_DIR value for container '$container'!"
 		fi
 	fi
-	podman inspect "$container" > "${targetName}/container-${backupBasename}.json" || (echo "ERROR: failed to export information about ${backupBasename} container!" >&2)
+	podman inspect "$container" > "${targetName}/container-${backupBasename}.json" || fail "ERROR: failed to export information about ${backupBasename} container!"
 done
 
-podman pod inspect "$APP_NAME" > "${targetName}/pod.json" || (echo "ERROR: failed to export information about ${APP_NAME} pod!" >&2)
-
-if [ ! -z "$isRunning" ] ; then
-	echo "Backup process finished, restarting '$APP_NAME' now..."
-	${__DIRNAME}/../app start "$APP_NAME"
-else
-	${__DIRNAME}/../app stop "$APP_NAME"
-fi
+podman pod inspect "$APP_NAME" > "${targetName}/pod.json" || fail "ERROR: failed to export information about ${APP_NAME} pod!"
