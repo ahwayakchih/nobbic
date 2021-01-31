@@ -13,6 +13,14 @@ on_error() {
 }
 trap 'on_error ${LINENO} ${?}' ERR
 
+# @param {string}    error message
+# @param [number=$?] code  exit code
+fail() {
+	LASTERR=${2:-$?}
+	echo ${1:-Failed} >&2
+	exit $LASTERR
+}
+
 # @param {string} from  e.g., CONTAINER_ENV_MONGODB_
 # @param {string} to  e.g., MONGO_, or empty string to remove whole prefix
 get_env_values_for() {
