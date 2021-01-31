@@ -372,9 +372,12 @@ function stopPod () {
 		return 1
 	fi
 
-	# Try to prevent possible errors, by stopping NodeBB first
-	echo -n "Stopping NodeBB of '$podName' pod... "
-	(podman stop -t 10 ${podName}-nodebb >/dev/null && echo "OK") || true
+	local isRunning=$(podman ps --filter status=running --filter name='^'$podName'-nodebb$' -q)
+	if [ ! -z "$isRunning" ] ; then
+		# Try to prevent possible errors, by stopping NodeBB first
+		echo -n "Stopping NodeBB of '$podName' pod... "
+		(podman stop -t 10 ${podName}-nodebb >/dev/null && echo "OK") || echo "Failed"
+	fi
 
 	echo "Stopping '$podName' pod..."
 	podman pod stop -t 10 "$podName" || return 1
