@@ -27,7 +27,7 @@ targetName=$(readlink -f "$BACKUP_TO_FILE")
 targetDir=$(dirname $targetName)
 targetFile=$(basename $targetName)
 
-isRunning=$(podman ps --filter status=running --filter name='^$CONTAINER$' -q)
+isRunning=$(podman ps --filter status=running --filter name='^'$CONTAINER'$' -q)
 
 if [ ! -z "$isRunning" ] ; then
 	echo -n "'$CONTAINER' is running, it will be stopped for the duration of making data backups... "
