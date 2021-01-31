@@ -36,7 +36,7 @@ isRunning=$(podman pod ps --filter status=running --filter name="$APP_NAME" -q)
 if [ ! -z "$isRunning" ] ; then
 	echo "'$APP_NAME' is running, it will be stopped for the duration of making data backups... "
 	${__DIRNAME}/../app stop "$APP_NAME" || fail "Could not stop '$APP_NAME' pod"
-	trap "echo 'Backup process finished, restarting $APP_NAME now...' && ${__DIRNAME}/../app start '$APP_NAME'" EXIT
+	trap "echo 'Backup process '\$(test \$? -eq 0 && echo 'SUCCEEDED' || echo 'FAILED')', restarting $APP_NAME now...' && ${__DIRNAME}/../app start '$APP_NAME'" EXIT
 else
 	# Make sure whole pod will remain stopped
 	trap "${__DIRNAME}/../app stop '$APP_NAME'" EXIT
