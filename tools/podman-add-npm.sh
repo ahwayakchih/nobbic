@@ -63,8 +63,8 @@ NPM_ENV=$(get_env_values_for CONTAINER_ENV_NPM_ "")
 
 PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS $PODMAN_CREATE_ARGS_NPM"
 
-podman create --pod "$POD" --name "$CONTAINER" --add-host=localhost:127.0.0.1 $PODMAN_CREATE_ARGS \
-	$NPM_ENV "$NPM_IMAGE" || exit 1
+podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS \
+	$NPM_ENV "$NPM_IMAGE" >/dev/null || exit 1
 
 # Restore stdout and close 4 that was storing its file descriptor
 exec 1>&4-
