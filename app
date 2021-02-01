@@ -78,7 +78,7 @@ function showHelp () {
 	echo ""
 	echo "You can set any additional environment variables for specific containers using CONTAINER_ENV_ prefix."
 	echo "CONTAINER_ENV_NODE_* variables will be set as NODE_* in nodebb container."
-	echo "CONTAINER_ENV_NODEBB_* variables will be set as NODEBB_* in nodebb container."
+	echo "CONTAINER_ENV_NODEBB_* variables will be set as * in nodebb container."
 	echo "CONTAINER_ENV_MONGODB_* variables will be set as * in mongodb container."
 	echo "CONTAINER_ENV_POSTGRES_* variables will be set as POSTGRES_* in postgres container."
 	echo "CONTAINER_ENV_PG_* variables will be set as PG* in postgres container."
