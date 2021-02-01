@@ -16,7 +16,7 @@ function onbb_setup_config () {
 		echo "ERROR: Could not determine FQDN to use as public URL of forum" >&2
 		return 1
 	fi
-	json=$json'"url":"http://'$fqdn':'${CONTAINER_NODEJS_PORT:-8080}'"'
+	json=$json'"url":"http://'$fqdn':'${CONTAINER_NODEJS_PORT:-4567}'"'
 
 	# Generate NodeBB secret
 	local secret=`tr -cd '[:alnum:]' < /dev/urandom | fold -w32 | head -n1 | fold -w8 | paste -sd\- -`

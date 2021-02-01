@@ -491,7 +491,7 @@ function onbb_wait_until_ready () {
 		seconds=120
 	fi
 
-	"${CONTAINER_REPO_DIR}.container/tools/wait-for.sh" 127.0.0.1:${CONTAINER_NODEJS_PORT:-8080} -t $seconds -l || return 1
+	"${CONTAINER_REPO_DIR}.container/tools/wait-for.sh" 127.0.0.1:${CONTAINER_NODEJS_PORT:-4567} -t $seconds -l || return 1
 }
 
 #

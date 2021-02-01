@@ -84,7 +84,7 @@ var testPORT = Math.min(Math.max(parseInt(argv.pop() || '', 10), 0), 65535);
 if (isNaN(testPORT) || !testFQDN) {
 	var filename = path.basename(module.filename);
 	console.log('USAGE: ' + filename + ' port hostname');
-	console.log('EXAMPLE: ' + filename + ' ' + (process.env.CONTAINER_NODEJS_PORT || 8080) + ' ' + (process.env.CONTAINER_APP_DNS || 'example.com'));
+	console.log('EXAMPLE: ' + filename + ' ' + (process.env.CONTAINER_NODEJS_PORT || 4567) + ' ' + (process.env.CONTAINER_APP_DNS || 'example.com'));
 	return process.exit(1);
 }
 
