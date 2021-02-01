@@ -11,10 +11,9 @@ if [ -z "$NODE_VERSION" ] ; then
     exit 1
 fi
 
-APP_NAME="$APP_NAME"
 if [ -z "$APP_NAME" ] ; then
-    echo "WARNING: APP_NAME not specified, default 'nodeapp' will be used" >&2
     APP_NAME="nodeapp"
+    echo "WARNING: APP_NAME not specified, default '$APP_NAME' will be used" >&2
 fi
 
 if podman image exists ${APP_NAME}:${NODE_VERSION} ; then

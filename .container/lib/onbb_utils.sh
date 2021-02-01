@@ -185,8 +185,9 @@ function onbb_setup_fqdn () {
 
 	if [ -z "$FQDN" ] ; then
 		echo "WARNING: No CONTAINER_APP_DNS_ALIAS nor CONTAINER_APP_DNS was specified" >&2
-		echo "         OpenDNS service will be used to get public IP" >&2
+		echo "         Calling OpenDNS service to get public IP..." >&2
 		FQDN=$(dig +short myip.opendns.com @resolver1.opendns.com)
+		echo "         Got '$FQDN'." >&2
 	fi
 
 	export NODEBB_FQDN="$FQDN"

@@ -6,10 +6,9 @@
 __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 source ${__DIRNAME}/common.sh
 
-APP_NAME="$APP_NAME"
 if [ -z "$APP_NAME" ] ; then
-    echo "WARNING: APP_NAME not specified, default 'nodebb' will be used" >&2
     APP_NAME="nodebb"
+    echo "WARNING: APP_NAME not specified, default '$APP_NAME' will be used" >&2
 fi
 
 NODEBB_REPO_VOLUME=${NODEBB_REPO_VOLUME:-nodebb-repo}

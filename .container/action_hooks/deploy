@@ -41,7 +41,8 @@ function onbb_setup_config () {
 	# Check various setup required variables and exit early if missing any
 	# This kinda duplicates some code, but allows to prevent running long operation before failing anyway
 	if [ -z "$CONTAINER_APP_DNS_ALIAS" -a -z "$CONTAINER_APP_DNS" ] ; then
-		echo "WARNING: When running NodeBB inside a container, you should set either CONTAINER_APP_DNS_ALIAS or CONTAINER_APP_DNS environment variable." >&2
+		echo "WARNING: When running NodeBB inside a container, you should set either" >&2
+		echo "         CONTAINER_APP_DNS_ALIAS or CONTAINER_APP_DNS environment variable." >&2
 		echo "         Without them NodeBB or its websockets may be unavailable from the outside." >&2
 		echo "         Setup will use OpenDNS service to discover public IP and use it instead." >&2
 	fi
