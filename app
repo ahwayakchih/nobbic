@@ -138,7 +138,7 @@ function buildPod () {
 	if [ -z "$APP_ADD_MONGODB" ] && [ -z "$APP_ADD_REDIS" ] && [ -z "$APP_ADD_POSTGRES" ] ; then
 		echo "WARNING: building without database container" >&2
 		echo "         Set APP_ADD_MONGODB, APP_ADD_REDIS and/or APP_ADD_POSTGRES in environment" >&2
-		echo "         or specify database access info when running the pod" >&2
+		# echo "         or specify database access info when running the pod" >&2
 	fi
 
 	# Prepare NodeBB image
