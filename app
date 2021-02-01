@@ -412,7 +412,7 @@ function cleanupImages () {
 	fi
 
 	# Remove all pods first
-	for pod in $(podman pod ls --filter label=containerized.nodebb --format '{{.Name}}') ; do
+	for pod in $(podman pod ls --filter label="$CONTAINERIZED_NODEBB_LABEL" --format '{{.Name}}') ; do
 		removePod "$pod"
 	done
 
