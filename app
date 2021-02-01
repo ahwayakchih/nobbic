@@ -141,29 +141,9 @@ function buildPod () {
 		# echo "         or specify database access info when running the pod" >&2
 	fi
 
-	# Prepare NodeBB image
-	local imageNameFile=$(mktemp)
-	env IMAGE_NAME_FILE="$imageNameFile" APP_NAME="$podName" tools/podman-create-nodebb.sh || return 1
-	local NODEBB_IMAGE=$(cat "$imageNameFile")
-	rm "$imageNameFile"
-	if [ -z "$NODEBB_IMAGE" ] ; then
-		echo "ERROR: could not get NodeBB container image name" >&2
-		return 1
-	fi
-
-	if [ -z "$CONTAINER_APP_DNS_ALIAS" -a -z "$CONTAINER_APP_DNS" ] ; then
-		echo "WARNING: no CONTAINER_APP_DNS_ALIAS nor CONTAINER_APP_DNS was specified" >&2
-		echo "         OpenDNS service will be used to get public IP when running the pod" >&2
-		# TODO: set to "localhost" by default?
-	elif [ -z "$CONTAINER_APP_DNS_ALIAS" ] ; then
-		nodebbOptions="$nodebbOptions -e CONTAINER_APP_DNS=$CONTAINER_APP_DNS"
-	else
-		nodebbOptions="$nodebbOptions -e CONTAINER_APP_DNS_ALIAS=$CONTAINER_APP_DNS_ALIAS"
-	fi
-
 	echo "Building '$podName' pod..."
 
-	local webPort=${CONTAINER_NODEJS_PORT:-8080}
+	local webPort=${CONTAINER_NODEJS_PORT:-4567}
 	local wsPort=${CONTAINER_WEBSOCKET_PORT:-$webPort}
 
 	local podOptions="-p $webPort:$webPort"
@@ -177,8 +157,6 @@ function buildPod () {
 
 	# Add "data" container, to be shared by database, nodebb, etc...
 	# podman create --pod "$podName" --name "${podName}-data" -v /data docker.io/busybox:musl || return 1
-
-	nodebbOptions="$nodebbOptions "$(get_env_values_for CONTAINER_ENV_NODEBB_ NODEBB_)$(get_env_values_for CONTAINER_ENV_NODE_ NODE_)
 
 	if [ ! -z "$APP_ADD_MONGODB" ] ; then
 		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_MONGODB "${__DIRNAME}/tools/podman-add-mongodb.sh")
@@ -212,22 +190,12 @@ function buildPod () {
 		nodebbOptions="$nodebbOptions $addNodeBBOptions"
 	fi
 
-	if [ "$CONTAINER_NODEJS_IP" ] ; then
-		nodebbOptions="$nodebbOptions -e CONTAINER_NODEJS_IP=${CONTAINER_NODEJS_IP}"
+	if [ -z "CONTAINER_NODEBB_PORT" ] ; then
+		export CONTAINER_NODEBB_PORT="$webPort"
 	fi
 
-	# Add NodeBB container
-	podman create --pod "$podName" --name "${podName}-nodebb" $PODMAN_CREATE_ARGS_NODEBB \
-		-e CONTAINER_NODEJS_PORT=$webPort\
-		-e CONTAINER_WEBSOCKET_PORT=$wsPort\
-		$nodebbOptions $NODEBB_IMAGE || return 1
-
-	local BACKUP_DATA="${RESTORE_FROM}/nodebb.tar"
-	if [ ! -z "$RESTORE_FROM" ] && [ -f "$BACKUP_DATA" ] ; then
-		echo -n "Copying $BACKUP_DATA to NodeBB container... "
-		podman cp "$BACKUP_DATA" ${podName}-nodebb:/app/nodebb-$(basename "$RESTORE_FROM").tar || (echo "failed" && exit 1) || return 1
-		echo "done"
-	fi
+	export PODMAN_CREATE_ARGS_NODEBB="$PODMAN_CREATE_ARGS_NODEBB $nodebbOptions"
+	addToPod "$podName" ${APP_ADD_NODEBB:-1} "${__DIRNAME}/tools/podman-add-nodebb.sh" || return 1
 }
 
 #
