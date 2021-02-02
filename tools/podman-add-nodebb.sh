@@ -33,12 +33,6 @@ if [ -z "$NODEBB_IMAGE" ] ; then
 	return 1
 fi
 
-NODEBB_PORT=${CONTAINER_NODEBB_PORT:-$(podman image inspect $NODEBB_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
-if [ -z "$NODEBB_PORT" ] ; then
-	NODEBB_PORT=4567
-	echo "WARNING: could not find port number exposed by $NODEBB_IMAGE, defaulting to $NODEBB_PORT" >&2
-fi
-
 NODEBB_ENV=$(get_env_values_for CONTAINER_ENV_NODEBB_ "")$(get_env_values_for CONTAINER_ENV_NODE_ NODE_)
 
 if [ -z "$APP_USE_FQDN" ] ; then
