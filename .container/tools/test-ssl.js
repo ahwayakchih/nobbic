@@ -14,10 +14,10 @@ var path  = require('path');
  * Depend on Node to check SSL certificate validity.
  *
  * @param {!number}   port       Port number to listen on
- * @param {!string}   hostname   Domain name to request through HTTPS
+ * @param {!string}   url        URL to try
  * @param {!Function} callback   Will call with error or null as first argument
  */
-function testSSL (port, hostname, callback) {
+function testSSL (port, url, callback) {
 	// If something terminates SSL and passes requests through a regular HTTP,
 	// NodeBB should be listening for HTTP, not HTTPS.
 	// So we setup a HTTP server, and call it through HTTPS, to see if that's the case.
@@ -43,7 +43,7 @@ function testSSL (port, hostname, callback) {
 	server.on('error', cleanup);
 
 	server.listen(port, null, null, function onListening () {
-		https.get('https://' + hostname, function (res) {
+		https.get('https://' + url.replace(/^\s*https?:\/\//, ''), function (res) {
 			res.on('data', function () {});
 			cleanup(res.headers[header.toLowerCase()] !== token ? new Error('Wrong data returned') : null);
 		}).on('error', cleanup);
@@ -70,7 +70,7 @@ var argv = process.argv.slice();
  *
  * @type {string}
  */
-var testFQDN = argv.pop();
+var testURL = argv.pop();
 
 /**
  * Port number to be used for test
@@ -80,15 +80,15 @@ var testFQDN = argv.pop();
 var testPORT = Math.min(Math.max(parseInt(argv.pop() || '', 10), 0), 65535);
 
 // If one of args is not valid, show usage info and exit.
-if (isNaN(testPORT) || !testFQDN) {
+if (isNaN(testPORT) || !testURL) {
 	var filename = path.basename(module.filename);
-	console.log('USAGE: ' + filename + ' port hostname');
-	console.log('EXAMPLE: ' + filename + ' 4567 ' + (process.env.APP_USE_FQDN || 'example.com'));
+	console.log('USAGE: ' + filename + ' port url');
+	console.log('EXAMPLE: ' + filename + ' 4567 ' + (process.env.APP_USE_FQDN || 'example.com') + (process.env.APP_USE_PORT ? ':' + process.env.APP_USE_PORT : ''));
 	return process.exit(1);
 }
 
 // Run test
-testSSL(testPORT, testFQDN, function (err) {
+testSSL(testPORT, testURL, function (err) {
 	if (err) {
 		console.error(err);
 	}

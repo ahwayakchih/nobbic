@@ -13,13 +13,18 @@ require('colors');
 
 var testSSL = require('/app/.container/tools/test-ssl.js');
 
-var PORT = process.env.APP_USE_PORT || null;
+// Port that NodeBB will be listening on
+var PORT = process.env.PORT || process.env.port || 4567;
 
-// Fully Qualified Domain Name
-var FQDN = process.env.APP_USE_FQDN || null;
+// Patially Qualified Domain Name
+// Fully Qualified Domain Name should end with a dot, so strip it.
+var PQDN = (process.env.APP_USE_FQDN || 'localhost').replace(/\.$/, '')
+
+// URL to test
+var URL = PQDN + (process.env.APP_USE_PORT ? ':' + process.env.APP_USE_PORT : '');
 
 // Check is SSL is working on selected domain name
-testSSL(PORT, FQDN, function onTestSSLResult (err) {
+testSSL(PORT, URL, function onTestSSLResult (err) {
 	'use strict';
 
 	// HTTPS or HTTP and WSS or WS
@@ -34,16 +39,17 @@ testSSL(PORT, FQDN, function onTestSSLResult (err) {
 	}
 
 	// Default domain name
-	if (FQDN) {
-		config.url = (USE_SSL ? 'https' : 'http') + '://' + FQDN;
+	if (URL) {
+		config.url = (USE_SSL ? 'https' : 'http') + '://' + URL;
 
-		// config['socket.io'] = config['socket.io'] || {};
+		config['socket.io'] = config['socket.io'] || {};
+		config['socket.io'].address = (USE_SSL ? 'wss://' : 'ws://') + URL;
 
 		// if (USE_SSL) {
-		// 	config['socket.io'].address = 'wss://' + FQDN + ':' + PORT;
+		// 	config['socket.io'].address = 'wss://' + URL + ':' + PORT;
 		// }
 		// else {
-		// 	config['socket.io'].address = 'ws://' + FQDN + ':' + PORT;
+		// 	config['socket.io'].address = 'ws://' + URL + ':' + PORT;
 		// }
 
 		// TODO: support multiple domain names? If so, "socket.io".origins changed from string to array of strings in v1.16.0
@@ -133,7 +139,7 @@ testSSL(PORT, FQDN, function onTestSSLResult (err) {
 	// Cleanup
 	config = null;
 	testSSL = null;
-	PORT = FQDN = null;
+	PORT = PQDN = URL = null;
 
 	// Continue to whatever file was meant to be started.
 	setImmediate(require.bind(null, './_' + path.basename(module.filename)));

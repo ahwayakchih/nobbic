@@ -224,8 +224,6 @@ function startPod () {
 	test "$existed" || buildPod "$podName" || return 1
 
 	if test "$existed" ; then
-		WAIT_FOR_PORT=$(podman container inspect "${podName}-nodebb" --format="{{range .Config.Env}}{{.}}\n{{end}}" | grep APP_USE_PORT | cut -d= -f2)
-
 		echo "Restarting '$podName' pod..."
 		podman pod start "$podName" || return 1
 		# Use `restart` right after `start` because of ports not being accessible from outside after stop+start.
@@ -233,9 +231,11 @@ function startPod () {
 		# and cgroups v1 problem seems to still exist. With cgroups v2 it works ok.
 		# podman pod restart "$podName" || return 1
 		(
+			WAIT_FOR_PORT=$(podman container inspect "${podName}-nodebb" --format="{{range .Config.Env}}{{.}}\n{{end}}" | grep -E '^PORT=' | cut -d= -f2)
 			echo "Waiting for $podName port $WAIT_FOR_PORT to be ready inside container"
 			podman exec "${podName}-nodebb" /app/.container/tools/wait-for.sh 127.0.0.1:$WAIT_FOR_PORT -t 120 -l || exit 1
 			sleep 1
+			WAIT_FOR_PORT=$(podman container inspect "${podName}-nodebb" --format="{{range .Config.Env}}{{.}}\n{{end}}" | grep -E '^APP_USE_PORT=' | cut -d= -f2)
 			echo "Waiting for $podName port $WAIT_FOR_PORT to be accessible from outside of container"
 			${__DIRNAME}/.container/tools/wait-for.sh localhost:${WAIT_FOR_PORT} -t 20 -l && echo "NodeBB should be accessible now" && exit 0
 			echo "WARNING: Looks like podman on this system is buggy and needs restart, not just start. Restarting..."
