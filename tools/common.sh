@@ -32,6 +32,6 @@ get_env_values_for() {
 	fi
 
 	for v in $values; do
-		echo -n "-e "$(echo "$v" | cut -d= -f1 | sed "s/^${1}/${2}/")'="'$(echo "$v" | cut -d= -f2)'" '
+		echo -n "-e "$(echo "$v" | cut -d= -f1 | sed "s/^${1}/${2}/")'='$(echo "$v" | cut -d= -f2)' '
 	done
 }
