@@ -17,9 +17,11 @@ if ! podman pod exists ${APP_NAME} ; then
 	exit 1
 fi
 
-NODEBB_ENV=$(podman inspect "${APP_NAME}-nodebb" --format='{{range .Config.Env}}{{.}}\n{{end}}' | grep -E "(NODE(BB)?_)")
+NODEBB_ENV=$(podman inspect "${APP_NAME}-nodebb" --format='{{range .Config.Env}}{{.}}\n{{end}}' | grep -E "^(NODE(BB)?|APP_USE)_")
 NODE_VERSION=$(echo "$NODEBB_ENV" | grep NODE_VERSION | cut -d= -f2 || echo "")
 NODEBB_VERSION=$(echo "$NODEBB_ENV" | grep NODEBB_VERSION | cut -d= -f2 || echo "")
+NODEBB_PORT=$(echo "$NODEBB_ENV" | grep -E "^APP_USE_PORT=" | cut -d= -f2 || echo "")
+NODEBB_FQDN=$(echo "$NODEBB_ENV" | grep -E "^APP_USE_FQDN=" | cut -d= -f2 || echo "")
 
 echo "NodeBB v${NODEBB_VERSION} is run with Node.js v${NODE_VERSION}"
 echo "Built with Containerized-NodeBB v"$(podman pod inspect "$APP_NAME" --format='{{range $key,$value := .Labels}}{{$key}}={{$value}}\n{{end}}' | grep "$CONTAINERIZED_NODEBB_LABEL" | cut -d= -f2 || echo "unknown")
@@ -32,5 +34,12 @@ for container in $(podman pod inspect "$APP_NAME" --format='{{range .Containers}
 	echo "- $name ($image)"
 done
 
-# isRunning=$(podman pod ps --filter status=running --filter name="$APP_NAME" -q)
 
+isRunning=$(podman pod ps --filter status=running --filter name="$APP_NAME" -q)
+if test $isRunning ; then
+	echo -n "Awaits "
+else
+	echo -n "Will await "
+fi
+# TODO: check if gateway uses SSL or not
+echo "connections at https://${NODEBB_FQDN}:${NODEBB_PORT}"
