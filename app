@@ -50,6 +50,11 @@ function showHelp () {
 	echo "Similarly you can add local NPM mirror, which may be helpful when you're testing various configurations, or simply running more than one forum:"
 	echo "APP_ADD_NPM      - set it to 1 to use default 'verdaccio/verdaccio:latest' image, or set image name, e.g., docker.io/verdaccio/verdaccio:5.x"
 	echo ""
+	echo "By default, official 'docker.io/node:NODE_VERSION-alpine' image will be used for NodeBB."
+	echo "You can change that by specifying APP_ADD_NODEBB environment variable with value like 'some.repo/image:%NODE_VERSION%'."
+	echo "'%%' placeholder will be replaced by NODE_VERSION value (either specified, or detected for selected NodeBB version)."
+	echo ""
+	echo "If placeholder is missing from image name, nothing ill be replaced, so better make sure that image contains Node.js version that will work with NodeBB".
 	echo "You can set NODEBB_VERSION to select which version of the forum to run. By default, latest release will be used."
 	echo "By default, 'nodebb-repo' name will be used for volume containing clone of NodeBB git repository. It will be shared by all apps (DO NOT create/restore/upgrade them concurrently!)."
 	echo "You can create separate volume for application by setting NODEBB_REPO_VOLUME environment variable with some unique name as its value."

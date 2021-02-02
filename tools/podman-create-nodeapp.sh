@@ -17,11 +17,16 @@ if [ -z "$APP_NAME" ] ; then
 fi
 
 if podman image exists ${APP_NAME}:${NODE_VERSION} ; then
-	echo "Skipping building ${APP_NAME}:${NODE_VERSION} because it already exists"
+	echo "Skipping building ${APP_NAME}:${NODE_VERSION} because it already exists" >&2
 	exit 0
 fi
 
-podman run --replace --name build-${APP_NAME} -v ${__DIRNAME}:/tools:ro docker.io/node:${NODE_VERSION}-alpine /bin/sh /tools/alpine-reconfigure-node.sh\
+echo "Building Node.js image for v$NODE_VERSION"
+NODE_IMAGE=${FROM_IMAGE:-"docker.io/node:%NODE_VERSION%-alpine"}
+NODE_IMAGE=${NODE_IMAGE/\%NODE_VERSION\%/$NODE_VERSION}
+echo "Using $NODE_IMAGE as a base for ${APP_NAME}:${NODE_VERSION}"
+
+podman run --replace --name build-${APP_NAME} -v ${__DIRNAME}:/tools:ro "$NODE_IMAGE" /bin/sh /tools/alpine-reconfigure-node.sh\
     && podman commit -c CMD=/bin/sh -c USER=node -c WORKDIR=/app -c ENV=ENV=/etc/profile build-${APP_NAME} ${APP_NAME}:${NODE_VERSION}\
     && podman rm build-${APP_NAME}
 
