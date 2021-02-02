@@ -439,60 +439,56 @@ if [ -z "$action" ] || [ "$action" = "help" ] ; then
 	exit 0
 fi
 
-if [ "$action" = "build" ] ; then
-	buildPod $(sanitizeAppName $2) || exit $?
-	exit 0
-fi
+case "$action" in
+	build)
+		buildPod $(sanitizeAppName $2) || exit $?
+		exit 0
+	;;
+	info)
+		infoPod $(sanitizeAppName $2) || exit $?
+		exit 0
+	;;
+	start)
+		startPod $(sanitizeAppName $2) || exit $?
+		exit 0
+	;;
+	bash)
+		enterBash $(sanitizeAppName $2) || exit $?
+		exit 0
+	;;
+	exec)
+		runCommand $(sanitizeAppName $2) $(shift 2; echo $@) || exit $?
+		exit 0
+	;;
+	backup)
+		backupPod $(sanitizeAppName $2) "$3" "$4" || exit $?
+		exit 0
+	;;
+	upgrade)
+		upgradePod $(sanitizeAppName $2) || exit $?
+		exit 0
+	;;
+	restore)
+		restorePod $(sanitizeAppName $2) "$3" "$4" || exit $?
+		exit 0
+	;;
+	stop)
+		stopPod $(sanitizeAppName $2) || exit $?
+		exit 0
+	;;
+	remove)
+		removePod $(sanitizeAppName $2) || exit $?
+		exit 0
+	;;
+	cleanup)
+		cleanupImages $2 || exit $?
+		exit 0
+	;;
+	*)
+		echo "ERROR: unrecognized action '$action', try 'help' action instead" >&2
+		exit 1
+	;;
+esac
 
-if [ "$action" = "info" ] ; then
-	infoPod $(sanitizeAppName $2) || exit $?
-	exit 0
-fi
-
-if [ "$action" = "start" ] ; then
-	startPod $(sanitizeAppName $2) || exit $?
-	exit 0
-fi
-
-if [ "$action" = "bash" ] ; then
-	enterBash $(sanitizeAppName $2) || exit $?
-	exit 0
-fi
-
-if [ "$action" = "exec" ] ; then
-	runCommand $(sanitizeAppName $2) $(shift 2; echo $@) || exit $?
-	exit 0
-fi
-
-if [ "$action" = "backup" ] ; then
-	backupPod $(sanitizeAppName $2) "$3" "$4" || exit $?
-	exit 0
-fi
-
-if [ "$action" = "upgrade" ] ; then
-	upgradePod $(sanitizeAppName $2) || exit $?
-	exit 0
-fi
-
-if [ "$action" = "restore" ] ; then
-	restorePod $(sanitizeAppName $2) "$3" "$4" || exit $?
-	exit 0
-fi
-
-if [ "$action" = "stop" ] ; then
-	stopPod $(sanitizeAppName $2) || exit $?
-	exit 0
-fi
-
-if [ "$action" = "remove" ] ; then
-	removePod $(sanitizeAppName $2) || exit $?
-	exit 0
-fi
-
-if [ "$action" = "cleanup" ] ; then
-	cleanupImages $2 || exit $?
-	exit 0
-fi
-
-echo "ERROR: unrecognized action '$action', try 'help' action instead" >&2
+echo "ERROR: this should never happen" >&2
 exit 1
