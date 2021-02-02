@@ -45,7 +45,7 @@ if [ -z "$POSTGRES_PORT" ] ; then
 	echo "WARNING: could not find port number exposed by $POSTGRES_IMAGE, defaulting to $POSTGRES_PORT" >&2
 fi
 
-POSTGRES_ENV=$(get_env_values_for CONTAINER_ENV_POSTGRES_ POSTGRES_)$(get_env_values_for CONTAINER_ENV_PG_ PG)
+POSTGRES_ENV=$(get_env_values_for CONTAINER_ENV_POSTGRES_ POSTGRES_)' '$(get_env_values_for CONTAINER_ENV_PG_ PG)
 
 POSTGRES_DB=$CONTAINER_ENV_POSTGRES_DB
 if [ -z "$POSTGRES_DB" ] ; then
