@@ -16,7 +16,11 @@ function onbb_setup_config () {
 		echo "ERROR: Could not determine FQDN to use as public URL of forum" >&2
 		return 1
 	fi
-	json=$json'"url":"http://'$fqdn':'${CONTAINER_NODEJS_PORT:-4567}'"'
+	local urlPort="";
+	if [ ! -z "$APP_USE_PORT" ] && [ "$APP_USE_PORT" != "80" ] && [ "$APP_USE_PORT" != "443" ] ; then
+		urlPort=':'$APP_USE_PORT
+	fi
+	json=$json'"url":"http://'${fqdn}${urlPort}'"'
 
 	# Generate NodeBB secret
 	local secret=`tr -cd '[:alnum:]' < /dev/urandom | fold -w32 | head -n1 | fold -w8 | paste -sd\- -`
@@ -40,10 +44,10 @@ function onbb_setup_config () {
 
 	# Check various setup required variables and exit early if missing any
 	# This kinda duplicates some code, but allows to prevent running long operation before failing anyway
-	if [ -z "$CONTAINER_APP_DNS_ALIAS" -a -z "$CONTAINER_APP_DNS" ] ; then
-		echo "WARNING: When running NodeBB inside a container, you should set either" >&2
-		echo "         CONTAINER_APP_DNS_ALIAS or CONTAINER_APP_DNS environment variable." >&2
-		echo "         Without them NodeBB or its websockets may be unavailable from the outside." >&2
+	if [ -z "$APP_USE_FQDN" ] ; then
+		echo "WARNING: When running NodeBB inside a container, you should set" >&2
+		echo "         APP_USE_FQDN environment variable." >&2
+		echo "         Without it NodeBB and its websockets may be unaccessible from the outside." >&2
 		echo "         Setup will use OpenDNS service to discover public IP and use it instead." >&2
 	fi
 

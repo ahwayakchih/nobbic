@@ -13,15 +13,13 @@ require('colors');
 
 var testSSL = require('/app/.container/tools/test-ssl.js');
 
-var IP   = process.env.CONTAINER_NODEJS_IP   || null;
-var PORT = process.env.CONTAINER_NODEJS_PORT || null;
-var WSPORT = process.env.CONTAINER_WEBSOCKET_PORT || null;
+var PORT = process.env.APP_USE_PORT || null;
 
 // Fully Qualified Domain Name
-var FQDN = process.env.CONTAINER_APP_DNS_ALIAS || process.env.CONTAINER_APP_DNS || null;
+var FQDN = process.env.APP_USE_FQDN || null;
 
 // Check is SSL is working on selected domain name
-testSSL(IP, PORT, FQDN, function onTestSSLResult (err) {
+testSSL(PORT, FQDN, function onTestSSLResult (err) {
 	'use strict';
 
 	// HTTPS or HTTP and WSS or WS
@@ -35,24 +33,18 @@ testSSL(IP, PORT, FQDN, function onTestSSLResult (err) {
 		config.port = PORT;
 	}
 
-	// Bind to IP address
-	if (IP) {
-		config.bind_address = IP;
-	}
-
 	// Default domain name
 	if (FQDN) {
 		config.url = (USE_SSL ? 'https' : 'http') + '://' + FQDN;
 
-		// OpenShift supports websockets but only on ports 8000 and 8443
-		config['socket.io'] = config['socket.io'] || {};
+		// config['socket.io'] = config['socket.io'] || {};
 
-		if (USE_SSL) {
-			config['socket.io'].address = 'wss://' + FQDN + ':' + (WSPORT || '8433');
-		}
-		else {
-			config['socket.io'].address = 'ws://' + FQDN + ':' + (WSPORT || '8000');
-		}
+		// if (USE_SSL) {
+		// 	config['socket.io'].address = 'wss://' + FQDN + ':' + PORT;
+		// }
+		// else {
+		// 	config['socket.io'].address = 'ws://' + FQDN + ':' + PORT;
+		// }
 
 		// TODO: support multiple domain names? If so, "socket.io".origins changed from string to array of strings in v1.16.0
 	}

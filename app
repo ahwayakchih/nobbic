@@ -61,14 +61,13 @@ function showHelp () {
 	echo "By default, forum will be run with Node.js version specified in the 'package.json' file."
 	echo "You can enforce different version by setting NODE_VERSION environment variable."
 	echo ""
-	echo "You can set also CONTAINER_NODEJS_PORT and CONTAINER_WEBSOCKET_PORT values to port numbers you want pod to listen to."
-	echo "They both default to 4567."
+	echo "You can set also APP_USE_PORT (http/https, defaults to 4567) value to port numbers you want the pod to listen to."
 	echo ""
-	echo "For example: CONTAINER_APP_DNS_ALIAS=localhost APP_ADD_MONGODB=1 ./app start my-forum"
+	echo "For example: APP_USE_FQDN=localhost APP_ADD_MONGODB=1 ./app start my-forum"
 	echo "It will create pod that includes MongoDB based on Ubuntu bionic (default) and NodeBB latest (default), and then run it with minimum required Node.js version for that NodeBB."
 	echo ""
-	echo "Another example: NODEBB_VERSION=1.12.1 CONTAINER_APP_DNS_ALIAS=localhost APP_ADD_POSTGRES=1 ./app start my-forum"
-	echo "It will create pod with NodeBB v1.12.1 that uses PostgreSQL as database engine and sets its URL to localhost:4567 (default port) and websockets to localhost:8000 (default)"
+	echo "Another example: NODEBB_VERSION=1.12.1 APP_USE_FQDN=localhost APP_ADD_POSTGRES=1 ./app start my-forum"
+	echo "It will create pod with NodeBB v1.12.1 that uses PostgreSQL as database engine and sets its URL to localhost:4567 (default port) and websockets to localhost:4567 (default)"
 	echo ""
 	echo "Before container is created, specified (or default) images are pulled from repository (check: podman pull --help). You can pass additional arguments to pull command through environment variables:"
 	echo "PODMAN_PULL_ARGS_MONGODB variable is used when pulling image for MongoDB database container,"
@@ -143,12 +142,28 @@ function buildPod () {
 
 	echo "Building '$podName' pod..."
 
-	local webPort=${CONTAINER_NODEJS_PORT:-4567}
-	local wsPort=${CONTAINER_WEBSOCKET_PORT:-$webPort}
+	local podOptions=""
 
-	local podOptions="-p $webPort:$webPort"
-	if [ "$webPort" != "$wsPort" ] ; then
-		podOptions="$podOptions -p $wsPort:$wsPort"
+	local port=${APP_USE_PORT:-8080}
+	local nodebbPort=4567
+	if [ -n "$NODEBB_CLUSTER" ] && [ "$NODEBB_CLUSTER" -gt 1 ] ; then
+		local nodebbEnvPort=""
+		for ((n=0;n<$NODEBB_CLUSTER;n++)); do
+			podOptions="$podOptions -p $port:$nodebbPort"
+			if [ -z "$nodebbEnvPort" ] ; then
+				nodebbEnvPort="$nodebbPort"
+			else
+				nodebbEnvPort="${nodebbEnvPort},${nodebbPort}"
+			fi
+			port=$(($port + 1))
+			nodebbPort=$(($nodebbPort + 1))
+		done
+		export CONTAINER_ENV_NODEBB_PORT=${CONTAINER_ENV_NODEBB_PORT:-"[${nodebbEnvPort}]"}
+		export CONTAINER_ENV_NODEBB_APP_USE_PORT=${CONTAINER_ENV_NODEBB_APP_USE_PORT:-${APP_USE_PORT:-8080}}
+	else
+		podOptions="$podOptions -p $port:$nodebbPort"
+		export CONTAINER_ENV_NODEBB_PORT=${CONTAINER_ENV_NODEBB_PORT:-"[${nodebbEnvPort}]"}
+		export CONTAINER_ENV_NODEBB_APP_USE_PORT=${CONTAINER_ENV_NODEBB_APP_USE_PORT:-${APP_USE_PORT:-8080}}
 	fi
 
 	podman pod create -n "$podName" $podOptions \
@@ -190,10 +205,6 @@ function buildPod () {
 		nodebbOptions="$nodebbOptions $addNodeBBOptions"
 	fi
 
-	if [ -z "CONTAINER_NODEBB_PORT" ] ; then
-		export CONTAINER_NODEBB_PORT="$webPort"
-	fi
-
 	export PODMAN_CREATE_ARGS_NODEBB="$PODMAN_CREATE_ARGS_NODEBB $nodebbOptions"
 	addToPod "$podName" ${APP_ADD_NODEBB:-1} "${__DIRNAME}/tools/podman-add-nodebb.sh" || return 1
 }
@@ -213,7 +224,7 @@ function startPod () {
 	test "$existed" || buildPod "$podName" || return 1
 
 	if test "$existed" ; then
-		WAIT_FOR_PORT=$(podman container inspect "${podName}-nodebb" --format="{{range .Config.Env}}{{.}}\n{{end}}" | grep CONTAINER_NODEJS_PORT | cut -d= -f2)
+		WAIT_FOR_PORT=$(podman container inspect "${podName}-nodebb" --format="{{range .Config.Env}}{{.}}\n{{end}}" | grep APP_USE_PORT | cut -d= -f2)
 
 		echo "Restarting '$podName' pod..."
 		podman pod start "$podName" || return 1

@@ -174,17 +174,14 @@ function onbb_echo_result_of_start_success () {
 }
 
 #
-# Setup NODEBB_FQDN, preferring CONTAINER_APP_DNS_ALIAS, then CONTAINER_APP_DNS, or fail.
+# Setup NODEBB_FQDN from APP_USE_FQDN, or dig OpenDNS, or fail (empty string).
+# Echo result to stdout.
 #
 function onbb_setup_fqdn () {
-	local FQDN="$CONTAINER_APP_DNS_ALIAS"
+	local FQDN="$APP_USE_FQDN"
 
 	if [ -z "$FQDN" ] ; then
-		FQDN="$CONTAINER_APP_DNS"
-	fi
-
-	if [ -z "$FQDN" ] ; then
-		echo "WARNING: No CONTAINER_APP_DNS_ALIAS nor CONTAINER_APP_DNS was specified" >&2
+		echo "WARNING: No APP_USE_FQDN was specified" >&2
 		echo "         Calling OpenDNS service to get public IP..." >&2
 		FQDN=$(dig +short myip.opendns.com @resolver1.opendns.com)
 		echo "         Got '$FQDN'." >&2
@@ -492,7 +489,7 @@ function onbb_wait_until_ready () {
 		seconds=120
 	fi
 
-	"${CONTAINER_REPO_DIR}.container/tools/wait-for.sh" 127.0.0.1:${CONTAINER_NODEJS_PORT:-4567} -t $seconds -l || return 1
+	"${CONTAINER_REPO_DIR}.container/tools/wait-for.sh" 127.0.0.1:4567 -t $seconds -l || return 1
 }
 
 #

@@ -41,20 +41,14 @@ fi
 
 NODEBB_ENV=$(get_env_values_for CONTAINER_ENV_NODEBB_ "")$(get_env_values_for CONTAINER_ENV_NODE_ NODE_)
 
-if [ -z "$CONTAINER_APP_DNS_ALIAS" ] && [ -z "$CONTAINER_APP_DNS" ] ; then
-	echo $NODEBB_ENV | grep CONTAINER_APP_DNS || (
-		echo "WARNING: no CONTAINER_APP_DNS_ALIAS nor CONTAINER_APP_DNS was specified" >&2
+if [ -z "$APP_USE_FQDN" ] ; then
+	echo $NODEBB_ENV | grep APP_USE_FQDN || (
+		echo "WARNING: no APP_USE_FQDN was specified" >&2
 		echo "         OpenDNS service will be used to get public IP when running the pod" >&2
 	)
 	# TODO: set to "localhost" by default?
-elif [ -n "$CONTAINER_APP_DNS_ALIAS" ] ; then
-	NODEBB_ENV="$NODEBB_ENV -e CONTAINER_APP_DNS_ALIAS=$CONTAINER_APP_DNS_ALIAS"
 else
-	NODEBB_ENV="$NODEBB_ENV -e CONTAINER_APP_DNS=$CONTAINER_APP_DNS"
-fi
-
-if [ "$CONTAINER_NODEJS_IP" ] ; then
-	NODEBB_ENV="$NODEBB_ENV -e CONTAINER_NODEJS_IP=${CONTAINER_NODEJS_IP}"
+	NODEBB_ENV="$NODEBB_ENV -e APP_USE_FQDN=$APP_USE_FQDN"
 fi
 
 PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS $PODMAN_CREATE_ARGS_NODEBB"

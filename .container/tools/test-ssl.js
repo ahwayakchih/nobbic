@@ -13,12 +13,11 @@ var path  = require('path');
  * Start server for a time of single request, check if it responds with correct data.
  * Depend on Node to check SSL certificate validity.
  *
- * @param {!string}   ip         IP number to listen on
  * @param {!number}   port       Port number to listen on
  * @param {!string}   hostname   Domain name to request through HTTPS
  * @param {!Function} callback   Will call with error or null as first argument
  */
-function testSSL (ip, port, hostname, callback) {
+function testSSL (port, hostname, callback) {
 	// If something terminates SSL and passes requests through a regular HTTP,
 	// NodeBB should be listening for HTTP, not HTTPS.
 	// So we setup a HTTP server, and call it through HTTPS, to see if that's the case.
@@ -43,7 +42,7 @@ function testSSL (ip, port, hostname, callback) {
 
 	server.on('error', cleanup);
 
-	server.listen(port, ip || null, null, function onListening () {
+	server.listen(port, null, null, function onListening () {
 		https.get('https://' + hostname, function (res) {
 			res.on('data', function () {});
 			cleanup(res.headers[header.toLowerCase()] !== token ? new Error('Wrong data returned') : null);
@@ -84,12 +83,12 @@ var testPORT = Math.min(Math.max(parseInt(argv.pop() || '', 10), 0), 65535);
 if (isNaN(testPORT) || !testFQDN) {
 	var filename = path.basename(module.filename);
 	console.log('USAGE: ' + filename + ' port hostname');
-	console.log('EXAMPLE: ' + filename + ' ' + (process.env.CONTAINER_NODEJS_PORT || 4567) + ' ' + (process.env.CONTAINER_APP_DNS || 'example.com'));
+	console.log('EXAMPLE: ' + filename + ' 4567 ' + (process.env.APP_USE_FQDN || 'example.com'));
 	return process.exit(1);
 }
 
 // Run test
-testSSL(process.env.CONTAINER_NODEJS_IP || null, testPORT, testFQDN, function (err) {
+testSSL(testPORT, testFQDN, function (err) {
 	if (err) {
 		console.error(err);
 	}
