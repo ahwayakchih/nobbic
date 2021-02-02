@@ -494,6 +494,5 @@ if [ "$action" = "cleanup" ] ; then
 	exit 0
 fi
 
-echo "ERROR: unrecognized action '$action'" >&2
-showHelp
+echo "ERROR: unrecognized action '$action', try 'help' action instead" >&2
 exit 1
