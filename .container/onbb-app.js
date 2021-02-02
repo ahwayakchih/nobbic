@@ -133,7 +133,7 @@ testSSL(PORT, FQDN, function onTestSSLResult (err) {
 	// Cleanup
 	config = null;
 	testSSL = null;
-	IP = PORT = FQDN = null;
+	PORT = FQDN = null;
 
 	// Continue to whatever file was meant to be started.
 	setImmediate(require.bind(null, './_' + path.basename(module.filename)));
