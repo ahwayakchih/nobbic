@@ -60,6 +60,7 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
 
 ## TODO
 
+- fix backup: export all env variables, so things like PORT are not lost
 - when url in config does not contain port number, redirect after login is broken
 - stop replacing app.js and src/cli/index.js, run config generator instead before calling nodebb in entrypoint.sh.
   we're not running in changing environment (old OpenShift v2) any more, environment variables in containers are

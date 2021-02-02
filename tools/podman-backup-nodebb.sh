@@ -34,6 +34,7 @@ if [ ! -z "$isRunning" ] ; then
 	podman stop "$CONTAINER" || exit 1
 fi
 
+# TODO: export all env variables, so things like PORT are not lost
 podman inspect "$CONTAINER" --format='{{range .Config.Env}}{{.}}\n{{end}}' | grep -E "(NODE(BB)?_|CONTAINER_)"  > "${targetName}.env"
 CONTAINER_DATA_DIR=$(cat "${targetName}.env" | grep "CONTAINER_DATA_DIR" | cut -d= -f2)
 
