@@ -22,6 +22,9 @@ function onbb_setup_config () {
 	fi
 	json=$json'"url":"http://'${fqdn}${urlPort}'"'
 
+	# Make sure to listen on correct port (url port does not have to be the same!)
+	json=$json',"port":"'${PORT:-4567}'"'
+
 	# Generate NodeBB secret
 	local secret=`tr -cd '[:alnum:]' < /dev/urandom | fold -w32 | head -n1 | fold -w8 | paste -sd\- -`
 	json=$json',"secret":"'$secret'"'
