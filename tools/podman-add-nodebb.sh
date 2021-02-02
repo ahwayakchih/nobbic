@@ -25,12 +25,12 @@ fi
 
 # Prepare NodeBB image
 imageNameFile=$(mktemp)
-env IMAGE_NAME_FILE="$imageNameFile" APP_NAME="$POD" tools/podman-create-nodebb.sh || return 1
+env IMAGE_NAME_FILE="$imageNameFile" APP_NAME="$POD" tools/podman-create-nodebb.sh || exit 1
 NODEBB_IMAGE=$(cat "$imageNameFile")
 rm "$imageNameFile"
 if [ -z "$NODEBB_IMAGE" ] ; then
 	echo "ERROR: could not get NodeBB container image name" >&2
-	return 1
+	exit 1
 fi
 
 NODEBB_ENV=$(get_env_values_for CONTAINER_ENV_NODEBB_ "")' '$(get_env_values_for CONTAINER_ENV_NODE_ NODE_)
