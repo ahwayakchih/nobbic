@@ -139,7 +139,7 @@ function infoPod () {
 		return 1
 	fi
 
-	APP_NAME="$podName" "${__DIRNAME}/tools/podman-info.sh" || return 1
+	APP_NAME="$podName" "${__DIRNAME}/tools/podman-info.sh" || return $?
 }
 
 #
@@ -188,7 +188,7 @@ function buildPod () {
 
 	podman pod create -n "$podName" $podOptions \
 		$PODMAN_ARG_LABEL \
-		--add-host=localhost:127.0.0.1 --hostname="$podName" || return 1
+		--add-host=localhost:127.0.0.1 --hostname="$podName" || return $?
 
 	# Add "data" container, to be shared by database, nodebb, etc...
 	# podman create --pod "$podName" --name "${podName}-data" -v /data docker.io/busybox:musl || return 1
@@ -226,7 +226,7 @@ function buildPod () {
 	fi
 
 	export PODMAN_CREATE_ARGS_NODEBB="$PODMAN_CREATE_ARGS_NODEBB $nodebbOptions"
-	addToPod "$podName" ${APP_ADD_NODEBB:-1} "${__DIRNAME}/tools/podman-add-nodebb.sh" || return 1
+	addToPod "$podName" ${APP_ADD_NODEBB:-1} "${__DIRNAME}/tools/podman-add-nodebb.sh" || return $?
 }
 
 #
@@ -241,11 +241,11 @@ function startPod () {
 	fi
 
 	local existed=$(podman pod exists "$podName" && echo exists);
-	test "$existed" || buildPod "$podName" || return 1
+	test "$existed" || buildPod "$podName" || return 4?
 
 	if test "$existed" ; then
 		echo "Restarting '$podName' pod..."
-		podman pod start "$podName" || return 1
+		podman pod start "$podName" || return $?
 		# Use `restart` right after `start` because of ports not being accessible from outside after stop+start.
 		# See: https://github.com/containers/podman/issues/7103 - issue is closed, but on Arch with podman v2.2.1
 		# and cgroups v1 problem seems to still exist. With cgroups v2 it works ok.
@@ -264,7 +264,7 @@ function startPod () {
 		)&
 	else
 		echo "Starting '$podName' pod..."
-		podman pod start "$podName" || return 1
+		podman pod start "$podName" || return $?
 	fi
 
 	podman attach --no-stdin --sig-proxy=false "${podName}-nodebb" || return 0
@@ -325,7 +325,7 @@ function backupPod () {
 		return 1
 	fi
 
-	APP_NAME="$podName" BACKUPS_DIR="$backupDir" BACKUP_NAME="$backupName" "${__DIRNAME}/tools/podman-backup.sh" || return 1
+	APP_NAME="$podName" BACKUPS_DIR="$backupDir" BACKUP_NAME="$backupName" "${__DIRNAME}/tools/podman-backup.sh" || return $?
 }
 
 #
@@ -339,7 +339,7 @@ function upgradePod () {
 		return 1
 	fi
 
-	APP_NAME="$podName" "${__DIRNAME}/tools/podman-upgrade.sh" || return 1
+	APP_NAME="$podName" "${__DIRNAME}/tools/podman-upgrade.sh" || return $?
 }
 
 #
@@ -357,7 +357,7 @@ function restorePod () {
 		return 1
 	fi
 
-	APP_NAME="$podName" BACKUPS_DIR="$backupDir" BACKUP_NAME="$backupName" "${__DIRNAME}/tools/podman-restore.sh" || return 1
+	APP_NAME="$podName" BACKUPS_DIR="$backupDir" BACKUP_NAME="$backupName" "${__DIRNAME}/tools/podman-restore.sh" || return $?
 }
 
 #
@@ -379,7 +379,7 @@ function stopPod () {
 	fi
 
 	echo "Stopping '$podName' pod..."
-	podman pod stop -t 10 "$podName" || return 1
+	podman pod stop -t 10 "$podName" || return $?
 }
 
 #
@@ -396,7 +396,7 @@ function removePod () {
 	stopPod $podName || return 1
 
 	echo "Removing '$podName' pod..."
-	podman pod rm "$podName" || return 1
+	podman pod rm "$podName" || return $?
 }
 
 #
@@ -440,17 +440,17 @@ if [ -z "$action" ] || [ "$action" = "help" ] ; then
 fi
 
 if [ "$action" = "build" ] ; then
-	buildPod $(sanitizeAppName $2) || exit 1
+	buildPod $(sanitizeAppName $2) || exit $?
 	exit 0
 fi
 
 if [ "$action" = "info" ] ; then
-	infoPod $(sanitizeAppName $2) || exit 1
+	infoPod $(sanitizeAppName $2) || exit $?
 	exit 0
 fi
 
 if [ "$action" = "start" ] ; then
-	startPod $(sanitizeAppName $2) || exit 1
+	startPod $(sanitizeAppName $2) || exit $?
 	exit 0
 fi
 
@@ -465,32 +465,32 @@ if [ "$action" = "exec" ] ; then
 fi
 
 if [ "$action" = "backup" ] ; then
-	backupPod $(sanitizeAppName $2) "$3" "$4" || exit 1
+	backupPod $(sanitizeAppName $2) "$3" "$4" || exit $?
 	exit 0
 fi
 
 if [ "$action" = "upgrade" ] ; then
-	upgradePod $(sanitizeAppName $2) || exit 1
+	upgradePod $(sanitizeAppName $2) || exit $?
 	exit 0
 fi
 
 if [ "$action" = "restore" ] ; then
-	restorePod $(sanitizeAppName $2) "$3" "$4" || exit 1
+	restorePod $(sanitizeAppName $2) "$3" "$4" || exit $?
 	exit 0
 fi
 
 if [ "$action" = "stop" ] ; then
-	stopPod $(sanitizeAppName $2) || exit 1
+	stopPod $(sanitizeAppName $2) || exit $?
 	exit 0
 fi
 
 if [ "$action" = "remove" ] ; then
-	removePod $(sanitizeAppName $2) || exit 1
+	removePod $(sanitizeAppName $2) || exit $?
 	exit 0
 fi
 
 if [ "$action" = "cleanup" ] ; then
-	cleanupImages $2 || exit 1
+	cleanupImages $2 || exit $?
 	exit 0
 fi
 
