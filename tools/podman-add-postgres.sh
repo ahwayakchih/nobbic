@@ -47,14 +47,26 @@ fi
 
 POSTGRES_ENV=$(get_env_values_for CONTAINER_ENV_POSTGRES_ POSTGRES_)$(get_env_values_for CONTAINER_ENV_PG_ PG)
 
+POSTGRES_DB=$CONTAINER_ENV_POSTGRES_DB
+if [ -z "$POSTGRES_DB" ] ; then
+	POSTGRES_DB=$POD
+	POSTGRES_ENV="-e POSTGRES_DB=$POSTGRES_DB $POSTGRES_ENV"
+fi
+
+POSTGRES_PASSWORD=$CONTAINER_ENV_POSTGRES_PASSWORD
+if [ -z "$POSTGRES_PASSWORD" ] ; then
+	# Generate random password for database access
+	# Ignore exit code 141 which hapens in case of writing to pipe that was closed, which is our case (read urandom until enough data is gathered),
+	# by using trick from https://stackoverflow.com/a/33026977/6352710, i.e., `|| test $? -eq 141` part.
+	POSTGRES_PASSWORD=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1 | fold -w4 | paste -sd\- - || test $? -eq 141)
+	POSTGRES_ENV="-e POSTGRES_PASSWORD=$POSTGRES_PASSWORD $POSTGRES_ENV"
+else
+	echo "WARNING: using pre-specified password for PostgreSQL database" >&2
+fi
+
 # Get PGDATA from env used by default by official PostgreSQL images.
 # We'll set CONTAINER_DATA_DIR to the same value, so backups know what to archive.
 dataDir=$(podman image inspect "$POSTGRES_IMAGE" --format='{{range .Config.Env}}{{.}}\n{{end}}'| grep PGDATA | cut -d= -f2 || echo "")
-
-# Generate random password for database access
-# Ignore exit code 141 which hapens in case of writing to pipe that was closed, which is our case (read urandom until enough data is gathered),
-# by using trick from https://stackoverflow.com/a/33026977/6352710, i.e., `|| test $? -eq 141` part.
-password=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1 | fold -w4 | paste -sd\- - || test $? -eq 141)
 
 PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS $PODMAN_CREATE_ARGS_POSTGRES"
 
@@ -62,8 +74,6 @@ PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS $PODMAN_CREATE_ARGS_POSTGRES"
 	# "NodeBB could not connect to your PostgreSQL database. PostgreSQL returned the following error: role "custom_user" does not exist"
 	# -e POSTGRES_USER="$POD"\
 podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS \
-	-e POSTGRES_PASSWORD="$password"\
-	-e POSTGRES_DB="$POD"\
 	-e CONTAINER_DATA_DIR="$dataDir"\
 	$POSTGRES_ENV "$POSTGRES_IMAGE" >/dev/null || exit 1
 
@@ -76,5 +86,5 @@ fi
 exec 1>&4-
 
 # Output result
-echo '-e CONTAINER_POSTGRES_HOST=localhost -e CONTAINER_POSTGRES_PORT='$POSTGRES_PORT' -e CONTAINER_POSTGRES_PASSWORD='$password\
-	'-e CONTAINER_POSTGRES_USER=postgres -e CONTAINER_POSTGRES_DB='$POD
+echo '-e CONTAINER_POSTGRES_HOST=localhost -e CONTAINER_POSTGRES_PORT='$POSTGRES_PORT' -e CONTAINER_POSTGRES_PASSWORD='$POSTGRES_PASSWORD\
+	'-e CONTAINER_POSTGRES_USER=postgres -e CONTAINER_POSTGRES_DB='$POSTGRES_DB
