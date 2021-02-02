@@ -60,35 +60,41 @@ fi
 FORCE_NODE_VERSION=$NODE_VERSION
 FORCE_NODEBB_VERSION=$NODEBB_VERSION
 
-# Get most of the setup variables from backed up NodeBB's environment
-# TODO: use `env` instead of `source` for security!
-source "${fromName}/nodebb.env"
-
 # Prepeare base environment variables
+# Get most of the setup variables from backed up NodeBB's environment,
+# while trying to keep our env safe.
 # TODO: drop support for CONTAINER_NODEJS_PORT and CONTAINER_APP_DNS_ALIAS.
-cmd="NODE_VERSION=${FORCE_NODE_VERSION:-$NODE_VERSION}\
-	NODEBB_VERSION=${FORCE_NODEBB_VERSION:-$NODEBB_VERSION}\
-	NODEBB_GIT='${NODEBB_GIT}'\
-	APP_USE_PORT=${APP_USE_PORT:-$CONTAINER_NODEJS_PORT}\
-	APP_USE_FQDN=${APP_USE_FQDN:-$CONTAINER_APP_DNS_ALIAS}\
-	"
+cmd=$(env -i $(xargs -a "${fromName}/nodebb.env") \
+		FORCE_NODE_VERSION="$FORCE_NODE_VERSION" \
+		FORCE_NODEBB_VERSION="$FORCE_NODEBB_VERSION" \
+		/bin/sh -c 'echo NODE_VERSION="${FORCE_NODE_VERSION:-$NODE_VERSION}"\
+			NODEBB_VERSION="${FORCE_NODEBB_VERSION:-$NODEBB_VERSION}"\
+			NODEBB_GIT="${NODEBB_GIT}"\
+			APP_USE_PORT="${APP_USE_PORT:-$CONTAINER_NODEJS_PORT}"\
+			APP_USE_FQDN="${APP_USE_FQDN:-$CONTAINER_APP_DNS_ALIAS}"\
+		')
 
 get_image_name () {
 	cat "$1" | grep ImageName | sed 's/^.*ImageName.*:\s*"//' | sed 's/".*$//' || echo "1"
 }
 
 # Check which database(s) to use
-if [ ! -z "$CONTAINER_POSTGRES_PORT" ] && [ -f "${fromName}/container-postgres.json" ] ; then
+if [ -f "${fromName}/container-postgres.json" ] ; then
 	oldImage=$(get_image_name "${fromName}/container-postgres.json")
-	cmd="APP_ADD_POSTGRES=${APP_ADD_POSTGRES:-$oldImage} ${cmd}"
-elif [ ! -z "$CONTAINER_MONGODB_PORT" ] && [ -f "${fromName}/container-mongodb.json" ] ; then
+	cmd="APP_ADD_POSTGRES='${APP_ADD_POSTGRES:-$oldImage}' ${cmd}"
+elif [ -f "${fromName}/container-mongodb.json" ] ; then
 	oldImage=$(get_image_name "${fromName}/container-mongodb.json")
-	cmd="APP_ADD_MONGODB=${APP_ADD_MONGODB:-$oldImage} ${cmd}"
+	cmd="APP_ADD_MONGODB='${APP_ADD_MONGODB:-$oldImage}' ${cmd}"
 fi
 
-if [ ! -z "$CONTAINER_REDIS_PORT" ] && [ -f "${fromName}/container-redis.json" ] ; then
+if [ -f "${fromName}/container-redis.json" ] ; then
 	oldImage=$(get_image_name "${fromName}/container-redis.json")
-	cmd="APP_ADD_REDIS=${APP_ADD_REDIS:-$oldImage} ${cmd}"
+	cmd="APP_ADD_REDIS='${APP_ADD_REDIS:-$oldImage}' ${cmd}"
+fi
+
+if [ -f "${fromName}/container-npm.json" ] ; then
+	oldImage=$(get_image_name "${fromName}/container-npm.json")
+	cmd="APP_ADD_NPM='${APP_ADD_REDIS:-$oldImage}' ${cmd}"
 fi
 
 cmd="RESTORE_FROM='${fromName}'	${cmd}"
