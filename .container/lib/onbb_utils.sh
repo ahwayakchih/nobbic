@@ -192,7 +192,7 @@ function onbb_setup_fqdn () {
 }
 
 #
-# Setup NODEBB_ADMIN_EMAIL from NODEBB_ADMIN_EMAIL, or from CONTAINER_LOGIN, or as CONTAINER_APP_NAME@NODEBB_FQDN, or fail.
+# Setup NODEBB_ADMIN_EMAIL from NODEBB_ADMIN_EMAIL, or from CONTAINER_LOGIN, or as APP_NAME@NODEBB_FQDN, or fail.
 #
 function onbb_setup_email () {
 	local email="$NODEBB_ADMIN_EMAIL"
@@ -202,11 +202,11 @@ function onbb_setup_email () {
 	fi
 
 	if [ -z "$email" -a "$NODEBB_FQDN" != "" ] ; then
-		email="$CONTAINER_APP_NAME@$NODEBB_FQDN"
+		email="$APP_NAME@$NODEBB_FQDN"
 	fi
 
 	if [ -z "$email" ] ; then
-		email="${CONTAINER_APP_NAME}@127.0.0.1"
+		email="${APP_NAME}@127.0.0.1"
 	fi
 
 	export NODEBB_ADMIN_EMAIL="$email"

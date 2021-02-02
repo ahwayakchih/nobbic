@@ -76,7 +76,6 @@ else
         -v $NODEBB_REPO_VOLUME:/repo:ro\
         nodebb-node:${NODE_VERSION} /bin/sh /containerizer/tools/alpine-prepare-nodebb-image.sh
     podman commit\
-        -c "ENV=CONTAINER_APP_NAME=${APP_NAME}"\
         -c "ENV=NODEBB_GIT=${NODEBB_GIT}"\
         -c "ENV=NODEBB_VERSION=${NODEBB_VERSION}"\
         -c "ENV=NODE_ENV=${NODE_ENV:-production}"\

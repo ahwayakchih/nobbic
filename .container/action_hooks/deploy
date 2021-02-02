@@ -27,7 +27,7 @@ function onbb_setup_config () {
 	json=$json',"secret":"'$secret'"'
 
 	# Generate name
-	local name=${CONTAINER_APP_NAME}
+	local name=${APP_NAME}
 	json=$json',"admin:username":"'$name'"'
 
 	# Generate password
@@ -70,9 +70,9 @@ function onbb_setup_config () {
 	# 	fi
 
 	# 	if [ -z "$CONTAINER_MONGODB_NAME" ] ; then
-	# 		if [ "$CONTAINER_APP_NAME" ] ; then
-	# 			echo "WARNING: CONTAINER_MONGODB_NAME was not specified, so '$CONTAINER_APP_NAME' will be used" >&2
-	# 			json=$json',"mongo:database":"'$CONTAINER_APP_NAME'"'
+	# 		if [ "$APP_NAME" ] ; then
+	# 			echo "WARNING: CONTAINER_MONGODB_NAME was not specified, so '$APP_NAME' will be used" >&2
+	# 			json=$json',"mongo:database":"'$APP_NAME'"'
 	# 		else
 	# 			echo "WARNING: CONTAINER_MONGODB_NAME was not specified, so default 'nodebb' will be used" >&2
 	# 			json=$json',"mongo:database":"nodebb"'

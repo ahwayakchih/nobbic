@@ -61,7 +61,7 @@ testSSL(PORT, URL, function onTestSSLResult (err) {
 		config.mongo = config.mongo || {};
 
 		// OpenShift seems to create MongoDB database with the same name as the application name.
-		config.mongo.database = process.env.CONTAINER_MONGODB_NAME || process.env.CONTAINER_APP_NAME || 'nodebb';
+		config.mongo.database = process.env.CONTAINER_MONGODB_NAME || process.env.APP_NAME || 'nodebb';
 
 		if (process.env.CONTAINER_MONGODB_HOST || process.env.CONTAINER_MONGODB_IP) {
 			config.mongo.host = process.env.CONTAINER_MONGODB_HOST || process.env.CONTAINER_MONGODB_IP;
@@ -97,7 +97,7 @@ testSSL(PORT, URL, function onTestSSLResult (err) {
 		config.database = config.database || 'postgres';
 		config.postgres = config.postgres || {};
 
-		config.postgres.database = process.env.CONTAINER_POSTGRES_DB || process.env.CONTAINER_APP_NAME || 'nodebb';
+		config.postgres.database = process.env.CONTAINER_POSTGRES_DB || process.env.APP_NAME || 'nodebb';
 		config.postgres.ssl = process.env.CONTAINER_POSTGRES_SSL || false;
 
 		if (process.env.CONTAINER_POSTGRES_HOST) {
