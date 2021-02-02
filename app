@@ -30,6 +30,7 @@ function showHelp () {
 	echo "Supported actions are:"
 	echo "help - show this info"
 	echo "build APP_NAME  - build pod with specified name"
+	echo "info APP_NAME   - get information about application's setup"
 	echo "start APP_NAME  - start pod (build it if none exists) with specified name"
 	echo "bash APP_NAME   - enter bash command line inside NodeBB container"
 	echo "exec APP_NAME COMMAND [ARG...]  - run command inside NodeBB container"
@@ -125,6 +126,20 @@ addToPod() {
 		./*|/*) if [ -f "$fromName" ] ; then env $(echo "$options" | xargs) "$fromName"; else echo "'$fromName' script not found">&2; fi ;;
 		*) env $(echo "$options FROM_IMAGE=$fromName" | xargs) "$toolPath";;
 	esac
+}
+
+#
+# @param {string} podName
+#
+function infoPod () {
+	local podName=$1
+
+	if [ -z "$podName" ] ; then
+		echo "ERROR: missing pod name" >&2
+		return 1
+	fi
+
+	APP_NAME="$podName" "${__DIRNAME}/tools/podman-info.sh" || return 1
 }
 
 #
@@ -426,6 +441,11 @@ fi
 
 if [ "$action" = "build" ] ; then
 	buildPod $(sanitizeAppName $2) || exit 1
+	exit 0
+fi
+
+if [ "$action" = "info" ] ; then
+	infoPod $(sanitizeAppName $2) || exit 1
 	exit 0
 fi
 
