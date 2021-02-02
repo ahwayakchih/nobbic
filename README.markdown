@@ -60,7 +60,8 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
 
 ## TODO
 
-- fix backup: export all env variables, so things like PORT are not lost
+- fix backup & restore: keep customization values like PODMAN_PULL_ARGS_*, CONTAINER_ENV_*, PODMAN_CREATE_ARGS_*
+  and CONTAINER_*_PORT
 - when url in config does not contain port number, redirect after login is broken
 - stop replacing app.js and src/cli/index.js, run config generator instead before calling nodebb in entrypoint.sh.
   we're not running in changing environment (old OpenShift v2) any more, environment variables in containers are
@@ -69,6 +70,9 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
   Also, it would help users to apply known solutions, if they could simply edit config.js.
   And currently our code does not support different port numbers in case of NodeBB cluster (when NodeBB workers are
   run with switched process.env.port for each of them).
+  **update:** replacing may still be needed, or writing config AFTER install, because install parses url from config,
+  and if there's a port specified, it overrides port setting with the one from url. Which breaks stuff if external port
+  is defferent than the one NodeBB should listen on, e.g., example.com:8080 -> 4567.
 - option for NodeBB to keep building assets in "series" mode
 - option to specify additional plugins when creating instance, so they are installed and
   activated from the start.
