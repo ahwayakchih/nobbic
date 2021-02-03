@@ -72,6 +72,7 @@ cmd=$(env -i $(xargs -a "${fromName}/nodebb.env") \
 			NODEBB_GIT="${NODEBB_GIT}"\
 			APP_USE_PORT="${APP_USE_PORT:-$CONTAINER_NODEJS_PORT}"\
 			APP_USE_FQDN="${APP_USE_FQDN:-$CONTAINER_APP_DNS_ALIAS}"\
+			APP_USE_CLUSTER=$(( $(echo $PORT | tr -cd , | wc -c) + 1))\
 		')
 
 get_image_name () {
