@@ -241,7 +241,7 @@ function startPod () {
 	fi
 
 	local existed=$(podman pod exists "$podName" && echo exists);
-	test "$existed" || buildPod "$podName" || return 4?
+	test "$existed" || buildPod "$podName" || return $?
 
 	if test "$existed" ; then
 		echo "Restarting '$podName' pod..."
