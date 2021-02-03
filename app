@@ -55,7 +55,7 @@ function showHelp () {
 	echo "You can change that by specifying APP_ADD_NODEBB environment variable with value like 'some.repo/image:%NODE_VERSION%'."
 	echo "'%%' placeholder will be replaced by NODE_VERSION value (either specified, or detected for selected NodeBB version)."
 	echo ""
-	echo "If placeholder is missing from image name, nothing ill be replaced, so better make sure that image contains Node.js version that will work with NodeBB".
+	echo "If placeholder is missing from image name, nothing will be replaced, so better make sure that image contains Node.js version that will work with NodeBB".
 	echo "You can set NODEBB_VERSION to select which version of the forum to run. By default, latest release will be used."
 	echo "By default, 'nodebb-repo' name will be used for volume containing clone of NodeBB git repository. It will be shared by all apps (DO NOT create/restore/upgrade them concurrently!)."
 	echo "You can create separate volume for application by setting NODEBB_REPO_VOLUME environment variable with some unique name as its value."
@@ -67,7 +67,8 @@ function showHelp () {
 	echo "By default, forum will be run with Node.js version specified in the 'package.json' file."
 	echo "You can enforce different version by setting NODE_VERSION environment variable."
 	echo ""
-	echo "You can set also APP_USE_PORT (http/https, defaults to 4567) value to port numbers you want the pod to listen to."
+	echo "You can set also APP_USE_PORT (http/https, defaults to 4567) value to port number you want the pod to listen to."
+	echo "Set APP_USE_CLUSTER to a number higher than 1, to make NodeBB spin more than one process for handling connections."
 	echo ""
 	echo "For example: APP_USE_FQDN=localhost APP_ADD_MONGODB=1 ./app start my-forum"
 	echo "It will create pod that includes MongoDB based on Ubuntu bionic (default) and NodeBB latest (default), and then run it with minimum required Node.js version for that NodeBB."
@@ -166,9 +167,9 @@ function buildPod () {
 
 	local port=${APP_USE_PORT:-8080}
 	local nodebbPort=4567
-	if [ -n "$NODEBB_CLUSTER" ] && [ "$NODEBB_CLUSTER" -gt 1 ] ; then
+	if [ -n "$APP_USE_CLUSTER" ] && [ "$APP_USE_CLUSTER" -gt 1 ] ; then
 		local nodebbEnvPort=""
-		for ((n=0;n<$NODEBB_CLUSTER;n++)); do
+		for ((n=0;n<$APP_USE_CLUSTER;n++)); do
 			podOptions="$podOptions -p $port:$nodebbPort"
 			if [ -z "$nodebbEnvPort" ] ; then
 				nodebbEnvPort="$nodebbPort"
@@ -178,13 +179,12 @@ function buildPod () {
 			port=$(($port + 1))
 			nodebbPort=$(($nodebbPort + 1))
 		done
-		export CONTAINER_ENV_NODEBB_PORT=${CONTAINER_ENV_NODEBB_PORT:-"[${nodebbEnvPort}]"}
-		export CONTAINER_ENV_NODEBB_APP_USE_PORT=${CONTAINER_ENV_NODEBB_APP_USE_PORT:-${APP_USE_PORT:-8080}}
+		export CONTAINER_ENV_NODEBB_PORT=${CONTAINER_ENV_NODEBB_PORT:-${nodebbEnvPort}}
 	else
 		podOptions="$podOptions -p $port:$nodebbPort"
 		export CONTAINER_ENV_NODEBB_PORT=${CONTAINER_ENV_NODEBB_PORT:-$nodebbPort}
-		export CONTAINER_ENV_NODEBB_APP_USE_PORT=${CONTAINER_ENV_NODEBB_APP_USE_PORT:-${APP_USE_PORT:-8080}}
 	fi
+	export CONTAINER_ENV_NODEBB_APP_USE_PORT=${CONTAINER_ENV_NODEBB_APP_USE_PORT:-${APP_USE_PORT:-8080}}
 
 	podman pod create -n "$podName" $podOptions \
 		$PODMAN_ARG_LABEL \

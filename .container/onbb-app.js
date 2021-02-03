@@ -14,7 +14,10 @@ require('colors');
 var testSSL = require('/app/.container/tools/test-ssl.js');
 
 // Port that NodeBB will be listening on
-var PORT = process.env.PORT || process.env.port || 4567;
+var PORT = process.env.PORT || process.env.port || '4567';
+if (!Array.isArray(PORT)) {
+	PORT = PORT.split(',');
+}
 
 // Patially Qualified Domain Name
 // Fully Qualified Domain Name should end with a dot, so strip it.
@@ -24,7 +27,7 @@ var PQDN = (process.env.APP_USE_FQDN || 'localhost').replace(/\.$/, '')
 var URL = PQDN + (process.env.APP_USE_PORT ? ':' + process.env.APP_USE_PORT : '');
 
 // Check is SSL is working on selected domain name
-testSSL(PORT, URL, function onTestSSLResult (err) {
+testSSL(PORT[0], URL, function onTestSSLResult (err) {
 	'use strict';
 
 	// HTTPS or HTTP and WSS or WS
@@ -34,7 +37,7 @@ testSSL(PORT, URL, function onTestSSLResult (err) {
 	var config = {};
 
 	// Port number
-	if (PORT) {
+	if (PORT[0]) {
 		config.port = PORT;
 	}
 

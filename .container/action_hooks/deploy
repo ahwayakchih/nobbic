@@ -23,7 +23,7 @@ function onbb_setup_config () {
 	json=$json'"url":"http://'${fqdn}${urlPort}'"'
 
 	# Make sure to listen on correct port (url port does not have to be the same!)
-	json=$json',"port":"'${PORT:-4567}'"'
+	json=$json',"port":['${PORT:-4567}']'
 
 	# Generate NodeBB secret
 	local secret=`tr -cd '[:alnum:]' < /dev/urandom | fold -w32 | head -n1 | fold -w8 | paste -sd\- -`
@@ -141,6 +141,10 @@ function onbb_setup_nodebb () {
 	local logfile=$(onbb_get_logfile "container-nodebb-setup.log")
 	local skipBuild=$(onbb_test_nodebb_version "1.13.3" && echo "--skip-build" || echo "")
 	series=true ./nodebb setup $skipBuild "$json" |& tee $logfile
+
+	# Overwrite config.json with correct values
+	local config=$(cat config.json)
+	echo "$config" | jq -s --indent 4 '.[0] * {"port":['${PORT:-4567}']}' > config.json
 
 	# Activate plugins
 	for plugin in cd ${CONTAINER_REPO_DIR}.container/plugins/nodebb-plugin-*; do
