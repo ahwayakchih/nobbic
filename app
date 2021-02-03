@@ -416,20 +416,49 @@ function cleanupImages () {
 	done
 
 	if [ "$imageType" = "repo" ] ; then
-		# Select only repo downloader image and repo volume
-		podman images --format "{{.Repository}}:{{.Tag}}" | grep localhost/nodebb-repo | xargs podman rmi -f
-		podman volume rm nodebb-repo
+		if podman images --format "{{.Repository}}" | grep localhost/nodebb-repo >/dev/null ; then
+			# Select only repo downloader image and repo volume
+			echo "Removing 'nodebb-repo' image..."
+			podman rmi -f localhost/nodebb-repo && echo "'nodebb-repo' image removed"
+		else
+			echo "Image 'nodebb-repo' was already removed"
+		fi
+
+		if podman volume ls | grep 'nodebb-repo' >/dev/null ; then
+			echo "Removing 'nodebb-repo' volume..."
+			podman volume rm nodebb-repo && echo "'nodebb-repo' volume removed"
+		else
+			echo "Volume 'nodebb-repo' was already removed"
+		fi
+
+		if podman volume ls | grep 'nodebb-npm' >/dev/null ; then
+			echo "Removing 'nodebb-npm' volume..."
+			podman volume rm nodebb-npm && echo "'nodebb-npm' volume removed"
+		fi
 		return 0
 	fi
 
+	local removedImages=false
+
 	if [ "$imageType" = "nodebb" ] ; then
 		# Select only nodebb images, not nodebb-node
-		podman images --format "{{.Repository}}:{{.Tag}}" | grep localhost/nodebb | grep -v localhost/nodebb- | xargs podman rmi -f
+		local removedImages=false
+		for image in $(podman images --format "{{.Repository}}:{{.Tag}}" | grep localhost/nodebb | grep -v localhost/nodebb- || echo "") ; do
+			echo "Removing '$image' image..."
+			podman rmi -f "$image" && echo "'$image' image removed"
+			removedImages=true
+		done
+		test $removedImages || echo "NodeBB images were already removed"
 		return 0
 	fi
 
 	# Both `nodebb` and `node` remove NodeBB images
-	podman images --format "{{.Repository}}:{{.Tag}}" | grep localhost/nodebb | xargs podman rmi -f
+	for image in $(podman images --format "{{.Repository}}:{{.Tag}}" | grep localhost/nodebb || echo "") ; do
+		echo "Removing '$image' image..."
+		podman rmi -f "$image" && echo "'$image' image removed"
+		removedImages=true
+	done
+	test $removedImages || echo "Node and NodeBB images were already removed"
 	return 0
 }
 
