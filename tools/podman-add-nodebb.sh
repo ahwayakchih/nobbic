@@ -36,11 +36,20 @@ fi
 NODEBB_ENV="-e APP_NAME=$POD "$(get_env_values_for CONTAINER_ENV_NODEBB_ "")' '$(get_env_values_for CONTAINER_ENV_NODE_ NODE_)
 
 if [ -z "$APP_USE_FQDN" ] ; then
-	echo $NODEBB_ENV | grep APP_USE_FQDN || (
+	if ! echo $NODEBB_ENV | grep -q APP_USE_FQDN ; then
 		echo "WARNING: no APP_USE_FQDN was specified" >&2
 		echo "         OpenDNS service will be used to get public IP when running the pod" >&2
-	)
-	# TODO: set to "localhost" by default?
+
+		APP_USE_FQDN=$(podman run --rm -t $PODMAN_CREATE_ARGS $PODMAN_CREATE_ARGS_NODEBB $NODEBB_ENV "$NODEBB_IMAGE" /bin/bash -c 'source .container/lib/onbb_utils.sh && onbb_setup_fqdn >/dev/null 2>&1 && echo -n "$NODEBB_FQDN" || echo -n ""')
+		if [ -z "$APP_USE_FQDN" ] ; then
+			APP_USE_FQDN=localhost
+			echo "ERROR: could not determine URL to be used for NodeBB, defaulting to '$APP_USE_FQDN'" >&2
+		else
+			echo "         Forum will await connections through '$APP_USE_FQDN'" >&2
+		fi
+		# TODO: test if it's really accessible through that name/IP?
+		NODEBB_ENV="$NODEBB_ENV -e APP_USE_FQDN=$APP_USE_FQDN"
+	fi
 else
 	NODEBB_ENV="$NODEBB_ENV -e APP_USE_FQDN=$APP_USE_FQDN"
 fi
