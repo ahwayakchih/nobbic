@@ -33,7 +33,7 @@ if [ -z "$NODEBB_IMAGE" ] ; then
 	exit 1
 fi
 
-NODEBB_ENV="-e APP_NAME=$APP_NAME "$(get_env_values_for CONTAINER_ENV_NODEBB_ "")' '$(get_env_values_for CONTAINER_ENV_NODE_ NODE_)
+NODEBB_ENV="-e APP_NAME=$POD "$(get_env_values_for CONTAINER_ENV_NODEBB_ "")' '$(get_env_values_for CONTAINER_ENV_NODE_ NODE_)
 
 if [ -z "$APP_USE_FQDN" ] ; then
 	echo $NODEBB_ENV | grep APP_USE_FQDN || (
