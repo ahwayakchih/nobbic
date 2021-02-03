@@ -35,6 +35,7 @@ fi
 
 NODEBB_ENV="-e APP_NAME=$POD "$(get_env_values_for CONTAINER_ENV_NODEBB_ "")' '$(get_env_values_for CONTAINER_ENV_NODE_ NODE_)
 
+# Detect FQDN if none was specified
 if ! echo $NODEBB_ENV | grep -q "APP_USE_FQDN=" ; then
 	if [ -z "$APP_USE_FQDN" ] ; then
 		echo "WARNING: no APP_USE_FQDN was specified" >&2

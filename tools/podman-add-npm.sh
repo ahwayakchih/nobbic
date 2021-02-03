@@ -25,23 +25,7 @@ fi
 
 NPM_IMAGE=${FROM_IMAGE:-docker.io/verdaccio/verdaccio}
 if ! podman image exists "$NPM_IMAGE" ; then
-	# if [ -z "$FROM_IMAGE" ] ; then
-	# 	NODE_VERSION=14
-	# 	env APP_NAME=nodebb-node NODE_VERSION=$NODE_VERSION ./tools/podman-create-nodeapp.sh
-
-	# 	podman run --replace --name build-${NPM_IMAGE} -v ${__DIRNAME}:/tools:ro nodebb-node:$NODE_VERSION /bin/bash -c "npm install -g verdaccio"\
-	# 		&& podman commit \
-	# 			-c CMD=/bin/bash\
-	# 			-c EXPOSE=4873 \
-	# 			-c USER=node \
-	# 			-c WORKDIR=/app \
-	# 			-c ENV=ENV=/etc/profile \
-	# 			-e ENV=CONTAINER_DATA_DIR=/home/node/.config/verdaccio/storage \
-	# 			build-${NPM_IMAGE} "$NPM_IMAGE" \
-	# 		&& podman rm build-${NPM_IMAGE}
-	# else
-		podman pull $PODMAN_PULL_ARGS_NPM "$NPM_IMAGE" >/dev/null || exit 1
-	# fi
+	podman pull $PODMAN_PULL_ARGS_NPM "$NPM_IMAGE" >/dev/null || exit 1
 fi
 
 if [ "$NPM_IMAGE" != "$FROM_IMAGE" ] ; then
