@@ -38,6 +38,8 @@ It was tested and is known to work with following database images from docker.io
 ### mongo (MongoDB)
 
 - 3.6.21-xenial
+- 4.0.22-xenial
+- 4.2.12-bionic
 - 4.4.3-bionic
 
 ### redis (Redis)
