@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # A very simple template handling for bash
 # Supports very short list of replacement tokens.
