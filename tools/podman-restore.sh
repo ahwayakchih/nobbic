@@ -96,7 +96,8 @@ fi
 
 if [ -f "${fromName}/container-npm.json" ] ; then
 	oldImage=$(get_image_name "${fromName}/container-npm.json")
-	cmd="APP_ADD_NPM='${APP_ADD_REDIS:-$oldImage}' ${cmd}"
+	cmd="APP_ADD_NPM='${APP_ADD_NPM:-$oldImage}' ${cmd}"
+fi
 fi
 
 cmd="RESTORE_FROM='${fromName}'	${cmd}"
