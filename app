@@ -165,6 +165,11 @@ function buildPod () {
 
 	local podOptions=""
 
+	# TODO: this is hackish. Once podman-add-* scripts only prepare variables, we can leave 
+	#       creating pod and its port setup for later, and do not need to check cases here.
+	#       ideally ports would be prepared by podman-add-nodebb, overwritten by podman-add-nginx,
+	#       then pod would be created and then containers. Maybe even scripts could be defined
+	#       to be run "before" or "after" nodebb script.
 	local port=${APP_USE_PORT:-8080}
 	local nodebbPort=4567
 	if [ -n "$APP_USE_CLUSTER" ] && [ "$APP_USE_CLUSTER" -gt 1 ] ; then
@@ -185,6 +190,11 @@ function buildPod () {
 		export CONTAINER_ENV_NODEBB_PORT=${CONTAINER_ENV_NODEBB_PORT:-$nodebbPort}
 	fi
 	export CONTAINER_ENV_NODEBB_APP_USE_PORT=${CONTAINER_ENV_NODEBB_APP_USE_PORT:-${APP_USE_PORT:-8080}}
+
+	if [ -n "$APP_ADD_NGINX" ] ; then
+		port=${APP_USE_PORT:-8080}
+		podOptions="-p $port:80"
+	fi
 
 	podman pod create -n "$podName" $podOptions \
 		$PODMAN_ARG_LABEL \
@@ -219,6 +229,14 @@ function buildPod () {
 
 	if [ ! -z "$APP_ADD_NPM" ] ; then
 		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_NPM "${__DIRNAME}/tools/podman-add-npm.sh")
+		if [ -z "$addNodeBBOptions" ] ; then
+			return 1
+		fi
+		nodebbOptions="$nodebbOptions $addNodeBBOptions"
+	fi
+
+	if [ ! -z "$APP_ADD_NGINX" ] ; then
+		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_NGINX "${__DIRNAME}/tools/podman-add-nginx.sh")
 		if [ -z "$addNodeBBOptions" ] ; then
 			return 1
 		fi
