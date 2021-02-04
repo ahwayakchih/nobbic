@@ -89,17 +89,17 @@ elif [ -f "${fromName}/container-mongodb.json" ] ; then
 	cmd="APP_ADD_MONGODB='${APP_ADD_MONGODB:-$oldImage}' ${cmd}"
 fi
 
-if [ -f "${fromName}/container-redis.json" ] ; then
+if [ -n "$APP_ADD_REDIS" ] || [ -f "${fromName}/container-redis.json" ] ; then
 	oldImage=$(get_image_name "${fromName}/container-redis.json")
 	cmd="APP_ADD_REDIS='${APP_ADD_REDIS:-$oldImage}' ${cmd}"
 fi
 
-if [ -f "${fromName}/container-npm.json" ] ; then
+if [ -n "$APP_ADD_NPM" ] || [ -f "${fromName}/container-npm.json" ] ; then
 	oldImage=$(get_image_name "${fromName}/container-npm.json")
 	cmd="APP_ADD_NPM='${APP_ADD_NPM:-$oldImage}' ${cmd}"
 fi
 
-if [ -f "${fromName}/container-nginx.json" ] ; then
+if [ -n "$APP_ADD_NGINX" ] || [ -f "${fromName}/container-nginx.json" ] ; then
 	oldImage=$(get_image_name "${fromName}/container-nginx.json")
 	cmd="APP_ADD_NGINX='${APP_ADD_NGINX:-$oldImage}' ${cmd}"
 fi
