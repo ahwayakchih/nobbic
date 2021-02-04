@@ -98,6 +98,10 @@ if [ -f "${fromName}/container-npm.json" ] ; then
 	oldImage=$(get_image_name "${fromName}/container-npm.json")
 	cmd="APP_ADD_NPM='${APP_ADD_NPM:-$oldImage}' ${cmd}"
 fi
+
+if [ -f "${fromName}/container-nginx.json" ] ; then
+	oldImage=$(get_image_name "${fromName}/container-nginx.json")
+	cmd="APP_ADD_NGINX='${APP_ADD_NGINX:-$oldImage}' ${cmd}"
 fi
 
 cmd="RESTORE_FROM='${fromName}'	${cmd}"
