@@ -64,17 +64,12 @@ else
 	echo "WARNING: using pre-specified password for PostgreSQL database" >&2
 fi
 
-# Get PGDATA from env used by default by official PostgreSQL images.
-# We'll set CONTAINER_DATA_DIR to the same value, so backups know what to archive.
-dataDir=$(podman image inspect "$POSTGRES_IMAGE" --format='{{range .Config.Env}}{{.}}\n{{end}}'| grep PGDATA | cut -d= -f2 || echo "")
-
 PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS $PODMAN_CREATE_ARGS_POSTGRES"
 
 	# Specyfing custom user name seem to prevent us from accessing db:
 	# "NodeBB could not connect to your PostgreSQL database. PostgreSQL returned the following error: role "custom_user" does not exist"
 	# -e POSTGRES_USER="$POD"\
 podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS \
-	-e CONTAINER_DATA_DIR="$dataDir"\
 	$POSTGRES_ENV "$POSTGRES_IMAGE" >/dev/null || exit 1
 
 # Import from backup, if specified

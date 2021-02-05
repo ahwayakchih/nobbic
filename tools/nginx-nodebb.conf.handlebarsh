@@ -10,10 +10,15 @@ server {
 
     server_name {{!APP_USE_FQDN}} *.{{!APP_USE_FQDN}};
 
-    # Set 502 error to local, so when NodeBB is down, nginx can serve some info instead
-    error_page  502    /50x.html;
-    location = /50x.html {
-        root   /usr/share/nginx/html;
+    # Just in case of some mistakes later, make sure there is some safe root set.
+    root /usr/share/nginx/html/;
+
+    # Set 502 error to local, so when NodeBB is down, nginx can serve some info instead.
+    # Page should be static, i.e., no dababase queries, so backup can be done in a bit safer way.
+    error_page  502    /502.html;
+    location = /502.html {
+        root /;
+        try_files {{!NGINX_NODEBB_ROOT}}/public/502.html /usr/share/nginx/html/50x.html =502;
     }
 
     proxy_set_header X-Real-IP $remote_addr;
@@ -37,12 +42,12 @@ server {
     }
 
     location ~ ^/assets/(.*) {
-        root /data/nodebb/;
+        root {{!NGINX_NODEBB_ROOT}}/;
         try_files /build/public/$1 /public/$1 @nodebb;
     }
 
     location /plugins/ {
-        root /data/nodebb/build/public/;
+        root {{!NGINX_NODEBB_ROOT}}/build/public/;
         try_files $uri @nodebb;
     }
 

@@ -203,9 +203,6 @@ function buildPod () {
 		$PODMAN_ARG_LABEL \
 		--add-host=localhost:127.0.0.1 --hostname="$podName" || return $?
 
-	# Add "data" container, to be shared by database, nodebb, etc...
-	# podman create --pod "$podName" --name "${podName}-data" -v /data docker.io/busybox:musl || return 1
-
 	if [ ! -z "$APP_ADD_MONGODB" ] ; then
 		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_MONGODB "${__DIRNAME}/tools/podman-add-mongodb.sh")
 		if [ -z "$addNodeBBOptions" ] ; then
@@ -240,10 +237,10 @@ function buildPod () {
 
 	if [ ! -z "$APP_ADD_NGINX" ] ; then
 		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_NGINX "${__DIRNAME}/tools/podman-add-nginx.sh")
-		if [ -z "$addNodeBBOptions" ] ; then
-			return 1
+		# Nginx does not add any options
+		if [ -n "$addNodeBBOptions" ] ; then
+			nodebbOptions="$nodebbOptions $addNodeBBOptions"
 		fi
-		nodebbOptions="$nodebbOptions $addNodeBBOptions"
 	fi
 
 	export PODMAN_CREATE_ARGS_NODEBB="$PODMAN_CREATE_ARGS_NODEBB $nodebbOptions"
@@ -272,7 +269,7 @@ function startPod () {
 		# and cgroups v1 problem seems to still exist. With cgroups v2 it works ok.
 		# podman pod restart "$podName" || return 1
 		(
-			WAIT_FOR_PORT=$(podman container inspect "${podName}-nodebb" --format="{{range .Config.Env}}{{.}}\n{{end}}" | grep -E '^PORT=' | cut -d= -f2)
+			WAIT_FOR_PORT=$(podman container inspect "${podName}-nodebb" --format="{{range .Config.Env}}{{.}}\n{{end}}" | grep -E '^PORT=' | cut -d= -f2 | cut -d, -f1)
 			echo "Waiting for $podName port $WAIT_FOR_PORT to be ready inside container"
 			podman exec "${podName}-nodebb" /app/.container/tools/wait-for.sh 127.0.0.1:$WAIT_FOR_PORT -t 120 -l || exit 1
 			sleep 1
@@ -418,6 +415,7 @@ function removePod () {
 
 	echo "Removing '$podName' pod..."
 	podman pod rm "$podName" || return $?
+	podman volume ls --format='{{.Name}}' | grep -E "^${podName}-" | xargs -r podman volume rm || return $?
 }
 
 #

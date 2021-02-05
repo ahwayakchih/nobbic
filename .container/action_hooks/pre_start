@@ -7,21 +7,28 @@ echo "Waiting for database to start..."
 onbb_wait_until_db_ready 120 || (onbb_echo_result_of_start_failed ${CONTAINER_REPO_DIR}nodebb/logs/output.log && exit 1) || exit 1
 echo "Database seems to be ready, start can continue"
 
-
 # Restore data, if available
 for archive in ${CONTAINER_REPO_DIR}nodebb-*.tar ; do
 	test -f "$archive" || continue
-	echo "Restoring /data from $archive archive"
+	echo "Restoring /app from $archive archive"
 	tar x -C / -v -f - < "$archive" && rm "$archive"
 	if [ -f "$archive" ] ; then
 		echo "ERROR: Could not cleanup $archive" >&2
 		exit 1
 	fi
+
+	# TODO: remove this before release - it's here only to restore older backups
+	if [ -d "${CONTAINER_REPO_DIR}data/nodebb" ] ; then
+		mkdir -p ${CONTAINER_REPO_DIR}data/nodebb/public\
+		&& mv ${CONTAINER_REPO_DIR}data/nodebb/public-uploads ${CONTAINER_REPO_DIR}data/nodebb/public/uploads\
+		&& cp -aTu ${CONTAINER_REPO_DIR}data/nodebb/. ${CONTAINER_REPO_DIR}nodebb/\
+		&& rm -rf ${CONTAINER_REPO_DIR}data
+	fi
 done
 
 # Run upgrade, if previously installed version was different
 VERSION_CURRENT=$(onbb_get_nodebb_version)
-VERSION_PREVIOUS=$(cat "${CONTAINER_DATA_DIR}NODEBB_VERSION" 2>/dev/null || echo -n "")
+VERSION_PREVIOUS=$(cat "${CONTAINER_REPO_DIR}NODEBB_VERSION" 2>/dev/null || echo -n "")
 
 echo -n "NodeBB is at v${VERSION_CURRENT}"
 if [ ! -z "$VERSION_PREVIOUS" ] ; then

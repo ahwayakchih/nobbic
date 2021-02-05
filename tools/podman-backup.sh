@@ -33,10 +33,11 @@ mkdir -p "$targetName"
 
 isRunning=$(podman pod ps --filter status=running --filter name="$APP_NAME" -q)
 
+# We'll stop nodebb container, to be sure that no requests will go to database(s)
 if [ ! -z "$isRunning" ] ; then
 	echo "'$APP_NAME' is running, it will be stopped for the duration of making data backups... "
-	${__DIRNAME}/../app stop "$APP_NAME" || fail "Could not stop '$APP_NAME' pod"
-	trap "echo 'Backup process '\$(test \$? -eq 0 && echo 'SUCCEEDED' || echo 'FAILED')', restarting $APP_NAME now...' && ${__DIRNAME}/../app start '$APP_NAME'" EXIT
+	podman stop "${APP_NAME}-nodebb" || fail "Could not stop '${APP_NAME}-nodebb' container"
+	trap "echo 'Backup process '\$(test \$? -eq 0 && echo 'SUCCEEDED' || echo 'FAILED')', restarting $APP_NAME now...' && podman start '${APP_NAME}-nodebb'" EXIT
 else
 	# Make sure whole pod will remain stopped
 	trap "${__DIRNAME}/../app stop '$APP_NAME'" EXIT
@@ -48,12 +49,7 @@ for container in $(podman pod inspect "$APP_NAME" --format='{{range .Containers}
 	if [ -f "$toolName" ] ; then
 		CONTAINER=$container BACKUP_TO_FILE="${targetName}/${backupBasename}" "$toolName" || fail "ERROR: backup of ${backupBasename} failed!"
 	else
-		dataDir=$(podman inspect "$container" --format='{{range .Config.Env}}{{.}}\n{{end}}'| grep CONTAINER_DATA_DIR | cut -d= -f2 || echo "")
-		if [ ! -z "$dataDir" ] ; then
-			podman run --rm --volumes-from $container:ro -v $targetName:/backup docker.io/alpine tar cvf "/backup/${backupBasename}.tar" "$dataDir" || fail "ERROR: failed to archive data directory of ${backupBasename}!"
-		else
-			fail "ERROR: Could not find CONTAINER_DATA_DIR value for container '$container'!"
-		fi
+		echo "WARNING: no backup script exists for '${backupBasename}'" >&2
 	fi
 	podman inspect "$container" > "${targetName}/container-${backupBasename}.json" || fail "ERROR: failed to export information about ${backupBasename} container!"
 done

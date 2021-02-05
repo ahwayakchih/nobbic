@@ -214,46 +214,6 @@ function onbb_setup_email () {
 }
 
 #
-# Relocate directory replacing it with symlink to new location
-#
-# @param {string} from
-# @param {string} to
-#
-function onbb_relocate () {
-	local from=$(readlink -f "$1")
-	local to=$(readlink -f "$2")
-
-	if [ "$from" = "$to" ] ; then
-		return 0
-	fi
-
-	local name=$(basename "$from")
-	echo "Pointing ${from} to $to"
-	local result
-
-	cp -aT "$from" "$to"
-	if [ ! -e "$to" ] ; then
-		echo "Could not copy current content to $to"
-		echo "$result"
-		return 1
-	fi
-
-	rm -rf "$from"
-	if [ -e "$from" ] ; then
-		echo "Could not clean up $from"
-		echo "$result"
-		return 1
-	fi
-
-	ln -s "$to" "$from"
-	if [ ! -e "$from" ] ; then
-		echo "Could not link $from to $to"
-		echo "$result"
-		return 1
-	fi
-}
-
-#
 # Find and apply all patches matching NodeBB version number.
 #
 # @param [version] defaults to $(onbb_get_nodebb_version)
@@ -298,11 +258,6 @@ function onbb_setup_environment () {
 	local d=`pwd`
 	cd "$CONTAINER_REPO_DIR"
 
-	local NODEBB_DATA_DIR="${CONTAINER_DATA_DIR}nodebb"
-
-	# Make sure there is persistent data directory
-	mkdir -p "$NODEBB_DATA_DIR"
-
 	# Make sure NODEBB_FQDN is set
 	local fqdn=$(onbb_setup_fqdn)
 	if [ -z "$fqdn" ] ; then
@@ -326,13 +281,13 @@ function onbb_setup_environment () {
 	# cd ../../../
 
 	# Make sure package.json is there and installed, so our custom app.js can work ok before NodeBB is installed
-	if [ ! -f nodebb/package.json ] ; then
-		if [ -f "$NODEBB_DATA_DIR/package.json" ] ; then
-			# Use default package.json, but merge dependencies from backuped one
-			jq -s --indent 4 '.[1] * {"dependencies": (.[0].dependencies * .[1].dependencies)}' "$NODEBB_DATA_DIR/package.json" nodebb/install/package.json > nodebb/package.json
-		else
-			cp -a nodebb/install/package.json nodebb/package.json
-		fi
+	if [ -f nodebb/package.json ] ; then
+		# Use default package.json, but merge dependencies from existing one
+		mv nodebb/package.json nodebb/package.old.json
+		jq -s --indent 4 '.[1] * {"dependencies": (.[0].dependencies * .[1].dependencies)}' nodebb/package.old.json nodebb/install/package.json > nodebb/package.json
+		# rm nodebb/package.old.json
+	else
+		cp -a nodebb/install/package.json nodebb/package.json
 	fi
 
 	if [ ! -d nodebb/node_modules/nconf ] ; then
@@ -379,47 +334,6 @@ function onbb_setup_environment () {
 			fi
 			cp -a "$containerApp" nodebb/src/cli/index.js
 		fi
-	fi
-
-	local target
-	local current
-
-	# Symlink nodebb/public/uploads to $CONTAINER_DATA_DIR/nodebb/public-uploads
-	onbb_relocate "nodebb/public/uploads" "$NODEBB_DATA_DIR/public-uploads" || return 1
-	# local uploadsDir="$NODEBB_DATA_DIR/public-uploads"
-	# target=$(readlink -f $uploadsDir)
-	# current=$(readlink -f )
-	# if [ "$target" != "$current" ] ; then
-	# 	echo "Pointing uploads directory to $uploadsDir"
-	# 	cp -a nodebb/public/uploads "$uploadsDir" || echo "Could not copy current content"
-	# 	rm -rf nodebb/public/uploads || echo "Could not clean up current directory"
-	# 	ln -s "$uploadsDir" nodebb/public/uploads || echo "Could not link"
-	# fi
-
-	# Symlink nodebb/logs to $CONTAINER_DATA_DIR/nodebb/logs
-	onbb_relocate "nodebb/logs" "$NODEBB_DATA_DIR/logs" || return 1
-	# local logsDir="$NODEBB_DATA_DIR/logs"
-	# if [ `readlink -f $logsDir` != `readlink -f nodebb/logs` ] ; then
-	# 	echo "Pointing logs directory to $logsDir"
-	# 	cp -a nodebb/logs "$logsDir"
-	# 	rm -rf nodebb/logs
-	# 	ln -s "$logsDir" nodebb/logs
-	# fi
-
-	# Symlink nodebb/config.json to $CONTAINER_DATA_DIR/nodebb/config.json
-	local from="nodebb/config.json"
-	local to="$NODEBB_DATA_DIR/config.json"
-	if [ `readlink -f $to` != `readlink -f "$from"` ] ; then
-		echo "Pointing config.json to $to"
-		if [ -f "$from" ] ; then
-			cp -a "$from" "$to"
-		fi
-		if [ ! -f "$to" ] ; then
-			# Create valid, "empty" config, so we can create symlink
-			echo -n "{}" > "$to"
-		fi
-		rm -rf "$from"
-		ln -s "$to" "$from"
 	fi
 
 	cd "$d"

@@ -78,12 +78,10 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
 - option for NodeBB to keep building assets in "series" mode
 - option to specify additional plugins when creating instance, so they are installed and
   activated from the start.
-- clear situation with NodeBB /data - package.json is not link, but a copy, others are linked, etc...
 - add musl-locales to Postgres (and other?) images: https://github.com/docker-library/postgres/issues/501
 - optional, mini-test (puppeteer-based?) to run after start
 - write proper README content
 - show README content in `./app help`?
-- add nginx container
 - add support for specifying more than one app name at the same time for build, start, upgrade and stop?
 - add command to send online users a message, e.g., "forum will close in 2 minutes, we will be back in about 10 minutes"
 - wait X time before closing forum, so users can save whatever they were working on

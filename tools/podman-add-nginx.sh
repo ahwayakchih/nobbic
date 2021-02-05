@@ -28,9 +28,8 @@ if ! podman image exists "$NGINX_IMAGE" ; then
 	podman pull $PODMAN_PULL_ARGS_NGINX "$NGINX_IMAGE" >/dev/null || exit 1
 fi
 
-if [ "$NGINX_IMAGE" != "$FROM_IMAGE" ] ; then
-	PODMAN_CREATE_ARGS_NGINX="-v ${POD}-data:/data:ro $PODMAN_CREATE_ARGS_NGINX"
-fi
+export NGINX_NODEBB_ROOT='/nodebb'
+PODMAN_CREATE_ARGS_NGINX="-v ${POD}-nodebb-build:${NGINX_NODEBB_ROOT}/build:ro -v ${POD}-nodebb-public:${NGINX_NODEBB_ROOT}/public:ro $PODMAN_CREATE_ARGS_NGINX"
 
 NGINX_PORT=${CONTAINER_NGINX_PORT:-$(podman image inspect $NGINX_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
 if [ -z "$NGINX_PORT" ] ; then
@@ -47,7 +46,7 @@ NGINX_ENV=$(get_env_values_for CONTAINER_ENV_NGINX_ "")
 
 PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS $PODMAN_CREATE_ARGS_NGINX"
 
-podman create --pod "$POD" --name "$CONTAINER" --add-host=localhost:127.0.0.1 $PODMAN_CREATE_ARGS \
+podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS \
 	$NGINX_ENV "$NGINX_IMAGE" || exit 1
 
 configFileName=$(mktemp)
@@ -59,4 +58,4 @@ rm "$configFileName"
 exec 1>&4-
 
 # Output result
-echo "-v ${POD}-data:/data:z"
+echo ''

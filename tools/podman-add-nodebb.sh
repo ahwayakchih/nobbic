@@ -26,14 +26,14 @@ fi
 # Prepare NodeBB image
 imageNameFile=$(mktemp)
 env IMAGE_NAME_FILE="$imageNameFile" APP_NAME="$POD" tools/podman-create-nodebb.sh || exit 1
-NODEBB_IMAGE=$(cat "$imageNameFile")
+source "$imageNameFile"
 rm "$imageNameFile"
 if [ -z "$NODEBB_IMAGE" ] ; then
 	echo "ERROR: could not get NodeBB container image name" >&2
 	exit 1
 fi
 
-NODEBB_ENV="-e APP_NAME=$POD "$(get_env_values_for CONTAINER_ENV_NODEBB_ "")' '$(get_env_values_for CONTAINER_ENV_NODE_ NODE_)
+NODEBB_ENV="$(get_env_values_for CONTAINER_ENV_NODEBB_ '') $(get_env_values_for CONTAINER_ENV_NODE_ NODE_) -e APP_NAME=${POD}"
 
 # Detect FQDN if none was specified
 if ! echo $NODEBB_ENV | grep -q "APP_USE_FQDN=" ; then

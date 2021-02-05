@@ -56,7 +56,6 @@ PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS $PODMAN_CREATE_ARGS_MONGODB"
 	# -e ${APP_SET_MONGODB_ENV_USER}="$podName" \
 	# -e ${APP_SET_MONGODB_ENV_PASSWORD}="$password" \
 podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS \
-	-e CONTAINER_DATA_DIR="/data/"\
 	$MONGODB_ENV "$MONGODB_IMAGE" >/dev/null || exit 1
 
 # Import from backup, if specified

@@ -17,11 +17,17 @@ NODEBB_REPO_DOWNLOADER="${NODEBB_REPO_VOLUME}-downloader"
 # Clone NodeBB repo to separate volume, so we don't have to do full clone again next time
 # and so we can extract which NODE_VERSION selected NODEBB_VERSION depends on.
 env ${__DIRNAME}/podman-create-repoapp.sh
-
-podman run --replace --rm --name nodebb-downloader\
+# We split NodeBB directories into 3 volumes, so it's easier to share selected parts between containers
+# Also, ${APP_NAME}-nodebbb* volumes will need `chown` run on them, once node.js image is ready
+# (repo container is pure Alpine, so no "node" user yet).
+podman run --replace -it --rm --name nodebb-downloader\
     -e NODEBB_GIT=$NODEBB_GIT\
     -e NODEBB_VERSION="$NODEBB_VERSION"\
     -v $NODEBB_REPO_VOLUME:/app\
+    -v ${APP_NAME}-nodebb:/target:z\
+    -v ${APP_NAME}-nodebb-build:/target/build:z\
+    -v ${APP_NAME}-nodebb-public:/target/public:z\
+    -e CONTAINER_INSTALL_DIR=/target\
     nodebb-repo
 
 if [ -z "$NODEBB_VERSION" ] || [ "$NODEBB_VERSION" = "latest" ] ; then
@@ -66,22 +72,29 @@ echo "Preparing NodeBB $NODEBB_VERSION (using Node.js v$NODE_VERSION) image for 
 IMAGE_NAME=nodebb:${NODE_VERSION}-${NODEBB_VERSION}
 if podman image exists $IMAGE_NAME ; then
     echo "Skipping building image which already exists"
+    # Just make sure NodeBB volumes are owned by "node" user
+    podman run --rm -it --replace --name prepare-nodebb\
+        -u root\
+        -v ${APP_NAME}-nodebb:/app/node:z\
+        -v ${APP_NAME}-nodebb-build:/app/node/build:z\
+        -v ${APP_NAME}-nodebb-public:/app/node/public:z\
+         $IMAGE_NAME /bin/sh -c 'chown -R node:node /app'
     # TODO: support some kind of "force-rebuild" switch?
 else
     podman run --replace --name build-nodebb\
         -e NODEBB_GIT=$NODEBB_GIT\
         -e NODEBB_VERSION=$NODEBB_VERSION\
         -u root\
-        -v ${__DIRNAME}/../:/containerizer:ro\
-        -v $NODEBB_REPO_VOLUME:/repo:ro\
-        nodebb-node:${NODE_VERSION} /bin/sh /containerizer/tools/alpine-prepare-nodebb-image.sh
+        -v ${APP_NAME}-nodebb:/app/node:z\
+        -v ${APP_NAME}-nodebb-build:/app/node/build:z\
+        -v ${APP_NAME}-nodebb-public:/app/node/public:z\
+        -v ${__DIRNAME}/../:/mnt:ro\
+        nodebb-node:${NODE_VERSION} /bin/sh /mnt/tools/alpine-prepare-nodebb-image.sh
     podman commit\
         -c "ENV=NODEBB_GIT=${NODEBB_GIT}"\
         -c "ENV=NODEBB_VERSION=${NODEBB_VERSION}"\
         -c "ENV=NODE_ENV=${NODE_ENV:-production}"\
         -c "ENV=CONTAINER_REPO_DIR=/app/"\
-        -c "ENV=CONTAINER_DATA_DIR=/data/"\
-        -c "VOLUME /data"\
         -c 'USER node'\
         -c 'WORKDIR /app'\
         -c 'CMD ["/bin/bash", "-l", "./.container/entrypoint.sh"]'\
@@ -92,6 +105,7 @@ fi
 echo "Image $IMAGE_NAME is ready"
 if [ ! -z "$IMAGE_NAME_FILE" ] ; then
     echo -n "Writing Nodebb container image name to ${IMAGE_NAME_FILE}... "
-    echo "$IMAGE_NAME" > $IMAGE_NAME_FILE
+    echo "NODEBB_IMAGE=$IMAGE_NAME" >> $IMAGE_NAME_FILE
+    echo 'PODMAN_CREATE_ARGS_NODEBB="${PODMAN_CREATE_ARGS_NODEBB} -v '"${APP_NAME}"'-nodebb:/app/nodebb:z -v '"${APP_NAME}"'-nodebb-public:/app/nodebb/public:z -v '"${APP_NAME}"'-nodebb-build:/app/nodebb/build:z"' >> $IMAGE_NAME_FILE
     echo "done!"
 fi

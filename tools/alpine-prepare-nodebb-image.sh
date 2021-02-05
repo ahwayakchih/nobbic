@@ -1,21 +1,14 @@
 #!/bin/sh
 
 # WARNING: This script has to be run as root INSIDE Alpine-based container.
-#          It's meant to copy files from /repo to /app/nodebb directory
-#          and all the containerization stuff to /app
+#          It's meant to copy files all the containerization stuff to /app.
 
 set -e
 
 # Copy our stuff
-cp -aT /containerizer/.container/. /app/.container
-cp -aT /containerizer/logs/. /app/logs
-cp -aT /containerizer/patches/. /app/patches
+cp -aT /mnt/.container/. /app/.container
+cp -aT /mnt/logs/. /app/logs
+cp -aT /mnt/patches/. /app/patches
 
-# Copy NodeBB stuff
-cp -aT /repo/nodebb/. /app/nodebb
-
-# Make sure we switched to correct repo version, just in case of some race condition between builders
-env NODEBB_GIT="$NODEBB_GIT" NODEBB_VERSION="$NODEBB_VERSION" /containerizer/tools/alpine-get-nodebb-repo.sh
-
-# Make sure `node` user owns newly copied files
+# Make sure `node` user owns newly copied files and NodeBB files mounted under /app/nodebb
 chown -R node:node /app

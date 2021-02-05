@@ -58,3 +58,8 @@ if [ ! -f "$packageFile" ] ; then
 	packageFile="/app/nodebb/install/package.json"
 fi
 jq -r -c '.engines.node' "$packageFile" | tr -dc '0-9' > /app/NODE_VERSION
+
+# "Install" it to specified target directory
+if [ -n "$CONTAINER_INSTALL_DIR" ] ; then
+	cp -aT /app/nodebb $CONTAINER_INSTALL_DIR || echo "failed copying repo data"
+fi

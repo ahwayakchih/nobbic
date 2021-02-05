@@ -34,15 +34,15 @@ if [ ! -z "$isRunning" ] ; then
 	podman stop "$CONTAINER" || exit 1
 fi
 
-# TODO: export all env variables, so things like PORT are not lost
+# TODO: export all env variables, so additional custom settings are not lost.
 podman inspect "$CONTAINER" --format='{{range .Config.Env}}{{.}}\n{{end}}' | grep -E "^(NODE(BB)?_|CONTAINER_|APP_|PORT)"  > "${targetName}.env"
-CONTAINER_DATA_DIR=$(cat "${targetName}.env" | grep "CONTAINER_DATA_DIR" | cut -d= -f2)
+CONTAINER_REPO_DIR=$(cat "${targetName}.env" | grep "CONTAINER_REPO_DIR" | cut -d= -f2)
 
 podman run --rm --volumes-from $CONTAINER:ro\
-	-v $__DIRNAME:/tools:ro\
-	-v $targetDir:/backup:rw\
-	-e CONTAINER_DATA_DIR="$CONTAINER_DATA_DIR"\
-	-e BACKUP_TO_FILE="/backup/$targetFile"\
+	-v ${__DIRNAME}:/tools:ro\
+	-v ${targetDir}:/backup:rw\
+	-e CONTAINER_REPO_DIR="${CONTAINER_REPO_DIR}"\
+	-e BACKUP_TO_FILE="/backup/${targetFile}"\
 	docker.io/alpine /tools/alpine-backup-nodebb.sh
 
 if [ ! -z "$isRunning" ] ; then

@@ -2,5 +2,18 @@
 
 source "${CONTAINER_REPO_DIR}.container/lib/onbb_utils.sh"
 
+# Keep some stuff backed-up
+packageFile="${CONTAINER_REPO_DIR}nodebb/package.json"
+if [ -f "$packageFile" ] ; then
+	# Extract current values, instead of copying them from ${CONTAINER_REPO_DIR}
+	jq -r -c '.version' "$packageFile" > "${CONTAINER_REPO_DIR}NODEBB_VERSION"
+	jq -r -c '.engines.node' "$packageFile" | tr -dc '0-9' > "${CONTAINER_REPO_DIR}NODE_VERSION"
+
+	currentDir=$(pwd)
+	cd "${CONTAINER_REPO_DIR}nodebb"
+	git config --get remote.origin.url > "${CONTAINER_REPO_DIR}NODEBB_GIT"
+	cd "$currentDir"
+fi
+
 # Make sure NodeBB is stopped
 onbb_wait_until_stopped 3 || exit 1
