@@ -77,7 +77,7 @@ cmd=$(env -i $(xargs -a "${fromName}/nodebb.env") \
 		')
 
 get_image_name () {
-	cat "$1" | grep ImageName | sed 's/^.*ImageName.*:\s*"//' | sed 's/".*$//' || echo "1"
+	cat "$1" 2>/dev/null | grep ImageName | sed 's/^.*ImageName.*:\s*"//' | sed 's/".*$//' || echo "1"
 }
 
 # Check which database(s) to use
