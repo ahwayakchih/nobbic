@@ -64,7 +64,6 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
 
 - fix backup & restore: keep customization values like PODMAN_PULL_ARGS_*, CONTAINER_ENV_*, PODMAN_CREATE_ARGS_*
   and CONTAINER_*_PORT
-- when url in config does not contain port number, redirect after login is broken
 - stop replacing app.js and src/cli/index.js, run config generator instead before calling nodebb in entrypoint.sh.
   we're not running in changing environment (old OpenShift v2) any more, environment variables in containers are
   immutable. To change them, one has to hack it, or simply re-create container. So there's no real need to override
@@ -75,6 +74,8 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
   **update:** replacing may still be needed, or writing config AFTER install, because install parses url from config,
   and if there's a port specified, it overrides port setting with the one from url. Which breaks stuff if external port
   is defferent than the one NodeBB should listen on, e.g., example.com:8080 -> 4567.
+- improve how database scripts modify options for creating NodeBB container (generate "env" file with overriden values
+  for things like CONTAINER_ENV_NODEBB_* and PODMAN_CREATE_ARGS_NODEBB, and then import it to main script)
 - option for NodeBB to keep building assets in "series" mode
 - option to specify additional plugins when creating instance, so they are installed and
   activated from the start.
@@ -85,3 +86,4 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
 - add support for specifying more than one app name at the same time for build, start, upgrade and stop?
 - add command to send online users a message, e.g., "forum will close in 2 minutes, we will be back in about 10 minutes"
 - wait X time before closing forum, so users can save whatever they were working on
+- rewrite whole thing in Go :D
