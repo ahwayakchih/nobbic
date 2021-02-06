@@ -22,9 +22,11 @@ NODE_VERSION=$(echo "$NODEBB_ENV" | grep NODE_VERSION | cut -d= -f2 || echo "")
 NODEBB_VERSION=$(echo "$NODEBB_ENV" | grep NODEBB_VERSION | cut -d= -f2 || echo "")
 NODEBB_PORT=$(echo "$NODEBB_ENV" | grep -E "^APP_USE_PORT=" | cut -d= -f2 || echo "")
 NODEBB_FQDN=$(echo "$NODEBB_ENV" | grep -E "^APP_USE_FQDN=" | cut -d= -f2 || echo "")
+NODEBB_GIT_SHA=$(podman run --rm --volumes-from "${APP_NAME}-nodebb:ro" "nodebb-node:${NODE_VERSION}" /bin/sh -c 'cd /app/nodebb && git rev-parse HEAD')
 
 echo "Hosted on "$(source /etc/os-release && echo $PRETTY_NAME)" using Podman v"$(podman version | head -n 1 | tr -d '[:blank:]' | cut -d : -f2)
 echo "NodeBB v${NODEBB_VERSION} is run with Node.js v${NODE_VERSION}"
+echo "NodeBB SHA:${NODEBB_GIT_SHA}"
 echo "Built with Containerized-NodeBB v"$(podman pod inspect "$APP_NAME" --format='{{range $key,$value := .Labels}}{{$key}}={{$value}}\n{{end}}' | grep "$CONTAINERIZED_NODEBB_LABEL" | cut -d= -f2 || echo "unknown")
 echo "It uses:"
 
