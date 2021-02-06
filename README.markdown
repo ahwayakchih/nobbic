@@ -42,12 +42,18 @@ It was tested and is known to work with following database images from docker.io
 - 4.2.12-bionic
 - 4.4.3-bionic
 
+Also from 3rd party:
+
+- bitnami/mongodb:latest (4.4.3-debian-10-r43 at the time of writing this)
+
 ### redis (Redis)
 
 - 5.0.10-alpine
 - 6.0.10-alpine
 - 6.2-rc2-alpine
 - 6.2-rc3-alpine
+
+It was also tested with NGINX v1.19.6-alpine and v1.18.0-alpine.
 
 ## Cleanup
 
