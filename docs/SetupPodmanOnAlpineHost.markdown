@@ -87,8 +87,8 @@ nano /etc/login.defs
 Make sure it contains:
 
 ```txt
-SUB_UID_COUNT 1000
-SUB_GID_COUNT 1000
+SUB_UID_COUNT 10000
+SUB_GID_COUNT 10000
 ```
 
 You can set numbers bigger than 1000, if there will be many containers (and user accounts created inside them) run by users.
