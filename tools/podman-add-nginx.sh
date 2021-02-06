@@ -31,16 +31,16 @@ fi
 export NGINX_NODEBB_ROOT='/nodebb'
 PODMAN_CREATE_ARGS_NGINX="-v ${POD}-nodebb-build:${NGINX_NODEBB_ROOT}/build:ro -v ${POD}-nodebb-public:${NGINX_NODEBB_ROOT}/public:ro $PODMAN_CREATE_ARGS_NGINX"
 
-NGINX_PORT=${CONTAINER_NGINX_PORT:-$(podman image inspect $NGINX_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
-if [ -z "$NGINX_PORT" ] ; then
-	# This is default NGINX's port
-	if [ "$NGINX_IMAGE" != "$FROM_IMAGE" ] ; then
-		NGINX_PORT=8080
-		echo "WARNING: could not find port number exposed by $NGINX_IMAGE, defaulting to $NGINX_PORT" >&2
-	else
-		echo "ERROR: could not find port number exposed by $NGINX_IMAGE" >&2
-	fi
-fi
+# NGINX_PORT=${CONTAINER_NGINX_PORT:-$(podman image inspect $NGINX_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
+# if [ -z "$NGINX_PORT" ] ; then
+# 	# This is default NGINX's port
+# 	if [ "$NGINX_IMAGE" != "$FROM_IMAGE" ] ; then
+# 		NGINX_PORT=80
+# 		echo "WARNING: could not find port number exposed by $NGINX_IMAGE, defaulting to $NGINX_PORT" >&2
+# 	else
+# 		echo "ERROR: could not find port number exposed by $NGINX_IMAGE" >&2
+# 	fi
+# fi
 
 NGINX_ENV=$(get_env_values_for CONTAINER_ENV_NGINX_ "")
 

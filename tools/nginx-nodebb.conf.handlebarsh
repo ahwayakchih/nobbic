@@ -5,8 +5,8 @@ upstream io_nodes {
 }
 
 server {
-    listen 80;
-    listen [::]:80;
+    listen {{!CONTAINER_NGINX_PORT}};
+    listen [::]:{{!CONTAINER_NGINX_PORT}};
 
     server_name {{!APP_USE_FQDN}} *.{{!APP_USE_FQDN}};
 

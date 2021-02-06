@@ -199,8 +199,11 @@ function buildPod () {
 	export CONTAINER_ENV_NODEBB_APP_USE_PORT=${CONTAINER_ENV_NODEBB_APP_USE_PORT:-${APP_USE_PORT:-8080}}
 
 	if [ -n "$APP_ADD_NGINX" ] ; then
+		# TODO: once "add-*" scripts only modify variables/state and actual `podman create`
+		#       commands are run at the end, these hardcoded values won't be needed here anyway.
 		port=${APP_USE_PORT:-8080}
-		podOptions="-p $port:80"
+		export CONTAINER_NGINX_PORT=${CONTAINER_NGINX_PORT:-80}
+		podOptions="-p ${port}:${CONTAINER_NGINX_PORT}"
 	fi
 
 	podman pod create -n "$podName" $podOptions \
