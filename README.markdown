@@ -69,8 +69,6 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
   immutable. To change them, one has to hack it, or simply re-create container. So there's no real need to override
   data in nconf dynamically.
   Also, it would help users to apply known solutions, if they could simply edit config.js.
-  And currently our code does not support different port numbers in case of NodeBB cluster (when NodeBB workers are
-  run with switched process.env.port for each of them).
   **update:** replacing may still be needed, or writing config AFTER install, because install parses url from config,
   and if there's a port specified, it overrides port setting with the one from url. Which breaks stuff if external port
   is defferent than the one NodeBB should listen on, e.g., example.com:8080 -> 4567.
