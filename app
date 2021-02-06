@@ -84,6 +84,7 @@ function showHelp () {
 	echo "PODMAN_PULL_ARGS_POSTGRES variable is used when pulling image for PostgreSQL database container,"
 	echo "PODMAN_PULL_ARGS_REDIS variable is used when pulling image for Redis database container."
 	echo "PODMAN_PULL_ARGS_NPM variable is used when pulling image for NPM mirror container."
+	echo "PODMAN_PULL_ARGS_NGINX variable is used when pulling image for NGINX server container."
 	echo ""
 	echo "You can set any additional environment variables for specific containers using CONTAINER_ENV_ prefix."
 	echo "CONTAINER_ENV_NODE_* variables will be set as NODE_* in nodebb container."
@@ -93,6 +94,7 @@ function showHelp () {
 	echo "CONTAINER_ENV_PG_* variables will be set as PG* in postgres container."
 	echo "CONTAINER_ENV_REDIS_* variables will be set as * in redis container."
 	echo "CONTAINER_ENV_NPM_* variables will be set as * in npm container."
+	echo "CONTAINER_ENV_NGINX_* variables will be set as * in nginx server container."
 	echo ""
 	echo "You can pass additional arguments to podman commands used for creation of containers (check: podman create --help) through separate environment variables:"
 	echo "PODMAN_CREATE_ARGS_NODEBB variable for NodeBB container,"
@@ -100,6 +102,7 @@ function showHelp () {
 	echo "PODMAN_CREATE_ARGS_POSTGRES variable for PostgreSQL database container,"
 	echo "PODMAN_CREATE_ARGS_REDIS variable for Redis database container."
 	echo "PODMAN_CREATE_ARGS_NPM variable for NPM mirror container."
+	echo "PODMAN_CREATE_ARGS_NGINX variable for NGINX server container."
 	echo "You can also set PODMAN_CREATE_ARGS environment variable, to pass the same additional arguments to all podman create commands."
 	echo ""
 	echo "When container is created, its port number is automaticaly read from image. In case of more than one port being exposed by that image, you can override its value through environment variable:"
@@ -107,6 +110,7 @@ function showHelp () {
 	echo "CONTAINER_POSTGRES_PORT for PostgreSQL container,"
 	echo "CONTAINER_REDIS_PORT for Redis container."
 	echo "CONTAINER_NPM_PORT for NPM container."
+	echo "CONTAINER_NGINX_PORT for NGINX container."
 	echo ""
 }
 
