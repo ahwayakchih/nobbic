@@ -64,6 +64,18 @@ else
 	echo "WARNING: using pre-specified password for PostgreSQL database" >&2
 fi
 
+ALPINE_LOCALE=''
+# Prepare locale, if none is found
+if ! podman run --rm -it "$POSTGRES_IMAGE" /bin/sh -c 'locale -a' &>/dev/null ; then
+	# Make sure PostgreSQL's image is Alpine based, otherwise there's no point to run our script
+	if podman run --rm -it "$POSTGRES_IMAGE" /bin/sh -c 'source /etc/os-release && test "$ID" = "alpine"' ; then
+		ALPINE_LOCALE='nodebb-alpine-locale'
+		# Create temporary container && install musl-locale there
+		podman run --replace --name "$ALPINE_LOCALE" -v ${__DIRNAME}/alpine-install-locale.sh:/usr/local/bin/alpine-install-locale.sh "$POSTGRES_IMAGE" alpine-install-locale.sh
+		POSTGRES_ENV="-e MUSL_LOCPATH=/usr/share/i18n/locales/musl $POSTGRES_ENV"
+	fi
+fi
+
 PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS $PODMAN_CREATE_ARGS_POSTGRES"
 
 	# Specyfing custom user name seem to prevent us from accessing db:
@@ -75,6 +87,20 @@ podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS \
 # Import from backup, if specified
 if [ ! -z "$RESTORE_FROM" ] && [ -f "${RESTORE_FROM}/postgres.txt" ] ; then
 	podman cp "${RESTORE_FROM}/postgres.txt" ${CONTAINER}:/docker-entrypoint-initdb.d/restore-${POD}.sql >/dev/null || exit 1
+fi
+
+# Install locale, if none is found
+if [ -n "$ALPINE_LOCALE" ] ; then
+	tempdir=$(mktemp -d)
+
+	podman cp "${ALPINE_LOCALE}:/usr/bin/locale" "${tempdir}/locale"
+	podman cp "${tempdir}/locale" "${CONTAINER}:/usr/bin/locale"
+
+	podman cp "${ALPINE_LOCALE}:/usr/share/i18n" "${tempdir}/i18n"
+	podman cp "${tempdir}/i18n" "${CONTAINER}:/usr/share/i18n"
+
+	rm -rf "$tempdir"
+	podman rm "$ALPINE_LOCALE"
 fi
 
 # Restore stdout and close 4 that was storing its file descriptor

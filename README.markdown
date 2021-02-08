@@ -83,7 +83,6 @@ Sometimes it may not work, for whatever reason, in which case read [docs/PodmanC
 - option for NodeBB to keep building assets in "series" mode
 - option to specify additional plugins when creating instance, so they are installed and
   activated from the start.
-- add musl-locales to Postgres (and other?) images: https://github.com/docker-library/postgres/issues/501
 - optional, mini-test (puppeteer-based?) to run after start
 - write proper README content
 - show README content in `./app help`?
