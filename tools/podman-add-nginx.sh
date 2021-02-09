@@ -50,7 +50,7 @@ podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS \
 	$NGINX_ENV "$NGINX_IMAGE" || exit 1
 
 configFileName=$(mktemp)
-env APP_USE_FQDN=${APP_USE_FQDN:-localhost} ${__DIRNAME}/handlebar.sh ${__DIRNAME}/nginx-nodebb.conf.handlebarsh > $configFileName
+env APP_USE_FQDN=${APP_USE_FQDN:-localhost} ${__DIRNAME}/handlebar.sh ${__DIRNAME}/nginx.conf.handlebarsh > $configFileName
 podman cp "$configFileName" "${CONTAINER}:/etc/nginx/conf.d/default.conf"
 rm "$configFileName"
 
