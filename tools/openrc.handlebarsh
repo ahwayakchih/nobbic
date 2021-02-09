@@ -1,0 +1,21 @@
+#!/sbin/openrc-run
+#supervisor="supervise-daemon"
+
+command={{!__APP}}
+command_args="start {{APP_NAME}}"
+command_background=true
+command_user="{{USER}}:{{GROUP}}"
+pidfile=/var/run/{{APP_NAME}}-pod.pid
+name="{{APP_NAME}} NodeBB pod"
+ 
+description="{{!APP_NAME}} pod serves NodeBB"
+ 
+depend() {
+    need net podman
+}
+
+stop() {
+    ebegin "Stopping ${RC_SVCNAME}" $(whoami)
+    su -c "${command} stop {{APP_NAME}}" {{USER}}
+    eend $?
+}

@@ -37,6 +37,7 @@ function showHelp () {
 	echo "backup APP_NAME [BACKUPS_DIR] [BACKUP_NAME] - create a backup containing data and setup info"
 	echo "upgrade APP_NAME - upgrade NodeBB version"
 	echo "restore APP_NAME [BACKUPS_DIR] [BACKUP_NAME] - restore from a previously created backup"
+	echo "install APP_NAME - generate service file and instructions on how to enable it"
 	echo "stop APP_NAME   - stop pod"
 	echo "remove APP_NAME - stop pod, remove its containers and their data, remove the pod itself"
 	echo "cleanup [nodebb|node|repo] - remove all pods, containers and images built for NodeBB containers, removing 'node' images, will also remove all nodebb images. 'repo' removes only the image used for downloading repo"
@@ -388,6 +389,20 @@ function restorePod () {
 #
 # @param {string} podName
 #
+function installPod () {
+	local podName=$1
+
+	if [ -z "$podName" ] ; then
+		echo "ERROR: missing pod name" >&2
+		return 1
+	fi
+
+	APP_NAME="$podName" "${__DIRNAME}/tools/os-install-service.sh" || return $?
+}
+
+#
+# @param {string} podName
+#
 function stopPod () {
 	local podName=$1
 
@@ -525,6 +540,10 @@ case "$action" in
 	;;
 	restore)
 		restorePod $(sanitizeAppName $2) "$3" "$4" || exit $?
+		exit 0
+	;;
+	install)
+		installPod $(sanitizeAppName $2) || exit $?
 		exit 0
 	;;
 	stop)

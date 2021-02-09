@@ -1,0 +1,14 @@
+[Unit]
+Description={{!APP_NAME}} pod serves NodeBB
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+User={{USER}}
+ExecStart={{!__APP}} start {{!APP_NAME}}
+ExecStop={{!__APP}} stop {{!APP_NAME}}
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target
