@@ -19,7 +19,7 @@ apk add --no-cache \
     git
 
 # `bash` for our scripts, `patch` for applying patches, `bind-tools` for dig (to check public IP)
-# `jq` is used by some of the .container/action_hooks and alpine-get-nodebb-repo.sh script
+# `jq` is used by some of the .container/action_hooks and tools/alpine-get-nodebb-repo.sh script
 apk add --no-cache \
     bash \
     patch \

@@ -1,16 +1,8 @@
 #!/bin/bash
 
-# WARNING: This script has to be run OUTSIDE container.
-#          It's meant to restore containers' data from backup.
-
-__DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
-source ${__DIRNAME}/common.sh
-__APP=$(dirname "$__DIRNAME")"/app"
-
-APP_NAME="$APP_NAME"
 if [ -z "$APP_NAME" ] ; then
     echo "ERROR: APP_NAME of new instance must be specified, so data from backup can be imported there" >&2
-    exit 1
+    return 1
 fi
 
 BACKUPS_DIR="$BACKUPS_DIR"
@@ -27,7 +19,7 @@ if [ -z "$BACKUP_NAME" ] ; then
 	BACKUP_NAME=$(ls "$BACKUPS_DIR" | grep "^$APP_NAME" | sort -n | tail -n 1)
 	if [ -z "$BACKUP_NAME" ] ; then
 		echo "ERROR: could not find backup of '$APP_NAME', if you are trying to import data to a new app, specify full path to selected backup" >&2
-		exit 1
+		return 1
 	fi
 	echo "WARNING: no BACKUP_NAME specified, defaulting to latest, i.e., '$BACKUP_NAME'" >&2
 else
@@ -41,19 +33,21 @@ echo "Restoring $APP_NAME container data from ${BACKUPS_DIR}/${BACKUP_NAME} back
 fromName="${BACKUPS_DIR}/${BACKUP_NAME}"
 if [ ! -d "$fromName" ] ; then
 	echo "ERROR: $fromName does not exist" >&2
-	exit 1
+	return 1
 else
 	fromName=$(readlink -f "$fromName")
 fi
 
-if podman pod exists ${APP_NAME} ; then
+# This check is here, not at the beginning, because we do not want user to remove pod
+# if backup does not exist, or is invalid for some reason
+if podman pod exists ${APP_NAME} &>/dev/null ; then
 	echo "ERROR: pod '${APP_NAME}' already exists, remove it before trying to retore it" >&2
-	exit 1
+	return 1
 fi
 
 if [ ! -f "${fromName}/nodebb.env" ] ; then
 	echo "ERROR: could not find '${fromName}/nodebb.env' to restore from" >&2
-	exit 1
+	return 1
 fi
 
 # Allow to enforce version numbers
@@ -109,3 +103,4 @@ cmd="RESTORE_FROM='${fromName}'	${cmd}"
 # Alpine/Busybox's env does not support "-S" option (to split single string full of variable declarations).
 # That's why we need to echo them through xargs, to call env with args separated properly and in correct order.
 env $(echo "$cmd" | xargs) ${__APP} start ${APP_NAME}
+# TODO exec instead of starting new subprocess

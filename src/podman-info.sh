@@ -1,20 +1,8 @@
 #!/bin/bash
 
-# WARNING: This script has to be run OUTSIDE of container.
-#          It's meant to get info about Node.js and NodeBB version, what is used, etc...
-
-__DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
-source ${__DIRNAME}/common.sh
-__APP=$(dirname "$__DIRNAME")"/app"
-
-if [ -z "$APP_NAME" ] ; then
-    echo "ERROR: APP_NAME must be specified" >&2
-    exit 1
-fi
-
-if ! podman pod exists ${APP_NAME} ; then
+if ! podman pod exists ${APP_NAME} &>/dev/null ; then
 	echo "ERROR: pod '${APP_NAME}' does not exist" >&2
-	exit 1
+	return 1
 fi
 
 NODEBB_ENV=$(podman container inspect "${APP_NAME}-nodebb" --format='{{range .Config.Env}}{{.}}\n{{end}}' | grep -E "^(NODE(BB)?|APP_USE)_")
@@ -27,7 +15,7 @@ NODEBB_GIT_SHA=$(podman run --rm --volumes-from "${APP_NAME}-nodebb:ro" "nodebb-
 echo "Hosted on "$(source /etc/os-release && echo $PRETTY_NAME)" using Podman v"$(podman version | head -n 1 | tr -d '[:blank:]' | cut -d : -f2)
 echo "NodeBB v${NODEBB_VERSION} is run with Node.js v${NODE_VERSION}"
 echo "NodeBB SHA:${NODEBB_GIT_SHA}"
-echo "Built with Containerized-NodeBB v"$(podman pod inspect "$APP_NAME" --format='{{range $key,$value := .Labels}}{{$key}}={{$value}}\n{{end}}' | grep "$CONTAINERIZED_NODEBB_LABEL" | cut -d= -f2 || echo "unknown")
+echo "Built with Containerized-NodeBB v"$(podman pod inspect "$APP_NAME" --format='{{range $key,$value := .Labels}}{{$key}}={{$value}}\n{{end}}' | grep "$__LABEL" | cut -d= -f2 || echo "unknown")
 echo "It uses:"
 
 for container in $(podman pod inspect "$APP_NAME" --format='{{range .Containers}}{{.Name}}\n{{end}}' | grep "^${APP_NAME}-") ; do
@@ -37,7 +25,6 @@ for container in $(podman pod inspect "$APP_NAME" --format='{{range .Containers}
 	echo "- $name ($image)"
 	echo "  with "$(podman container inspect "$container" --format='{{range .Config.Env}}{{.}}\n{{end}}' | grep '_VERSION' | xargs echo)
 done
-
 
 isRunning=$(podman pod ps --filter status=running --filter name="$APP_NAME" -q)
 if test $isRunning ; then

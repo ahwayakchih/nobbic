@@ -1,40 +1,18 @@
 #!/bin/bash
 
-# WARNING: This script has to be run OUTSIDE container.
-#          It's meant to add PostgreSQL to the specified pod.
-
-# Remember our stdout, so we can bring it back later
-exec 4>&1
-
-# Redirect stdout to stderr, just in case something slips through
-# so it will not break our result.
-exec 1>&2
-
-__DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
-source ${__DIRNAME}/common.sh
-
-POD="$POD"
-if [ -z "$POD" ] ; then
-	echo "ERROR: POD name must be specified to add PostgreSQL to it" >&2
-	exit 1
+if ! podman pod exists ${APP_NAME} &>/dev/null ; then
+	echo "ERROR: could not find pod '${APP_NAME}'" >&2
+	return 1
 fi
 
-if ! podman pod exists ${POD} ; then
-	echo "ERROR: could not find pod '${POD}'" >&2
-	exit 1
-fi
-
-CONTAINER="$CONTAINER"
-if [ -z "$CONTAINER" ] ; then
-	CONTAINER="${POD}-postgres"
-fi
+POSTGRES_CONTAINER=${CONTAINER:-"${APP_NAME}-postgres"}
 
 POSTGRES_IMAGE=${FROM_IMAGE:-docker.io/postgres:alpine}
 # Make sure image is available before we inspect it
-if ! podman image exists "$POSTGRES_IMAGE" >/dev/null ; then
+if ! podman image exists "$POSTGRES_IMAGE" &>/dev/null ; then
 	if ! podman pull $PODMAN_PULL_ARGS_POSTGRES "$POSTGRES_IMAGE" >/dev/null ; then
 		echo "ERROR: could not find '$POSTGRES_IMAGE'" >&2
-		exit 1
+		return 1
 	fi
 fi
 
@@ -42,15 +20,15 @@ fi
 POSTGRES_PORT=${CONTAINER_POSTGRES_PORT:-$(podman image inspect $POSTGRES_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
 if [ -z "$POSTGRES_PORT" ] ; then
 	POSTGRES_PORT=5432
-	echo "WARNING: could not find port number exposed by $POSTGRES_IMAGE, defaulting to $POSTGRES_PORT" >&2
+	echo "WARNING: could not find port number exposed by ${POSTGRES_IMAGE}, defaulting to ${POSTGRES_PORT}" >&2
 fi
 
 POSTGRES_ENV=$(get_env_values_for CONTAINER_ENV_POSTGRES_ POSTGRES_)' '$(get_env_values_for CONTAINER_ENV_PG_ PG)
 
 POSTGRES_DB=$CONTAINER_ENV_POSTGRES_DB
 if [ -z "$POSTGRES_DB" ] ; then
-	POSTGRES_DB=$POD
-	POSTGRES_ENV="-e POSTGRES_DB=$POSTGRES_DB $POSTGRES_ENV"
+	POSTGRES_DB="$APP_NAME"
+	POSTGRES_ENV="-e POSTGRES_DB=${POSTGRES_DB} ${POSTGRES_ENV}"
 fi
 
 POSTGRES_PASSWORD=$CONTAINER_ENV_POSTGRES_PASSWORD
@@ -59,7 +37,7 @@ if [ -z "$POSTGRES_PASSWORD" ] ; then
 	# Ignore exit code 141 which hapens in case of writing to pipe that was closed, which is our case (read urandom until enough data is gathered),
 	# by using trick from https://stackoverflow.com/a/33026977/6352710, i.e., `|| test $? -eq 141` part.
 	POSTGRES_PASSWORD=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w16 | head -n1 | fold -w4 | paste -sd\- - || test $? -eq 141)
-	POSTGRES_ENV="-e POSTGRES_PASSWORD=$POSTGRES_PASSWORD $POSTGRES_ENV"
+	POSTGRES_ENV="-e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} ${POSTGRES_ENV}"
 else
 	echo "WARNING: using pre-specified password for PostgreSQL database" >&2
 fi
@@ -71,22 +49,22 @@ if ! podman run --rm -it "$POSTGRES_IMAGE" /bin/sh -c 'locale -a' &>/dev/null ; 
 	if podman run --rm -it "$POSTGRES_IMAGE" /bin/sh -c 'source /etc/os-release && test "$ID" = "alpine"' ; then
 		ALPINE_LOCALE='nodebb-alpine-locale'
 		# Create temporary container && install musl-locale there
-		podman run --replace --name "$ALPINE_LOCALE" -v ${__DIRNAME}/alpine-install-locale.sh:/usr/local/bin/alpine-install-locale.sh "$POSTGRES_IMAGE" alpine-install-locale.sh
+		podman run --replace --name "$ALPINE_LOCALE" -v ${__TOOLS}/alpine-install-locale.sh:/usr/local/bin/alpine-install-locale.sh "$POSTGRES_IMAGE" alpine-install-locale.sh
 		POSTGRES_ENV="-e MUSL_LOCPATH=/usr/share/i18n/locales/musl $POSTGRES_ENV"
 	fi
 fi
 
-PODMAN_CREATE_ARGS="$PODMAN_CREATE_ARGS $PODMAN_CREATE_ARGS_POSTGRES"
+POSTGRES_CREATE_ARGS="${PODMAN_CREATE_ARGS} ${PODMAN_CREATE_ARGS_POSTGRES}"
 
 	# Specyfing custom user name seem to prevent us from accessing db:
 	# "NodeBB could not connect to your PostgreSQL database. PostgreSQL returned the following error: role "custom_user" does not exist"
-	# -e POSTGRES_USER="$POD"\
-podman create --pod "$POD" --name "$CONTAINER" $PODMAN_CREATE_ARGS \
+	# -e POSTGRES_USER="$APP_NAME"\
+podman create --pod "$APP_NAME" --name "$POSTGRES_CONTAINER" $POSTGRES_CREATE_ARGS \
 	$POSTGRES_ENV "$POSTGRES_IMAGE" >/dev/null || exit 1
 
 # Import from backup, if specified
 if [ ! -z "$RESTORE_FROM" ] && [ -f "${RESTORE_FROM}/postgres.txt" ] ; then
-	podman cp "${RESTORE_FROM}/postgres.txt" ${CONTAINER}:/docker-entrypoint-initdb.d/restore-${POD}.sql >/dev/null || exit 1
+	podman cp "${RESTORE_FROM}/postgres.txt" ${POSTGRES_CONTAINER}:/docker-entrypoint-initdb.d/restore-${APP_NAME}.sql >/dev/null || exit 1
 fi
 
 # Install locale, if none is found
@@ -94,18 +72,19 @@ if [ -n "$ALPINE_LOCALE" ] ; then
 	tempdir=$(mktemp -d)
 
 	podman cp "${ALPINE_LOCALE}:/usr/bin/locale" "${tempdir}/locale"
-	podman cp "${tempdir}/locale" "${CONTAINER}:/usr/bin/locale"
+	podman cp "${tempdir}/locale" "${POSTGRES_CONTAINER}:/usr/bin/locale"
 
 	podman cp "${ALPINE_LOCALE}:/usr/share/i18n" "${tempdir}/i18n"
-	podman cp "${tempdir}/i18n" "${CONTAINER}:/usr/share/i18n"
+	podman cp "${tempdir}/i18n" "${POSTGRES_CONTAINER}:/usr/share/i18n"
 
 	rm -rf "$tempdir"
 	podman rm "$ALPINE_LOCALE"
 fi
 
-# Restore stdout and close 4 that was storing its file descriptor
-exec 1>&4-
-
 # Output result
-echo '-e CONTAINER_POSTGRES_HOST=localhost -e CONTAINER_POSTGRES_PORT='$POSTGRES_PORT' -e CONTAINER_POSTGRES_PASSWORD='$POSTGRES_PASSWORD\
-	'-e CONTAINER_POSTGRES_USER=postgres -e CONTAINER_POSTGRES_DB='$POSTGRES_DB
+export PODMAN_CREATE_ARGS_NODEBB="-e CONTAINER_POSTGRES_HOST=localhost\
+	-e CONTAINER_POSTGRES_PORT=${POSTGRES_PORT}\
+	-e CONTAINER_POSTGRES_PASSWORD=${POSTGRES_PASSWORD}\
+	-e CONTAINER_POSTGRES_USER=postgres\
+	-e CONTAINER_POSTGRES_DB=${POSTGRES_DB}\
+	${PODMAN_CREATE_ARGS_NODEBB}"

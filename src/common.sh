@@ -35,3 +35,11 @@ get_env_values_for() {
 		echo -n "-e "$(echo "$v" | cut -d= -f1 | sed "s/^${1}/${2}/")'='$(echo "$v" | cut -d= -f2)' '
 	done
 }
+
+# @param {string} templateName
+# @param {string} [outputFile]
+generate() {
+	outputFile=${2:-$(mktemp -p ./)}
+	env "${__TOOLS}/handlebar.sh" "${__TEMPLATES}/$1" > "$outputFile" || return 1
+	echo $outputFile
+}

@@ -3,8 +3,8 @@
 # WARNING: This script has to be sourced by os-install-service.sh script.
 #          It should be run on a system that uses OpenRC init system.
 
-serviceFile=$(mktemp -p ./)
-env "${__DIRNAME}/handlebar.sh" "${__DIRNAME}/openrc.handlebarsh" > "$serviceFile"
+serviceFile="${APP_NAME}.service"
+generate openrc.handlebarsh $serviceFile || return 1
 chmod +x "$serviceFile"
 unitFile="/etc/init.d/$APP_NAME"
 

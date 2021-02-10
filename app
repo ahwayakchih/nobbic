@@ -1,14 +1,39 @@
 #!/bin/bash
 
-action=$1
-__DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
-source ${__DIRNAME}/tools/common.sh
+export action=$1
 
-export CONTAINERIZED_NODEBB_VERSION=0.5.0
-export CONTAINERIZED_NODEBB_LABEL=containerized.nodebb
+export __VERSION=0.5.0
+export __LABEL=containerized.nodebb
 
-export PODMAN_ARG_LABEL="--label ${CONTAINERIZED_NODEBB_LABEL}=${CONTAINERIZED_NODEBB_VERSION}"
-export PODMAN_CREATE_ARGS="$PODMAN_ARG_LABEL $PODMAN_CREATE_ARGS"
+export __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
+export __APP="${__DIRNAME}/app"
+export __SRC="${__DIRNAME}/src"
+export __TOOLS="${__DIRNAME}/tools"
+export __TEMPLATES="${__DIRNAME}/src/templates"
+
+source ${__SRC}/common.sh
+
+export PODMAN_ARG_LABEL="--label ${__LABEL}=${__VERSION}"
+export PODMAN_CREATE_ARGS="${PODMAN_ARG_LABEL} ${PODMAN_CREATE_ARGS}"
+
+#
+# @param {string} scriptPath
+#
+function inline () {
+	local __INLINED=$1
+
+	if [ -z "$__INLINED" ] ; then
+		echo "WARNING: No script path was specified to inline, ignoring" >&2
+		return 0
+	fi
+
+	if test $(basename "$__INLINED") = "$__INLINED" ; then
+		__INLINED="${__SRC}/${__INLINED}"
+	fi
+
+	source $__INLINED
+	return $?
+}
 
 #
 # @param {string} appName
@@ -116,49 +141,43 @@ function showHelp () {
 }
 
 #
-# @param {string} podName
+# @param {string} APP_NAME is the same as pod's name
 # @param {string} fromName   full script path or repo/image name
 # @param {string} toolPath   path to default script to use, if image is not a script path
 #
 addToPod() {
-	local podName=$1
+	local APP_NAME=$1
 	local fromName=$2
 	local toolPath=$3
 
-	local options="POD=$podName"
-	if [ ! -z "$RESTORE_FROM" ] && [ -d "$RESTORE_FROM" ]; then
-		options="$options RESTORE_FROM=${RESTORE_FROM}"
-	fi
-
 	case "$fromName" in
-		1) env $(echo "$options" | xargs) "$toolPath";;
-		./*|/*) if [ -f "$fromName" ] ; then env $(echo "$options" | xargs) "$fromName"; else echo "'$fromName' script not found">&2; fi ;;
-		*) env $(echo "$options FROM_IMAGE=$fromName" | xargs) "$toolPath";;
+		1) inline "$toolPath" || return $?;;
+		./*|/*) if [ -f "$fromName" ] ; then inline "$fromName" || return $?; else echo "'$fromName' script not found">&2; fi ;;
+		*) local FROM_IMAGE=$fromName; inline "$toolPath" || return $?;;
 	esac
 }
 
 #
-# @param {string} podName
+# @param {string} APP_NAME is the same as pod's name
 #
 function infoPod () {
-	local podName=$1
+	local APP_NAME=$1
 
-	if [ -z "$podName" ] ; then
+	if [ -z "$APP_NAME" ] ; then
 		echo "ERROR: missing pod name" >&2
 		return 1
 	fi
 
-	APP_NAME="$podName" "${__DIRNAME}/tools/podman-info.sh" || return $?
+	inline podman-info.sh || return $?
 }
 
 #
-# @param {string} podName
+# @param {string} APP_NAME is the same as pod's name
 #
 function buildPod () {
-	local podName=$1
-	local nodebbOptions=""
+	local APP_NAME=$1
 
-	if [ -z "$podName" ] ; then
+	if [ -z "$APP_NAME" ] ; then
 		echo "ERROR: missing pod name" >&2
 		return 1
 	fi
@@ -169,7 +188,9 @@ function buildPod () {
 		# echo "         or specify database access info when running the pod" >&2
 	fi
 
-	echo "Building '$podName' pod..."
+	echo "Building '${APP_NAME}' pod..."
+
+	export PODMAN_CREATE_ARGS_NODEBB="${PODMAN_CREATE_ARGS_NODEBB}"
 
 	local podOptions=""
 
@@ -207,237 +228,216 @@ function buildPod () {
 		podOptions="-p ${port}:${CONTAINER_NGINX_PORT}"
 	fi
 
-	podman pod create -n "$podName" $podOptions \
+	podman pod create -n "$APP_NAME" $podOptions \
 		$PODMAN_ARG_LABEL \
-		--add-host=localhost:127.0.0.1 --hostname="$podName" || return $?
+		--add-host=localhost:127.0.0.1 --hostname="$APP_NAME" || return $?
 
-	if [ ! -z "$APP_ADD_MONGODB" ] ; then
-		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_MONGODB "${__DIRNAME}/tools/podman-add-mongodb.sh")
-		if [ -z "$addNodeBBOptions" ] ; then
-			return 1
-		fi
-		nodebbOptions="$nodebbOptions $addNodeBBOptions"
+	if [ -n "$APP_ADD_MONGODB" ] ; then
+		addToPod "$APP_NAME" "$APP_ADD_MONGODB" podman-add-mongodb.sh || return $?
 	fi
 
-	if [ ! -z "$APP_ADD_REDIS" ] ; then
-		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_REDIS "${__DIRNAME}/tools/podman-add-redis.sh")
-		if [ -z "$addNodeBBOptions" ] ; then
-			return 1
-		fi
-		nodebbOptions="$nodebbOptions $addNodeBBOptions"
+	if [ -n "$APP_ADD_REDIS" ] ; then
+		addToPod "$APP_NAME" "$APP_ADD_REDIS" podman-add-redis.sh || return $?
 	fi
 
-	if [ ! -z "$APP_ADD_POSTGRES" ] ; then
-		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_POSTGRES "${__DIRNAME}/tools/podman-add-postgres.sh")
-		if [ -z "$addNodeBBOptions" ] ; then
-			return 1
-		fi
-		nodebbOptions="$nodebbOptions $addNodeBBOptions"
+	if [ -n "$APP_ADD_POSTGRES" ] ; then
+		addToPod "$APP_NAME" "$APP_ADD_POSTGRES" podman-add-postgres.sh || return $?
 	fi
 
-	if [ ! -z "$APP_ADD_NPM" ] ; then
-		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_NPM "${__DIRNAME}/tools/podman-add-npm.sh")
-		if [ -z "$addNodeBBOptions" ] ; then
-			return 1
-		fi
-		nodebbOptions="$nodebbOptions $addNodeBBOptions"
+	if [ -n "$APP_ADD_NPM" ] ; then
+		addToPod "$APP_NAME" "$APP_ADD_NPM" podman-add-npm.sh || return $?
 	fi
 
-	if [ ! -z "$APP_ADD_NGINX" ] ; then
-		addNodeBBOptions=$(addToPod "$podName" $APP_ADD_NGINX "${__DIRNAME}/tools/podman-add-nginx.sh")
-		# Nginx does not add any options
-		if [ -n "$addNodeBBOptions" ] ; then
-			nodebbOptions="$nodebbOptions $addNodeBBOptions"
-		fi
+	if [ -n "$APP_ADD_NGINX" ] ; then
+		addToPod "$APP_NAME" "$APP_ADD_NGINX" podman-add-nginx.sh || return $?
 	fi
 
-	export PODMAN_CREATE_ARGS_NODEBB="$PODMAN_CREATE_ARGS_NODEBB $nodebbOptions"
-	addToPod "$podName" ${APP_ADD_NODEBB:-1} "${__DIRNAME}/tools/podman-add-nodebb.sh" || return $?
+	addToPod "$APP_NAME" "${APP_ADD_NODEBB:-1}" podman-add-nodebb.sh || return $?
 }
 
 #
-# @param {string} podName
+# @param {string} APP_NAME is the same as pod's name
 #
 function startPod () {
-	local podName=$1
+	local APP_NAME=$1
 
-	if [ -z "$podName" ] ; then
+	if [ -z "$APP_NAME" ] ; then
 		echo "ERROR: missing pod name" >&2
 		return 1
 	fi
 
-	local existed=$(podman pod exists "$podName" && echo exists);
-	test "$existed" || buildPod "$podName" || return $?
+	local existed=$(podman pod exists "$APP_NAME" && echo exists);
+	test "$existed" || buildPod "$APP_NAME" || return $?
 
 	if test "$existed" ; then
-		echo "Restarting '$podName' pod..."
-		podman pod start "$podName" || return $?
+		echo "Restarting '$APP_NAME' pod..."
+		podman pod start "$APP_NAME" || return $?
 		# Use `restart` right after `start` because of ports not being accessible from outside after stop+start.
 		# See: https://github.com/containers/podman/issues/7103 - issue is closed, but on Arch with podman v2.2.1
 		# and cgroups v1 problem seems to still exist. With cgroups v2 it works ok.
-		# podman pod restart "$podName" || return 1
+		# podman pod restart "$APP_NAME" || return 1
 		(
-			WAIT_FOR_PORT=$(podman container inspect "${podName}-nodebb" --format="{{range .Config.Env}}{{.}}\n{{end}}" | grep -E '^PORT=' | cut -d= -f2 | cut -d, -f1)
-			echo "Waiting for $podName port $WAIT_FOR_PORT to be ready inside container"
-			podman exec "${podName}-nodebb" /app/.container/tools/wait-for.sh 127.0.0.1:$WAIT_FOR_PORT -t 120 -l || exit 1
+			WAIT_FOR_PORT=$(podman container inspect "${APP_NAME}-nodebb" --format="{{range .Config.Env}}{{.}}\n{{end}}" | grep -E '^PORT=' | cut -d= -f2 | cut -d, -f1)
+			echo "Waiting for ${APP_NAME} port ${WAIT_FOR_PORT} to be ready inside container"
+			podman exec "${APP_NAME}-nodebb" /app/.container/tools/wait-for.sh 127.0.0.1:${WAIT_FOR_PORT} -t 120 -l || exit 1
 			sleep 1
-			WAIT_FOR_PORT=$(podman container inspect "${podName}-nodebb" --format="{{range .Config.Env}}{{.}}\n{{end}}" | grep -E '^APP_USE_PORT=' | cut -d= -f2)
-			echo "Waiting for $podName port $WAIT_FOR_PORT to be accessible from outside of container"
+			WAIT_FOR_PORT=$(podman container inspect "${APP_NAME}-nodebb" --format="{{range .Config.Env}}{{.}}\n{{end}}" | grep -E '^APP_USE_PORT=' | cut -d= -f2)
+			echo "Waiting for $APP_NAME port ${WAIT_FOR_PORT} to be accessible from outside of container"
 			${__DIRNAME}/.container/tools/wait-for.sh localhost:${WAIT_FOR_PORT} -t 20 -l && echo "NodeBB should be accessible now" && exit 0
 			echo "WARNING: Looks like podman on this system is buggy and needs restart, not just start. Restarting..."
-			podman pod restart "$podName"
+			podman pod restart "$APP_NAME"
 			# TODO: reattach to nodebb stdout?
 		)&
 	else
-		echo "Starting '$podName' pod..."
-		podman pod start "$podName" || return $?
+		echo "Starting '${APP_NAME}' pod..."
+		podman pod start "$APP_NAME" || return $?
 	fi
 
-	podman attach --no-stdin --sig-proxy=false "${podName}-nodebb" || return 0
+	podman attach --no-stdin --sig-proxy=false "${APP_NAME}-nodebb" || return 0
 }
 
 #
-# @param {string} podName
+# @param {string} APP_NAME is the same as pod's name
 #
 function enterBash () {
-	local podName=$1
+	local APP_NAME=$1
 
-	if [ -z "$podName" ] ; then
+	if [ -z "$APP_NAME" ] ; then
 		echo "ERROR: missing pod name" >&2
 		return 1
 	fi
 
-	if ! podman pod exists "$podName" ; then
-		echo "ERROR: could not find pod '$podName'" >&2
+	if ! podman pod exists "$APP_NAME" ; then
+		echo "ERROR: could not find pod '${APP_NAME}'" >&2
 		return 1
 	fi
 
-	podman exec -it ${podName}-nodebb /bin/bash || return $?
+	podman exec -it ${APP_NAME}-nodebb /bin/bash || return $?
 }
 
 #
-# @param {string} podName
+# @param {string} APP_NAME is the same as pod's name
 # @param {string} command
 # @param {string} arg...
 #
 function runCommand () {
-	local podName=$1
+	local APP_NAME=$1
 
-	if [ -z "$podName" ] ; then
+	if [ -z "$APP_NAME" ] ; then
 		echo "ERROR: missing pod name" >&2
 		return 1
 	fi
 
-	if ! podman pod exists "$podName" ; then
-		echo "ERROR: could not find pod '$podName'" >&2
+	if ! podman pod exists "$APP_NAME" ; then
+		echo "ERROR: could not find pod '${APP_NAME}'" >&2
 		return 1
 	fi
 
-	podman exec ${podName}-nodebb /bin/bash -c "source .container/lib/onbb_utils.sh; $(shift 1; echo $@)" || return $?
+	podman exec ${APP_NAME}-nodebb /bin/bash -c "source .container/lib/onbb_utils.sh; $(shift 1; echo $@)" || return $?
 }
 
 #
-# @param {string} podName
+# @param {string} APP_NAME is the same as pod's name
 # @param {string} backupsDir
 # @param {string} backupName
 #
 function backupPod () {
-	local podName=$1
-	local backupDir=$2
-	local backupName=$3
+	local APP_NAME=$1
+	local BACKUPS_DIR=$2
+	local BACKUP_NAME=$3
 
-	if [ -z "$podName" ] ; then
+	if [ -z "$APP_NAME" ] ; then
 		echo "ERROR: missing pod name" >&2
 		return 1
 	fi
 
-	APP_NAME="$podName" BACKUPS_DIR="$backupDir" BACKUP_NAME="$backupName" "${__DIRNAME}/tools/podman-backup.sh" || return $?
+	inline podman-backup.sh || return $?
 }
 
 #
-# @param {string} podName
+# @param {string} APP_NAME is the same as pod's name
 #
 function upgradePod () {
-	local podName=$1
+	local APP_NAME=$1
 
-	if [ -z "$podName" ] ; then
+	if [ -z "$APP_NAME" ] ; then
 		echo "ERROR: missing pod name" >&2
 		return 1
 	fi
 
-	APP_NAME="$podName" "${__DIRNAME}/tools/podman-upgrade.sh" || return $?
+	inline podman-upgrade.sh || return $?
 }
 
 #
-# @param {string} podName
+# @param {string} APP_NAME is the same as pod's name
 # @param {string} backupsDir
 # @param {string} backupName
 #
 function restorePod () {
-	local podName=$1
-	local backupDir=$2
-	local backupName=$3
+	local APP_NAME=$1
+	local BACKUPS_DIR=$2
+	local BACKUP_NAME=$3
 
-	if [ -z "$podName" ] ; then
+	if [ -z "$APP_NAME" ] ; then
 		echo "ERROR: missing pod name" >&2
 		return 1
 	fi
 
-	APP_NAME="$podName" BACKUPS_DIR="$backupDir" BACKUP_NAME="$backupName" "${__DIRNAME}/tools/podman-restore.sh" || return $?
+	inline podman-restore.sh || return $?
 }
 
 #
-# @param {string} podName
+# @param {string} APP_NAME is the same as pod's name
 #
 function installPod () {
-	local podName=$1
+	local APP_NAME=$1
 
-	if [ -z "$podName" ] ; then
+	if [ -z "$APP_NAME" ] ; then
 		echo "ERROR: missing pod name" >&2
 		return 1
 	fi
 
-	APP_NAME="$podName" "${__DIRNAME}/tools/os-install-service.sh" || return $?
+	inline host-install-service.sh || return $?
 }
 
 #
-# @param {string} podName
+# @param {string} APP_NAME is the same as pod's name
 #
 function stopPod () {
-	local podName=$1
+	local APP_NAME=$1
 
-	if [ -z "$podName" ] ; then
+	if [ -z "$APP_NAME" ] ; then
 		echo "ERROR: missing pod name" >&2
 		return 1
 	fi
 
-	local isRunning=$(podman ps --filter status=running --filter name='^'$podName'-nodebb$' -q)
+	local isRunning=$(podman ps --filter status=running --filter name='^'$APP_NAME'-nodebb$' -q)
 	if [ ! -z "$isRunning" ] ; then
 		# Try to prevent possible errors, by stopping NodeBB first
-		echo -n "Stopping NodeBB of '$podName' pod... "
-		(podman stop -t 10 ${podName}-nodebb >/dev/null && echo "OK") || echo "Failed"
+		echo -n "Stopping NodeBB of '${APP_NAME}' pod... "
+		(podman stop -t 10 ${APP_NAME}-nodebb >/dev/null && echo "OK") || echo "Failed"
 	fi
 
-	echo "Stopping '$podName' pod..."
-	podman pod stop -t 10 "$podName" || return $?
+	echo "Stopping '${APP_NAME}' pod..."
+	podman pod stop -t 10 "$APP_NAME" || return $?
 }
 
 #
-# @param {string} podName
+# @param {string} APP_NAME is the same as pod's name
 #
 function removePod () {
-	local podName=$1
+	local APP_NAME=$1
 
-	if [ -z "$podName" ] ; then
+	if [ -z "$APP_NAME" ] ; then
 		echo "ERROR: missing pod name" >&2
 		return 1
 	fi
 
-	stopPod $podName || return 1
+	stopPod $APP_NAME || return 1
 
-	echo "Removing '$podName' pod..."
-	podman pod rm "$podName" || return $?
-	podman volume ls --format='{{.Name}}' | grep -E "^${podName}-" | xargs -r podman volume rm || return $?
+	echo "Removing '${APP_NAME}' pod..."
+	podman pod rm "$APP_NAME" || return $?
+	podman volume ls --format='{{.Name}}' | grep -E "^${APP_NAME}-" | xargs -r podman volume rm || return $?
 }
 
 #
@@ -452,7 +452,7 @@ function cleanupImages () {
 	fi
 
 	# Remove all pods first
-	for pod in $(podman pod ls --filter label="$CONTAINERIZED_NODEBB_LABEL" --format '{{.Name}}') ; do
+	for pod in $(podman pod ls --filter label="$__LABEL" --format '{{.Name}}') ; do
 		removePod "$pod"
 	done
 
