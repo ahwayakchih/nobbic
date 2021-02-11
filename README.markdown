@@ -5,7 +5,7 @@ This project's goal is to make it easy to setup new NodeBB installation in a pod
 
 While it's quite easy to start the NodeBB docker container alone, things complicate quickly when one wants
 to start also database container, NGINX proxy container, etc... It's not difficult, but it takes time
-(and a lot of reading) if it's not something you everyday already.
+(and a lot of reading) if it's not something you do everyday already.
 
 
 ## Requirements
