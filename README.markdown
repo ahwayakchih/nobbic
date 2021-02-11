@@ -65,7 +65,7 @@ That will install latest released NodeBB version, with latest version of Redis d
 It will take some time to download and prepare all the stuff for the first time (somewhere between 15-30 minutes, but it all depends on network, processors and available RAM).
 Every next try that uses the same Node.js version, should be much faster.
 
-Read [docs/Usage.markdown](./docs/Usage.markdown) for more info about all the possibilities.
+Read [docs/Usage.markdown](./docs/Usage.markdown) to see full list of supported actions.
 
 ## TODO
 
