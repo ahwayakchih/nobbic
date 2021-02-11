@@ -50,94 +50,26 @@ function sanitizeAppName () {
 }
 
 function showHelp () {
-	echo "Usage: app [ACTION]"
-	echo ""
-	echo "Supported actions are:"
-	echo "help - show this info"
-	echo "build APP_NAME  - build pod with specified name"
-	echo "info APP_NAME   - get information about application's setup"
-	echo "start APP_NAME  - start pod (build it if none exists) with specified name"
-	echo "bash APP_NAME   - enter bash command line inside NodeBB container"
-	echo "exec APP_NAME COMMAND [ARG...]  - run command inside NodeBB container"
-	echo "backup APP_NAME [BACKUPS_DIR] [BACKUP_NAME] - create a backup containing data and setup info"
-	echo "restore APP_NAME [BACKUPS_DIR] [BACKUP_NAME] - restore from a previously created backup"
-	echo "upgrade APP_NAME - upgrade NodeBB version"
-	echo "install APP_NAME - generate service file and instructions on how to enable it"
-	echo "stop APP_NAME   - stop pod"
-	echo "remove APP_NAME - stop pod, remove its containers and their data, remove the pod itself"
-	echo "cleanup [nodebb|node|repo] - remove all pods, containers and images built for NodeBB containers, removing 'node' images, will also remove all nodebb images. 'repo' removes only the image used for downloading repo"
-	echo ""
-	echo "When building, you can specify database images to use for pod containers by setting environment variables:"
-	echo "APP_ADD_MONGODB  - set it to 1 to use default 'bionic' image, or set image name, e.g., docker.io/mongo:4.4.2-bionic"
-	echo "APP_ADD_POSTGRES - set it to 1 to use default 'alpine' image, or set image name, e.g., docker.io/postgres:13.1-alpine"
-	echo "APP_ADD_REDIS    - set it to 1 to use default 'alpine3.12' image, or set image name, e.g., docker.io/redis:6.0.9-alpine"
-	echo "You can specify two: one of MongoDB or PostgreSQL and Redis, to make NodeBB use Redis for session storage only."
-	echo "Keep in mind that support for PostgreSQL was added in v1.10.x."
-	echo ""
-	echo "Similarly you can add local NPM mirror, which may be helpful when you're testing various configurations, or simply running more than one forum:"
-	echo "APP_ADD_NPM      - set it to 1 to use default 'verdaccio/verdaccio:latest' image, or set image name, e.g., docker.io/verdaccio/verdaccio:5.x"
-	echo ""
-	echo "You can add NGINX server to serve static assets and load balance connections between multiple instances of NodeBB (see APP_USE_CLUSTER):"
-	echo "APP_ADD_NGINX    - set it to 1 to use default 'docker.io/nginx:alpine' image, or set image name, e.g., docker.io/nginx:stable-alpine"
-	echo ""
-	echo "By default, official 'docker.io/node:NODE_VERSION-alpine' image will be used for NodeBB."
-	echo "You can change that by specifying APP_ADD_NODEBB environment variable with value like 'some.repo/image:%NODE_VERSION%'."
-	echo "'%%' placeholder will be replaced by NODE_VERSION value (either specified, or detected for selected NodeBB version)."
-	echo ""
-	echo "If placeholder is missing from image name, nothing will be replaced, so better make sure that image contains Node.js version that will work with NodeBB".
-	echo "You can set NODEBB_VERSION to select which version of the forum to run. By default, latest release will be used."
-	echo "By default, 'nodebb-repo' name will be used for volume containing clone of NodeBB git repository. It will be shared by all apps (DO NOT create/restore/upgrade them concurrently!)."
-	echo "You can create separate volume for application by setting NODEBB_REPO_VOLUME environment variable with some unique name as its value."
-	echo ""
-	echo "Set NODEBB_GIT to URL of git repository of NodeBB forum."
-	echo "Official repo will be used by default, but you can specify other, e.g., with your custom modifications."
-	echo "It just has to follow example of official repo and create tag per released version."
-	echo ""
-	echo "By default, forum will be run with Node.js version specified in the 'package.json' file."
-	echo "You can enforce different version by setting NODE_VERSION environment variable."
-	echo ""
-	echo "You can set also APP_USE_PORT (http/https, defaults to 4567) value to port number you want the pod to listen to."
-	echo "Set APP_USE_CLUSTER to a number higher than 1, to make NodeBB spin more than one process for handling connections."
-	echo ""
-	echo "For example: APP_USE_FQDN=localhost APP_ADD_MONGODB=1 ./nobbic start my-forum"
-	echo "It will create pod that includes MongoDB based on Ubuntu bionic (default) and NodeBB latest (default), and then run it with minimum required Node.js version for that NodeBB."
-	echo ""
-	echo "Another example: NODEBB_VERSION=1.12.1 APP_USE_FQDN=localhost APP_ADD_POSTGRES=1 ./nobbic start my-forum"
-	echo "It will create pod with NodeBB v1.12.1 that uses PostgreSQL as database engine and sets its URL to localhost:4567 (default port) and websockets to localhost:4567 (default)"
-	echo ""
-	echo "Before container is created, specified (or default) images are pulled from repository (check: podman pull --help). You can pass additional arguments to pull command through environment variables:"
-	echo "PODMAN_PULL_ARGS_MONGODB variable is used when pulling image for MongoDB database container,"
-	echo "PODMAN_PULL_ARGS_POSTGRES variable is used when pulling image for PostgreSQL database container,"
-	echo "PODMAN_PULL_ARGS_REDIS variable is used when pulling image for Redis database container."
-	echo "PODMAN_PULL_ARGS_NPM variable is used when pulling image for NPM mirror container."
-	echo "PODMAN_PULL_ARGS_NGINX variable is used when pulling image for NGINX server container."
-	echo ""
-	echo "You can set any additional environment variables for specific containers using CONTAINER_ENV_ prefix."
-	echo "CONTAINER_ENV_NODE_* variables will be set as NODE_* in nodebb container."
-	echo "CONTAINER_ENV_NODEBB_* variables will be set as * in nodebb container."
-	echo "CONTAINER_ENV_MONGODB_* variables will be set as * in mongodb container."
-	echo "CONTAINER_ENV_POSTGRES_* variables will be set as POSTGRES_* in postgres container."
-	echo "CONTAINER_ENV_PG_* variables will be set as PG* in postgres container."
-	echo "CONTAINER_ENV_REDIS_* variables will be set as * in redis container."
-	echo "CONTAINER_ENV_NPM_* variables will be set as * in npm container."
-	echo "CONTAINER_ENV_NGINX_* variables will be set as * in nginx server container."
-	echo ""
-	echo "You can pass additional arguments to podman commands used for creation of containers (check: podman create --help) through separate environment variables:"
-	echo "PODMAN_CREATE_ARGS_NODEBB variable for NodeBB container,"
-	echo "PODMAN_CREATE_ARGS_MONGODB variable for MongoDB database container,"
-	echo "PODMAN_CREATE_ARGS_POSTGRES variable for PostgreSQL database container,"
-	echo "PODMAN_CREATE_ARGS_REDIS variable for Redis database container."
-	echo "PODMAN_CREATE_ARGS_NPM variable for NPM mirror container."
-	echo "PODMAN_CREATE_ARGS_NGINX variable for NGINX server container."
-	echo "You can also set PODMAN_CREATE_ARGS environment variable, to pass the same additional arguments to all podman create commands."
-	echo ""
-	echo "When container is created, its port number is automaticaly read from image. In case of more than one port being exposed by that image, you can override its value through environment variable:"
-	echo "CONTAINER_MONGODB_PORT for MongoDB container,"
-	echo "CONTAINER_POSTGRES_PORT for PostgreSQL container,"
-	echo "CONTAINER_REDIS_PORT for Redis container."
-	echo "CONTAINER_NPM_PORT for NPM container."
-	echo "CONTAINER_NGINX_PORT for NGINX container."
-	echo ""
+	local action=$1;
+	local src="./docs/Usage.markdown"
+	if [ -n "$action" ] ; then
+		src="./docs/actions/$(basename $action).markdown"
+	fi
+
+	if [ ! -f "$src" ] ; then
+		echo "ERROR: no documentation available" >&2
+		return 1
+	fi
+
+	echo 'Usage:'
+	grep -v -E '[[:space:]]*\[Read more\]\([^)]*\)\.*$' "$src"\
+		| tail -n +3\
+		| sed -E 's/[\#]+[[:space:]]*//g'\
+		| sed 's/```sh$/'$(tput bold)'/'\
+		| sed 's/```$/'$(tput sgr0)'/'\
+		| sed 's/^\*/nobbic/'\
+		| sed -E 's/`([^`]*)`/'$(tput bold)'\1'$(tput sgr0)'/g'\
+		| sed -E 's/\[([^]]+)\]\([^)]*\)/\1/g'
 }
 
 #
@@ -509,7 +441,7 @@ function cleanupImages () {
 
 
 if [ -z "$action" ] || [ "$action" = "help" ] ; then
-	showHelp
+	showHelp $2
 	exit 0
 fi
 
