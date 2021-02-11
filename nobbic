@@ -61,6 +61,14 @@ function showHelp () {
 		return 1
 	fi
 
+	local prefix=""
+	if ! command nobbic --help &>/dev/null ; then
+		prefix="$__DIRNAME"
+		if [ "$(pwd)" = "$__DIRNAME" ] ; then
+			prefix="./"
+		fi
+	fi
+
 	echo 'Usage:'
 	grep -v -E '[[:space:]]*\[Read more\]\([^)]*\)\.*$' "$src"\
 		| tail -n +3\
@@ -69,7 +77,8 @@ function showHelp () {
 		| sed 's/```$/'$(tput sgr0)'/'\
 		| sed 's/^\*/nobbic/'\
 		| sed -E 's/`([^`]*)`/'$(tput bold)'\1'$(tput sgr0)'/g'\
-		| sed -E 's/\[([^]]+)\]\([^)]*\)/\1/g'
+		| sed -E 's/\[([^]]+)\]\([^)]*\)/\1/g'\
+		| sed -E 's/(^|[[:space:]])nobbic($|[[:space:]])/\1'${prefix//\//\\\/}'nobbic\2/'
 }
 
 #
