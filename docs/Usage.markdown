@@ -1,8 +1,12 @@
 Usage
 =====
 
-Project offers an easy way to instal and run NodeBB with one of PostgreSQL, MongoDB or Redis as a main database,
-or one fo the first two as main and Redis as a session database.
+```sh
+nobbic ACTION [ARG...]
+```
+
+Nobbic offers an easy way to install and run NodeBB with one of PostgreSQL, MongoDB or Redis as a main database,
+or one of the first two as a main and Redis as a session database.
 
 It also allows to create backups and restore from those backups.
 
