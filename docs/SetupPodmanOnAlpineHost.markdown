@@ -7,8 +7,8 @@ This tutorial is mainly a compilation of 3 other documents:
 2. https://wiki.alpinelinux.org/wiki/Podman
 3. https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md
 
-It was written when **Alpine Linux** did not have podman in **v3.13** repository, only in "edge" repository.
-Hopefully with next version it will be available in default repositories.
+It was written when [**Alpine Linux**](https://alpinelinux.org/) did not have podman in the **v3.13** repository,
+only in the "edge" repository. Hopefully with next version it will be available in default repositories.
 In the meantime, keep reading this "tutorial".
 
 ## Install Alpine Linux from ISO
