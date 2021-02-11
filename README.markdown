@@ -52,12 +52,15 @@ Once it's "installed", you can use it from command line, for example:
 ./nobbic help
 ```
 
+You can add nobic's path to the `PATH` environment variable, or keep prefixing commands with path to the script, e.g., `./nobbic` or `~/nobbic/nobic`, etc...
+For clarity, example commands following in this and other documents found in [docs](./docs) subdirectory will not be prefixed.
+
 ## Usage
 
 To quickly proceed to creating and starting NodeBB, try:
 
 ```sh
-APP_USE_FQDN=localhost APP_ADD_REDIS=1 ./nobbic start my-new-forum
+APP_USE_FQDN=localhost APP_ADD_REDIS=1 nobbic start my-new-forum
 ```
 
 That will install latest released NodeBB version, with latest version of Redis database, and make it accessible through "http://localhost:8080" URL.

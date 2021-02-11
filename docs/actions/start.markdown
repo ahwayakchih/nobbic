@@ -54,7 +54,7 @@ Set `APP_USE_CLUSTER` to a number higher than 1, to make NodeBB spin more than o
 For example:
 
 ```sh
-APP_USE_FQDN=localhost APP_ADD_MONGODB=1 ./nobbic start my-forum
+APP_USE_FQDN=localhost APP_ADD_MONGODB=1 nobbic start my-forum
 ```
 
 It will create pod that includes MongoDB based on Ubuntu bionic (default) and NodeBB latest (default), and then run it with minimum required Node.js version for that NodeBB.
@@ -62,7 +62,7 @@ It will create pod that includes MongoDB based on Ubuntu bionic (default) and No
 Another example:
 
 ```sh
-NODEBB_VERSION=1.12.1 APP_USE_FQDN=localhost APP_ADD_POSTGRES=1 ./nobbic start my-forum
+NODEBB_VERSION=1.12.1 APP_USE_FQDN=localhost APP_ADD_POSTGRES=1 nobbic start my-forum
 ```
 
 It will create pod with NodeBB v1.12.1 that uses PostgreSQL as database engine and sets its URL to localhost:8080 (default port) and websockets to localhost:8080 (default)
