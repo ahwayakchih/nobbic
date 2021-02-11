@@ -1,11 +1,11 @@
 Nobbic
 ======
 
-Nobbic helps you nicely fit NodeBB, database and other stuff into a single pod with containers.
+Nobbic helps you nicely fit [NodeBB](https://nodebb.org/), database and other stuff into a single pod with containers.
 
 While it's quite easy to start the NodeBB docker container alone, things complicate quickly when one wants
-to start also database container, NGINX proxy container, etc... It's not difficult, but it takes time
-(and a lot of reading) if it's not something you do everyday already.
+to start also database container, NGINX proxy container, etc... while trying out different versions.
+It's not difficult, but it takes time (and a lot of reading) if it's not something you do everyday already.
 
 Best of all is that after NodeBB is installed and running, it can be controlled with usual `podman` commands.
 Nobbic does not usurp ownership of anything. It just helps to set thing up and running, and then may help
@@ -14,7 +14,8 @@ with backing them up and restoring, but it's all optional.
 
 ## Requirements
 
-All it requires to start is the `bash` shell and the `podman` installed. And a Linux operating system.
+All it requires to start is the [`bash`](https://www.gnu.org/software/bash/) shell
+and the [`podman`](https://podman.io/) installed. And a [Linux](https://www.linux.org/) operating system.
 
 **Podman** should be at least **v2.2.1** and **[configured for running rootless](https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md)**.
 Simplest way to test whole thing is to [install Alpine Linux (with podman)](./docs/SetupPodmanOnAlpineHost.markdown) in a virtual machine (like QEMU, VirtualBox or VMWare).
