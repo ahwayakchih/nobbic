@@ -16,7 +16,9 @@ TODO
 - option to specify additional plugins when creating instance, so they are installed and
   activated from the start.
 - optional, mini-test (puppeteer-based?) to run after start
-- add support for specifying more than one app name at the same time for build, start, upgrade and stop?
+- add support for specifying more than one app name at the same time for build, start, upgrade, backup, restore and stop?
+- when no app/pod name is specified backup all of them?
+- ask (or require "force" flag) before removing?
 - add command to send online users a message, e.g., "forum will close in 2 minutes, we will be back in about 10 minutes"
 - wait X time before closing forum, so users can save whatever they were working on
 - rewrite whole thing in Go :D
