@@ -1,15 +1,15 @@
-NodeBB In a Container
-=====================
+Nobbic
+======
 
-Nobbic's goal is to make it easy to setup new NodeBB installation in a pod (a set of connected containers).
+Nobbic helps you nicely fit NodeBB, database and other stuff into a single pod with containers.
 
 While it's quite easy to start the NodeBB docker container alone, things complicate quickly when one wants
 to start also database container, NGINX proxy container, etc... It's not difficult, but it takes time
 (and a lot of reading) if it's not something you do everyday already.
 
-Best of all is that after NodeBB is installed and running, it can be controlled with usuall `podman` commands.
+Best of all is that after NodeBB is installed and running, it can be controlled with usual `podman` commands.
 Nobbic does not usurp ownership of anything. It just helps to set thing up and running, and then may help
-with backing up and restoring, but it's all optional.
+with backing them up and restoring, but it's all optional.
 
 
 ## Requirements
