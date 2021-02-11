@@ -69,10 +69,10 @@ After logging in as a root user, it's time to install and configure podman.
 The only "required" packages to run rootless podman are `podman` (of course) and `shadow`.
 `crun` helps running containers faster with less memory use.
 `curl` is needed later in this tutorial.
-Rest of them are simply useful for running other scripts (`bash`), getting some code (`git`) and parsing container info (`jq`).
+Rest of them are simply useful for running other scripts (`bash`), getting some code (`git`), parsing container info (`jq`) and help with rendering text in CLI (`ncurses`).
 
 ```sh
-apk add git jq podman crun shadow bash curl
+apk add git jq podman crun shadow bash curl ncurses
 ```
 
 ### Prepare UID and GID mapping
