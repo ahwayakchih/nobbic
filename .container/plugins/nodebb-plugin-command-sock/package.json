@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ahwayakchih/containerized-nodebb.git"
+    "url": "git+https://github.com/ahwayakchih/nobbic.git"
   },
   "keywords": [
     "commands",
@@ -20,9 +20,9 @@
   "author": "Marcin Konicki (https://ahwayakchih.neoni.net)",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/ahwayakchih/containerized-nodebb/issues"
+    "url": "https://github.com/ahwayakchih/nobbic/issues"
   },
-  "homepage": "https://github.com/ahwayakchih/containerized-nodebb#readme",
+  "homepage": "https://github.com/ahwayakchih/nobbic#readme",
   "devDependencies": {
     "mocha": "^2.4.5"
   },

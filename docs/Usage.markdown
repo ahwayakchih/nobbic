@@ -16,7 +16,7 @@ Both support various options passed through environment variables. You can eithe
 like it was shown in a [README.markdown](../README.markdown):
 
 ```sh
-APP_USE_FQDN=localhost APP_ADD_REDIS=1 ./app start my-new-forum
+APP_USE_FQDN=localhost APP_ADD_REDIS=1 ./nobbic start my-new-forum
 ```
 
 For a full list of available options, read [BuildAndStart.markdown](./BuildAndStart.markdown).
@@ -26,7 +26,7 @@ For a full list of available options, read [BuildAndStart.markdown](./BuildAndSt
 This action simply outputs information about forum pod. It can be used as sson as one is built:
 
 ```sh
-./app info my-new-forum
+./nobbic info my-new-forum
 ```
 
 It should output something like this (all depends on options you used to build forum pod):
@@ -35,7 +35,7 @@ It should output something like this (all depends on options you used to build f
 Hosted on Arch Linux using Podman v2.2.1
 NodeBB v1.12.1 is run with Node.js v8.17.0
 NodeBB SHA:041cde4dbce64c8f748c81800fac8f6738bf0005
-Built with Containerized-NodeBB v0.5.0
+Built with Nobbic v0.5.0
 It uses:
 - mongodb (docker.io/mongo:bionic)
   with MONGO_VERSION=4.4.3 GOSU_VERSION=1.12 JSYAML_VERSION=3.13.1
@@ -77,7 +77,7 @@ When started, it will await connections at https://localhost:8080
 To just remove single installation of NodeBB, use following command line:
 
 ```sh
-./app remove my-new-forum
+./nobbic remove my-new-forum
 ```
 
 Of course, replace `my-new-forum` with whatever name you used to create it in the first place.
@@ -88,13 +88,13 @@ Of course, replace `my-new-forum` with whatever name you used to create it in th
 To remove all installations:
 
 ```sh
-./app cleanup nodebb
+./nobbic cleanup nodebb
 ```
 
 To remove all installations and cached images:
 
 ```sh
-./app cleanup node && ./app cleanup repo
+./nobbic cleanup node && ./nobbic cleanup repo
 ```
 
 To remove everything from podman, simply run:

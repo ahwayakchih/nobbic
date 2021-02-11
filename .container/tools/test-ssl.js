@@ -21,7 +21,7 @@ function testSSL (port, url, callback) {
 	// If something terminates SSL and passes requests through a regular HTTP,
 	// NodeBB should be listening for HTTP, not HTTPS.
 	// So we setup a HTTP server, and call it through HTTPS, to see if that's the case.
-	var header = 'X-Containerized-NodeBB-Test';
+	var header = 'X-NodeBB-In-a-Container-Test';
 	var token = "" + Math.random();
 
 	var server = http.createServer(function (req, res) {

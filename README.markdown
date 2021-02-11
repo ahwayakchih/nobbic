@@ -1,11 +1,15 @@
-NodeBB in a container
+NodeBB In a Container
 =====================
 
-This project's goal is to make it easy to setup new NodeBB installation in a pod (a set of connected containers).
+Nobbic's goal is to make it easy to setup new NodeBB installation in a pod (a set of connected containers).
 
 While it's quite easy to start the NodeBB docker container alone, things complicate quickly when one wants
 to start also database container, NGINX proxy container, etc... It's not difficult, but it takes time
 (and a lot of reading) if it's not something you do everyday already.
+
+Best of all is that after NodeBB is installed and running, it can be controlled with usuall `podman` commands.
+Nobbic does not usurp ownership of anything. It just helps to set thing up and running, and then may help
+with backing up and restoring, but it's all optional.
 
 
 ## Requirements
@@ -33,23 +37,23 @@ For a full list of software, read [docs/Compatibility.markdown](./docs/Compatibi
 
 ## Installation
 
-You can download ZIP archive with this project from [GitHub](https://github.com/ahwayakchih/containerized-nodebb)
+You can download ZIP archive with this project from [GitHub](https://github.com/ahwayakchih/nobbic)
 and unzip it to selected directory, or git clone repository if you already have `git` installed:
 
 ```sh
-git clone https://github.com/ahwayakchih/containerized-nodebb.git
+git clone https://github.com/ahwayakchih/nobbic.git
 ```
 
 Once you have directory with files in it, open command line and change to that directory, for example:
 
 ```sh
-cd containerized-nodebb
+cd nobbic
 ```
 
 Once it's "installed", you can use it from command line, for example:
 
 ```sh
-./app help
+./nobbic help
 ```
 
 ## Usage
@@ -57,7 +61,7 @@ Once it's "installed", you can use it from command line, for example:
 To quickly proceed to creating and starting NodeBB, try:
 
 ```sh
-APP_USE_FQDN=localhost APP_ADD_REDIS=1 ./app start my-new-forum
+APP_USE_FQDN=localhost APP_ADD_REDIS=1 ./nobbic start my-new-forum
 ```
 
 That will install latest released NodeBB version, with latest version of Redis database, and make it accessible through

@@ -1,6 +1,6 @@
 {
 	"id": "nodebb-plugin-command-sock",
-	"url": "https://github.com/ahwayakchih/containerized-nodebb",
+	"url": "https://github.com/ahwayakchih/nobbic",
 	"library": "main.js",
 	"hooks": [
 		{
