@@ -182,6 +182,10 @@ function buildPod () {
 		return 1
 	fi
 
+	local APP_CREATE_ENV_FILE=$(mktemp -p ./)
+	env APP_NAME="$APP_NAME" | grep -E "^(NODE(BB)?|CONTAINER|APP|PODMAN)_" > "$APP_CREATE_ENV_FILE"
+	trap "rm '${APP_CREATE_ENV_FILE}'" EXIT
+
 	if [ -z "$APP_ADD_MONGODB" ] && [ -z "$APP_ADD_REDIS" ] && [ -z "$APP_ADD_POSTGRES" ] ; then
 		echo "WARNING: building without database container" >&2
 		echo "         Set APP_ADD_MONGODB, APP_ADD_REDIS and/or APP_ADD_POSTGRES in environment" >&2
@@ -266,7 +270,7 @@ function startPod () {
 		return 1
 	fi
 
-	local existed=$(podman pod exists "$APP_NAME" && echo exists);
+	local existed=$(podman pod exists "$APP_NAME" && echo "exists");
 	test "$existed" || buildPod "$APP_NAME" || return $?
 
 	if test "$existed" ; then

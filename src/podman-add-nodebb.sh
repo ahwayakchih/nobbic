@@ -39,6 +39,10 @@ NODEBB_CREATE_ARGS="${PODMAN_CREATE_ARGS} ${PODMAN_CREATE_ARGS_NODEBB}"
 podman create --pod "$APP_NAME" --name "$NODEBB_CONTAINER" $NODEBB_CREATE_ARGS \
 	$NODEBB_ENV "$NODEBB_IMAGE" >/dev/null || exit 1
 
+if [ -n "$APP_CREATE_ENV_FILE" ] ; then
+	podman cp "$APP_CREATE_ENV_FILE" "${NODEBB_CONTAINER}:/app/POD_BUILD_ENV"
+fi
+
 # Import from backup, if specified
 BACKUP_DATA="${RESTORE_FROM}/nodebb.tar"
 if [ ! -z "$RESTORE_FROM" ] && [ -f "$BACKUP_DATA" ] ; then

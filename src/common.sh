@@ -36,6 +36,21 @@ get_env_values_for() {
 	done
 }
 
+# @param {string} envFilePath
+# @param {string} regex
+function import() {
+	test -f "$1" || return 1
+
+	local regex=${2:-^(PORT|(NODE(BB)?|CONTAINER|APP|PODMAN)_)}
+	local name
+ 	while read -r line ; do
+ 		name=${line%=*}
+ 		[[ "$name" =~ $regex ]] || continue
+ 		test -z "${!name}" || continue
+ 		declare -x -g "${name}"="${line#*=}" || echo "failed to export '${name}'"
+	done <"${1:-}"
+}
+
 # @param {string} templateName
 # @param {string} [outputFile]
 generate() {

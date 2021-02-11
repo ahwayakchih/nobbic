@@ -50,25 +50,22 @@ if [ ! -f "${fromName}/nodebb.env" ] ; then
 	return 1
 fi
 
-# Allow to enforce version numbers
-FORCE_NODE_VERSION=$NODE_VERSION
-FORCE_NODEBB_VERSION=$NODEBB_VERSION
+# Import POD env first, so we can keep whatever values user enforced before
+import "${fromName}/pod.env"
 
-# Prepeare base environment variables
-# Get most of the setup variables from backed up NodeBB's environment,
-# while trying to keep our env safe.
+# Import NodeBB env next, but only values that are auto-created and required for
+# setting up correct versions.
+# Things like CONTAINER_ENV_* are not, and they often are modified by *-add-*scripts,
+# or they were already declared in pod.env.
+import "${fromName}/nodebb.env" "^(NODE(BB)?_|APP_|PORT)"
+
+# Backward compatibility with old backups
 # TODO: drop support for CONTAINER_NODEJS_PORT and CONTAINER_APP_DNS_ALIAS.
-cmd=$(env -i $(xargs -a "${fromName}/nodebb.env") \
-		FORCE_NODE_VERSION="$FORCE_NODE_VERSION" \
-		FORCE_NODEBB_VERSION="$FORCE_NODEBB_VERSION" \
-		FORCE_NODEBB_CLUSTER="${APP_USE_CLUSTER:-}" \
-		/bin/sh -c 'echo NODE_VERSION="${FORCE_NODE_VERSION:-$NODE_VERSION}"\
-			NODEBB_VERSION="${FORCE_NODEBB_VERSION:-$NODEBB_VERSION}"\
-			NODEBB_GIT="${NODEBB_GIT}"\
-			APP_USE_PORT="${APP_USE_PORT:-$CONTAINER_NODEJS_PORT}"\
-			APP_USE_FQDN="${APP_USE_FQDN:-$CONTAINER_APP_DNS_ALIAS}"\
-			APP_USE_CLUSTER=${FORCE_NODEBB_CLUSTER:-$(( $(echo $PORT | tr -cd , | wc -c) + 1))}\
-		')
+export APP_USE_PORT=${APP_USE_PORT:-$CONTAINER_NODEJS_PORT}
+export APP_USE_FQDN=${APP_USE_FQDN:-$CONTAINER_APP_DNS_ALIAS}
+
+# APP_USE_CLUSTER is not saved, so calculate it from PORT
+export APP_USE_CLUSTER=${APP_USE_CLUSTER:-$(( $(echo $PORT | tr -cd , | wc -c) + 1))}
 
 get_image_name () {
 	cat "$1" 2>/dev/null | grep ImageName | sed 's/^.*ImageName.*:\s*"//' | sed 's/".*$//' || echo "1"
@@ -77,30 +74,27 @@ get_image_name () {
 # Check which database(s) to use
 if [ -f "${fromName}/container-postgres.json" ] ; then
 	oldImage=$(get_image_name "${fromName}/container-postgres.json")
-	cmd="APP_ADD_POSTGRES='${APP_ADD_POSTGRES:-$oldImage}' ${cmd}"
+	export APP_ADD_POSTGRES=${APP_ADD_POSTGRES:-$oldImage}
 elif [ -f "${fromName}/container-mongodb.json" ] ; then
 	oldImage=$(get_image_name "${fromName}/container-mongodb.json")
-	cmd="APP_ADD_MONGODB='${APP_ADD_MONGODB:-$oldImage}' ${cmd}"
+	export APP_ADD_MONGODB=${APP_ADD_MONGODB:-$oldImage}
 fi
 
 if [ -n "$APP_ADD_REDIS" ] || [ -f "${fromName}/container-redis.json" ] ; then
 	oldImage=$(get_image_name "${fromName}/container-redis.json")
-	cmd="APP_ADD_REDIS='${APP_ADD_REDIS:-$oldImage}' ${cmd}"
+	export APP_ADD_REDIS=${APP_ADD_REDIS:-$oldImage}
 fi
 
 if [ -n "$APP_ADD_NPM" ] || [ -f "${fromName}/container-npm.json" ] ; then
 	oldImage=$(get_image_name "${fromName}/container-npm.json")
-	cmd="APP_ADD_NPM='${APP_ADD_NPM:-$oldImage}' ${cmd}"
+	export APP_ADD_NPM=${APP_ADD_NPM:-$oldImage}
 fi
 
 if [ -n "$APP_ADD_NGINX" ] || [ -f "${fromName}/container-nginx.json" ] ; then
 	oldImage=$(get_image_name "${fromName}/container-nginx.json")
-	cmd="APP_ADD_NGINX='${APP_ADD_NGINX:-$oldImage}' ${cmd}"
+	export APP_ADD_NGINX=${APP_ADD_NGINX:-$oldImage}
 fi
 
-cmd="RESTORE_FROM='${fromName}'	${cmd}"
+export RESTORE_FROM=${fromName}
 
-# Alpine/Busybox's env does not support "-S" option (to split single string full of variable declarations).
-# That's why we need to echo them through xargs, to call env with args separated properly and in correct order.
-env $(echo "$cmd" | xargs) ${__APP} start ${APP_NAME}
-# TODO exec instead of starting new subprocess
+exec ${__APP} start ${APP_NAME}

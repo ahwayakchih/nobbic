@@ -35,6 +35,7 @@ podman run --rm --volumes-from $CONTAINER:ro\
 	-e CONTAINER_REPO_DIR="${CONTAINER_REPO_DIR}"\
 	-e BACKUP_TO_FILE="/backup/${NODEBB_ARCHIVE}"\
 	docker.io/alpine alpine-backup-nodebb.sh\
+	&& podman cp "${CONTAINER}:/app/POD_BUILD_ENV" "${BACKUP_PATH}/pod.env"
 	&& echo "NodeBB data backup done"
 
 if [ ! -z "$isRunning" ] ; then
