@@ -72,3 +72,8 @@ Read [docs/Usage.markdown](./docs/Usage.markdown) to see full list of supported 
 This is not a finished project yet (it may never will be).
 
 Read [TODO.markdown](./TODO.markdown) to see a list of changes that are already planned.
+
+
+## Why "Nobbic"?
+
+Because it's a **No**de**BB** **I**n a **C**ontainer ;).
