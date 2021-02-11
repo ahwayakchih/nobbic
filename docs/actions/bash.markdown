@@ -1,5 +1,5 @@
-Usage
-=====
+[Usage](../Usage.markdown)
+==========================
 
 ## `bash` APP_NAME
 

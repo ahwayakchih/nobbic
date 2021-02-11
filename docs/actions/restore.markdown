@@ -1,5 +1,5 @@
-Usage
-=====
+[Usage](../Usage.markdown)
+==========================
 
 ## `restore` APP_NAME [BACKUPS_DIR] [BACKUP_NAME]
 

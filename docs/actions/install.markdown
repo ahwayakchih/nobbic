@@ -1,5 +1,5 @@
-Usage
-=====
+[Usage](../Usage.markdown)
+==========================
 
 ## `install` APP_NAME
 

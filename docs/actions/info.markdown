@@ -1,5 +1,5 @@
-Usage
-=====
+[Usage](../Usage.markdown)
+==========================
 
 ## `info` APP_NAME
 

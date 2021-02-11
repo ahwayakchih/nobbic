@@ -1,5 +1,5 @@
-Usage
-=====
+[Usage](../Usage.markdown)
+==========================
 
 ## `backup` APP_NAME [BACKUPS_DIR] [BACKUP_NAME]
 

@@ -1,5 +1,5 @@
-Usage
-=====
+[Usage](../Usage.markdown)
+==========================
 
 ## `exec` APP_NAME COMMAND [ARG...]
 
