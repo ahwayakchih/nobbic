@@ -98,11 +98,8 @@ drwxr-xr-x    2 node     node          4096 Dec  9 13:14 patches
 ```
 
 
-There's an additional command available there, which allows to call special functions inside NodeBB's process:
-
-`onbb_exec_command`
-
-For example:
+There's an additional `onbb_exec_command` command available there,
+which allows to call special functions inside NodeBB's process:
 
 ```sh
 nobbic exec my-new-forum onbb_exec_command help
@@ -117,6 +114,14 @@ Following commands are available:
    resetPassword email
    help
 ```
+
+So, to reset default NodeBB's administrator's password, use command like:
+
+```sh
+nobbic exec my-new-forum onbb_exec_command resetPassword my-new-forum@127.0.0.1
+```
+
+It should output an URL to "change password" page.
 
 
 ## `backup` APP_NAME [BACKUPS_DIR] [BACKUP_NAME]
