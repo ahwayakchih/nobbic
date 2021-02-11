@@ -15,4 +15,5 @@ APP_USE_FQDN=localhost APP_ADD_REDIS=1 nobbic start my-new-forum
 
 This will create and start pod named "my-new-forum", that will use latest Redis database and serve NodeBB at http://localhost:8080.
 
-For a full list of available options, read [BuildAndStart.markdown](./BuildAndStart.markdown).
+Opions:
+
