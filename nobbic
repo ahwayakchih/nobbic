@@ -6,7 +6,7 @@ export __VERSION=0.5.0
 export __LABEL=nobbic
 
 export __DIRNAME=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
-export __APP="${__DIRNAME}/app"
+export __APP="${__DIRNAME}/nobbic"
 export __SRC="${__DIRNAME}/src"
 export __TOOLS="${__DIRNAME}/tools"
 export __TEMPLATES="${__DIRNAME}/src/templates"
