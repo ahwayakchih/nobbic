@@ -16,4 +16,4 @@ containing backup data. For example:
 nobbic backup my-new-forum
 ```
 
-will create directory like `/home/username/backups/my-new-forum_2021-02-10T19-04-06` (assuming your current direcotry is `/home/username`).
+will create directory like `/home/username/backups/my-new-forum_2021-02-10T19-04-06` (assuming your current directory is `/home/username`).
