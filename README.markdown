@@ -1,15 +1,16 @@
-NodeBB in the container
-=======================
+NodeBB in a container
+=====================
 
-This document needs A LOT of work, but for now:
+This project's goal is to make it easy to setup new NodeBB installation in a pod (a set of connected containers).
 
-```sh
-./app help
-```
+While it's quite easy to start the NodeBB docker container alone, things complicate quickly when one wants
+to start also database container, NGINX proxy container, etc... It's not difficult, but it takes time
+(and a lot of reading) if it's not something you everyday already.
+
 
 ## Requirements
 
-All it requires to start is a `bash` shell and `podman`.
+All it requires to start is the `bash` shell and the `podman` installed. And a Linux operating system.
 
 **Podman** should be at least **v2.2.1** and **[configured for running rootless](https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md)**.
 Simplest way to test whole thing is to [install Alpine Linux (with podman)](./docs/SetupPodmanOnAlpineHost.markdown) in a virtual machine (like QEMU, VirtualBox or VMWare).
@@ -20,72 +21,56 @@ Project was tested ONLY in rootless mode, with configuration in `~/.config/conta
 runtime = "crun"
 ```
 
+
 ## Compatibility
 
 It was tested with various versions of NodeBB between (and including) v1.12.1 and v1.16.2.
-Depending on NodeBB version, it was tested with Node.js versions 8, 10, 12, 13, 14 and 15.
+Depending on NodeBB version, it was tested with Node.js versions 8, 10, 12, 13, 14 and 15,
+and various versions and combinations of databases.
 
-It was tested and is known to work with following database images from docker.io:
+For a full list of software, read [docs/Compatibility.markdown](./docs/Compatibility.markdown).
 
-### postgres (PostgreSQL)
 
-- 9.6.20-alpine
-- 10.15-alpine
-- 11.10-alpine
-- 12.5-alpine
-- 13.1-alpine
+## Installation
 
-### mongo (MongoDB)
-
-- 3.6.21-xenial
-- 4.0.22-xenial
-- 4.2.12-bionic
-- 4.4.3-bionic
-
-Also from 3rd party:
-
-- bitnami/mongodb:latest (4.4.3-debian-10-r43 at the time of writing this)
-
-### redis (Redis)
-
-- 5.0.10-alpine
-- 6.0.10-alpine
-- 6.2-rc2-alpine
-- 6.2-rc3-alpine
-
-It was also tested with NGINX v1.19.6-alpine and v1.18.0-alpine.
-
-## Cleanup
-
-To remove everything from podman, simply run:
+You can download ZIP archive with this project from [GitHub](https://github.com/ahwayakchih/containerized-nodebb)
+and unzip it to selected directory, or git clone repository if you already have `git` installed:
 
 ```sh
-podman system prune -a
-podman volume prune
+git clone https://github.com/ahwayakchih/containerized-nodebb.git
 ```
 
-Sometimes it may not work, for whatever reason, in which case read [docs/PodmanCleanup](./docs/PodmanCleanup.markdown).
+Once you have directory with files in it, open command line and change to that directory, for example:
+
+```sh
+cd containerized-nodebb
+```
+
+Once it's "installed", you can use it from command line, for example:
+
+```sh
+./app help
+```
+
+## Usage
+
+To quickly proceed to creating and starting NodeBB, try:
+
+```sh
+APP_USE_FQDN=localhost APP_ADD_REDIS=1 ./app start my-new-forum
+```
+
+That will install latest released NodeBB version, with latest version of Redis database, and make it accessible through
+"http://localhost:8080" URL.
+
+It will take some time to download and prepare all the stuff for the first time
+(somewhere between 15-30 minutes, but it all depends on network, processors and available RAM).
+Every next try that uses the same Node.js version, should be much faster.
+
+Read [docs/Usage.markdown](./docs/Usage.markdown) for more info about all the possibilities.
 
 ## TODO
 
-- add support for Let's Encrypt when APP_USE_FQDN is specified and names existing domain name (not IP number).
-- stop replacing app.js and src/cli/index.js, run config generator instead before calling nodebb in entrypoint.sh.
-  we're not running in changing environment (old OpenShift v2) any more, environment variables in containers are
-  immutable. To change them, one has to hack it, or simply re-create container. So there's no real need to override
-  data in nconf dynamically.
-  Also, it would help users to apply known solutions, if they could simply edit config.js.
-  **update:** replacing may still be needed, or writing config AFTER install, because install parses url from config,
-  and if there's a port specified, it overrides port setting with the one from url. Which breaks stuff if external port
-  is defferent than the one NodeBB should listen on, e.g., example.com:8080 -> 4567.
-- add support for something like APP_ADD_POSTGRES=postgres://user@hostname:port/dbname for all databases,
-  so it will be easier to backup and restore access to external databases, and define by user when first start/build is done.
-- option for NodeBB to keep building assets in "series" mode
-- option to specify additional plugins when creating instance, so they are installed and
-  activated from the start.
-- optional, mini-test (puppeteer-based?) to run after start
-- write proper README content
-- show README content in `./app help`?
-- add support for specifying more than one app name at the same time for build, start, upgrade and stop?
-- add command to send online users a message, e.g., "forum will close in 2 minutes, we will be back in about 10 minutes"
-- wait X time before closing forum, so users can save whatever they were working on
-- rewrite whole thing in Go :D
+This is not a finished project yet (it may never will be).
+
+Read [TODO.markdown](./TODO.markdown) to see a list of changes that are already planned.
