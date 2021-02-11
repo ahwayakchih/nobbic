@@ -22,7 +22,7 @@ When building, you can specify database images to use with the created pod by se
 `APP_ADD_REDIS` can be set to 1, to use default 'alpine3.12' image, or to specific image name, e.g., docker.io/redis:6.0.9-alpine
 
 You can specify two of them as long as one of them is Redis. That will make NodeBB use Redis for session storage only.
-Keep in mind that support for PostgreSQL was added in NodeBB v1.10.x.
+*Keep in mind that support for PostgreSQL was added in NodeBB v1.10.x.*
 
 Similarly you can add local NPM mirror container to the pod, which may be helpful when you're testing various configurations, or simply running more than one forum.
 Just set `APP_ADD_NPM` to 1, to use default 'verdaccio/verdaccio:latest' image, or to specific image name, e.g., docker.io/verdaccio/verdaccio:5.x.

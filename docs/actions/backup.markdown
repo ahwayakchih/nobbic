@@ -3,8 +3,7 @@
 
 ## `backup` APP_NAME [BACKUPS_DIR] [BACKUP_NAME]
 
-Creates a backup directory containing data from database(s), archive with files uploaded by users to NodeBB, etc...
-All the information needed to rebuild the pod whenever it's needed.
+Creates a backup directory containing data from database(s), archive with files uploaded by users to NodeBB, etc... - all the information needed to rebuild the pod whenever it's needed.
 
 `BACKUPS_DIR` and `BACKUP_NAME` arguments are optional.
 
@@ -17,5 +16,4 @@ containing backup data. For example:
 nobbic backup my-new-forum
 ```
 
-will create directory like `/home/username/backups/my-new-forum_2021-02-10T19-04-06`
-(assuming your current direcotry is `/home/username`).
+will create directory like `/home/username/backups/my-new-forum_2021-02-10T19-04-06` (assuming your current direcotry is `/home/username`).

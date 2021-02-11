@@ -7,8 +7,7 @@ This tutorial is mainly a compilation of 3 other documents:
 2. https://wiki.alpinelinux.org/wiki/Podman
 3. https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md
 
-It was written when [**Alpine Linux**](https://alpinelinux.org/) did not have podman in the **v3.13** repository,
-only in the "edge" repository. Hopefully with next version it will be available in default repositories.
+It was written when [**Alpine Linux**](https://alpinelinux.org/) did not have podman in the **v3.13** repository, only in the "edge" repository. Hopefully with next version it will be available in default repositories.
 In the meantime, keep reading this "tutorial".
 
 ## Install Alpine Linux from ISO
@@ -94,8 +93,7 @@ SUB_GID_COUNT 10000
 You can set numbers bigger than 1000, if there will be many containers (and user accounts created inside them) run by users.
 Save changes and exit editor.
 
-This will allocate pool of "virtual" ids for every user. You can read more about this in tutorial found in [`podman`'s repository](https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md#etcsubuid-and-etcsubgid-configuration)
-and deep-dive into why this is needed at [Red Hat's blog](https://www.redhat.com/en/blog/understanding-root-inside-and-outside-container).
+This will allocate pool of "virtual" ids for every user. You can read more about this in tutorial found in [`podman`'s repository](https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md#etcsubuid-and-etcsubgid-configuration) and deep-dive into why this is needed at [Red Hat's blog](https://www.redhat.com/en/blog/understanding-root-inside-and-outside-container).
 
 If you do not want to allocate pool of ids for every user, only for specific ones, you can skip editing `/etc/login.defs`. Instead, use the command `usermod` the way it's described in podman's repository.
 
@@ -159,8 +157,7 @@ su -l username
 
 ### Change default configuration
 
-Podman uses `runc` runtime by default.
-You can switch it to use `crun` instead.
+Podman uses `runc` runtime by default. You can switch it to use `crun` instead.
 
 First, prepare space for user-specific configuration:
 
@@ -181,6 +178,7 @@ nano $HOME/.config/containers/containers.conf
 ```
 
 You can comment original lines and add new ones next under them, or replace originals with new ones.
+
 To quickly find a line, use CTRL+w key combination and type in part of it, e.g., "runtime =" and hit ENTER.
 If it finds similar line, just repeat searching (it will continue searching starting from current line).
 
@@ -190,8 +188,7 @@ runtime = "crun"
 
 Save changes and exit editor.
 
-If you want, you can change some other options through `$HOME/.config/containers/storage.conf` file.
-Default file can be downloaded from `https://raw.githubusercontent.com/containers/storage/master/storage.conf`.
+If you want, you can change some other options through `$HOME/.config/containers/storage.conf` file. Default file can be downloaded from `https://raw.githubusercontent.com/containers/storage/master/storage.conf`.
 
 That's all! Well... almost.
 
@@ -211,8 +208,7 @@ You should see something like this:
 	  crun version 0.16
 ```
 
-Finally test if podman can run containers properly.
-You can do that by either executing following "one-liner" command:
+Finally test if podman can run containers properly. You can do that by either executing following "one-liner" command:
 
 ```sh
 ([ $(id -u) != "0" ] && [ $(podman run --rm -v $HOME:/host docker.io/alpine /bin/sh -c '[ "$container" = "podman" ] && (id -u | tee /host/test.log) && (chmod 0700 /host/test.log)') = "0" ] && [ $(cat $HOME/test.log) = "0" ] && [ $(stat -c "%U:%G" $HOME/test.log) = $(id -nu)":"$(id -ng) ] && (rm $HOME/test.log) && echo "That's all, it works :)") || echo "It failed for some reason :("

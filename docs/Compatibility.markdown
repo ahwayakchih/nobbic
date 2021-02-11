@@ -7,8 +7,7 @@ Project was tested with various versions of NodeBB between (and including) v1.12
 
 ## Node.js
 
-Depending on NodeBB version, project was tested with Node.js versions 8, 10, 12, 13, 14 and 15
-images from docker.io, all of them using Alpine Linux as a base.
+Depending on NodeBB version, project was tested with Node.js versions 8, 10, 12, 13, 14 and 15 images from docker.io, all of them using Alpine Linux as a base.
 
 ## Databases
 

@@ -27,8 +27,7 @@ drwxr-xr-x   12 node     node          4096 Feb 11 15:12 nodebb
 drwxr-xr-x    2 node     node          4096 Dec  9 13:14 patches
 ```
 
-There's an additional `onbb_exec_command` command available there,
-which allows to call special functions inside NodeBB's process:
+There's an additional `onbb_exec_command` command available there, which allows to call special functions inside NodeBB's process:
 
 ```sh
 nobbic exec my-new-forum onbb_exec_command help
