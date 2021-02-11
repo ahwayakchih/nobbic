@@ -50,7 +50,7 @@ function sanitizeAppName () {
 }
 
 function showHelp () {
-	echo "Usage: app [action]"
+	echo "Usage: app [ACTION]"
 	echo ""
 	echo "Supported actions are:"
 	echo "help - show this info"
@@ -60,8 +60,8 @@ function showHelp () {
 	echo "bash APP_NAME   - enter bash command line inside NodeBB container"
 	echo "exec APP_NAME COMMAND [ARG...]  - run command inside NodeBB container"
 	echo "backup APP_NAME [BACKUPS_DIR] [BACKUP_NAME] - create a backup containing data and setup info"
-	echo "upgrade APP_NAME - upgrade NodeBB version"
 	echo "restore APP_NAME [BACKUPS_DIR] [BACKUP_NAME] - restore from a previously created backup"
+	echo "upgrade APP_NAME - upgrade NodeBB version"
 	echo "install APP_NAME - generate service file and instructions on how to enable it"
 	echo "stop APP_NAME   - stop pod"
 	echo "remove APP_NAME - stop pod, remove its containers and their data, remove the pod itself"
