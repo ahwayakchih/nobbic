@@ -6,9 +6,12 @@ or one fo the first two as main and Redis as a session database.
 
 It also allows to create backups and restore from those backups.
 
+Most of the actions require specifying APP_NAME as their first argument. APP_NAME is simply a name of your chosing for the NodeBB installation.
+
 Following "actions" are implemented so far:
 
-## `build` and `start`
+## `build` APP_NAME
+## `start` APP_NAME
 
 The only difference between `build` and `start` is that `start` will automatically `build` if specified forum was not built yet and then it will start pod and containers (`build` does not start anything).
 
@@ -19,17 +22,19 @@ like it was shown in a [README.markdown](../README.markdown):
 APP_USE_FQDN=localhost APP_ADD_REDIS=1 ./nobbic start my-new-forum
 ```
 
+This will create and start pod named "my-new-forum", that will use latest Redis database and serve NodeBB at http://localhost:8080.
+
 For a full list of available options, read [BuildAndStart.markdown](./BuildAndStart.markdown).
 
-## `info`
+## `info` APP_NAME
 
-This action simply outputs information about forum pod. It can be used as sson as one is built:
+This action simply outputs information about selected pod. It can be used as soon as one is built:
 
 ```sh
-./nobbic info my-new-forum
+nobbic info my-new-forum
 ```
 
-It should output something like this (all depends on options you used to build forum pod):
+It should output something like this (everyting depends on options you used to build the pod):
 
 ```txt
 Hosted on Arch Linux using Podman v2.2.1
@@ -44,57 +49,75 @@ It uses:
 When started, it will await connections at https://localhost:8080
 ```
 
-## `bash`
+## `bash` APP_NAME
+
+Switches your current CLI to bash command line inside the NodeBB's container.
+Use `exit` command, to exit from container back into your previous shell.
+
+For example, if you run following commands, line-by-line separately:
+
+```sh
+pwd
+nobbic bash my-new-forum
+pwd
+exit
+```
+
+they should output something like:
+
+```txt
+/home/username
+/app
+```
+
+
+## `exec` APP_NAME COMMAND [ARG...]
 
 ...
 
-## `exec`
+## `backup` APP_NAME [BACKUPS_DIR] [BACKUP_NAME]
 
 ...
 
-## `backup`
+## `upgrade` APP_NAME
 
 ...
 
-## `upgrade`
+## `restore` APP_NAME [BACKUPS_DIR] [BACKUP_NAME]
 
 ...
 
-## `restore`
+## `install` APP_NAME
 
 ...
 
-## `install`
+## `stop` APP_NAME
 
 ...
 
-## `stop`
-
-...
-
-## `remove`
+## `remove` APP_NAME
 
 To just remove single installation of NodeBB, use following command line:
 
 ```sh
-./nobbic remove my-new-forum
+nobbic remove my-new-forum
 ```
 
 Of course, replace `my-new-forum` with whatever name you used to create it in the first place.
 
 
-## `cleanup`
+## `cleanup` ["nodebb"|"node"|"repo"]
 
 To remove all installations:
 
 ```sh
-./nobbic cleanup nodebb
+nobbic cleanup nodebb
 ```
 
 To remove all installations and cached images:
 
 ```sh
-./nobbic cleanup node && ./nobbic cleanup repo
+nobbic cleanup node && nobbic cleanup repo
 ```
 
 To remove everything from podman, simply run:
