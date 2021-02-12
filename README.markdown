@@ -16,12 +16,6 @@ All it requires to start is the [`bash`](https://www.gnu.org/software/bash/) she
 **Podman** should be at least **v2.2.1** and **[configured for running rootless](https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md)**.
 Simplest way to test whole thing is to [install Alpine Linux (with podman)](./docs/SetupPodmanOnAlpineHost.markdown) in a virtual machine (like [QEMU](https://www.qemu.org/)).
 
-Project was tested ONLY in rootless mode, with configuration in `~/.config/containers/containers.conf`, changed from defaults to:
-
-```
-runtime = "crun"
-```
-
 
 ## Compatibility
 
@@ -55,6 +49,7 @@ Once it's "installed", you can use it from command line, for example:
 You can add nobic's path to the `PATH` environment variable, or keep prefixing commands with path to the script, e.g., `./nobbic` or `~/nobbic/nobic`, etc...
 For clarity, example commands following in this and other documents found in [docs](./docs) subdirectory will not be prefixed.
 
+
 ## Usage
 
 To quickly proceed to creating and starting NodeBB, try:
@@ -69,6 +64,7 @@ It will take some time to download and prepare all the stuff for the first time 
 Every next try that uses the same Node.js version, should be much faster.
 
 Read [docs/Usage.markdown](./docs/Usage.markdown) to see full list of supported actions.
+
 
 ## TODO
 

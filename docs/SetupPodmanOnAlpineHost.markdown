@@ -7,8 +7,9 @@ This tutorial is mainly a compilation of 3 other documents:
 2. https://wiki.alpinelinux.org/wiki/Podman
 3. https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md
 
-It was written when [**Alpine Linux**](https://alpinelinux.org/) did not have podman in the **v3.13** repository, only in the "edge" repository. Hopefully with next version it will be available in default repositories.
+It was written when [**Alpine Linux**](https://alpinelinux.org/) did not have `podman` in the **v3.13** repository, only in the "edge" repository. Hopefully with next version it will be available in default repositories.
 In the meantime, keep reading this "tutorial".
+
 
 ## Install Alpine Linux from ISO
 
@@ -18,6 +19,7 @@ After booting virtual machine or a computer from ISO/CD/USB/etc..., login as "ro
 setup-alpine
 reboot
 ```
+
 
 ## Switch to "edge" version
 
@@ -60,9 +62,11 @@ sync
 reboot
 ```
 
+
 ## Configuring Podman
 
 After logging in as a root user, it's time to install and configure podman.
+
 
 ### Install various dependencies and helpful tools
 
@@ -74,6 +78,7 @@ Rest of them are simply useful for running other scripts (`bash`), getting some 
 ```sh
 apk add git jq podman crun shadow bash curl ncurses
 ```
+
 
 ### Prepare UID and GID mapping
 
@@ -97,6 +102,7 @@ This will allocate pool of "virtual" ids for every user. You can read more about
 
 If you do not want to allocate pool of ids for every user, only for specific ones, you can skip editing `/etc/login.defs`. Instead, use the command `usermod` the way it's described in podman's repository.
 
+
 ### Enable pinging from containers
 
 Make sure that pinging from rootless container is enabled:
@@ -107,6 +113,7 @@ echo 'net.ipv4.ping_group_range=0 2000000' > /etc/sysctl.d/podman.conf
 ```
 
 You can read more about why this is needed in tutorial found in [`podman`'s repository](https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md#enable-unprivileged-ping).
+
 
 ### Add a new regular user
 
@@ -119,6 +126,7 @@ passwd username
 ```
 
 *NOTICE:* use `useradd` instead of `adduser`, to make sure "virtual" ids will be properly allocated for created user account.
+
 
 ### Enable podman "service"
 
@@ -147,6 +155,7 @@ rc-update add podman
 rc-service podman start
 ```
 
+
 ## Configure Podman for user
 
 Switch to the new user account:
@@ -155,42 +164,8 @@ Switch to the new user account:
 su -l username
 ```
 
-### Change default configuration
-
-Podman uses `runc` runtime by default. You can switch it to use `crun` instead.
-
-First, prepare space for user-specific configuration:
-
-```sh
-mkdir -p $HOME/.config/containers
-```
-
-Next, download default configuration which containes a lot of helpful comments:
-
-```sh
-curl https://raw.githubusercontent.com/containers/common/master/pkg/config/containers.conf > $HOME/.config/containers/containers.conf
-```
-
-Finally, change some of the lines in containers configuration file:
-
-```sh
-nano $HOME/.config/containers/containers.conf
-```
-
-You can comment original lines and add new ones next under them, or replace originals with new ones.
-
-To quickly find a line, use CTRL+w key combination and type in part of it, e.g., "runtime =" and hit ENTER.
-If it finds similar line, just repeat searching (it will continue searching starting from current line).
-
-```txt
-runtime = "crun"
-```
-
-Save changes and exit editor.
-
-If you want, you can change some other options through `$HOME/.config/containers/storage.conf` file. Default file can be downloaded from `https://raw.githubusercontent.com/containers/storage/master/storage.conf`.
-
 That's all! Well... almost.
+
 
 ## Test if it works OK.
 
