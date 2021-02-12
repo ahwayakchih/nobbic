@@ -46,7 +46,7 @@ Once it's "installed", you can use it from command line, for example:
 ./nobbic help
 ```
 
-You can add nobic's path to the `PATH` environment variable, or keep prefixing commands with path to the script, e.g., `./nobbic` or `~/nobbic/nobic`, etc...
+You can add nobbic's path to the `PATH` environment variable, or keep prefixing commands with path to its location, e.g., `./nobbic` or `~/nobbic/nobic`, etc...
 For clarity, example commands following in this and other documents found in [docs](./docs) subdirectory will not be prefixed.
 
 
