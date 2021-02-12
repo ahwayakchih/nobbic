@@ -155,8 +155,10 @@ rc-update add podman
 rc-service podman start
 ```
 
+That's all! Well... almost.
 
-## Configure Podman for user
+
+## Test if it works
 
 Switch to the new user account:
 
@@ -164,12 +166,9 @@ Switch to the new user account:
 su -l username
 ```
 
-That's all! Well... almost.
+`whoami` command should show "username".
 
-
-## Test if it works OK.
-
-While still being logged as regular user (`whoami` command shows "username"), check if podman can run and uses your config:
+Now it's time to check if podman can run and uses proper config:
 
 ```sh
 podman info | grep crun
@@ -180,7 +179,7 @@ You should see something like this:
 ```txt
 	name: crun
 	path: /usr/bin/crun
-	  crun version 0.16
+	  crun version 0.17
 ```
 
 Finally test if podman can run containers properly. You can do that by either executing following "one-liner" command:
