@@ -301,20 +301,6 @@ function backupPod () {
 
 #
 # @param {string} APP_NAME is the same as pod's name
-#
-function upgradePod () {
-	local APP_NAME=$1
-
-	if [ -z "$APP_NAME" ] ; then
-		echo "ERROR: missing pod name" >&2
-		return 1
-	fi
-
-	inline podman-upgrade.sh || return $?
-}
-
-#
-# @param {string} APP_NAME is the same as pod's name
 # @param {string} backupsDir
 # @param {string} backupName
 #
@@ -329,6 +315,20 @@ function restorePod () {
 	fi
 
 	inline podman-restore.sh || return $?
+}
+
+#
+# @param {string} APP_NAME is the same as pod's name
+#
+function upgradePod () {
+	local APP_NAME=$1
+
+	if [ -z "$APP_NAME" ] ; then
+		echo "ERROR: missing pod name" >&2
+		return 1
+	fi
+
+	inline podman-upgrade.sh || return $?
 }
 
 #
