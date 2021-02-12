@@ -26,4 +26,4 @@ env ${__APP} stop $APP_NAME || return 1
 env ${__APP} backup $APP_NAME || (${__APP} start $APP_NAME && exit 1) || return 1
 # TODO: when podman supports renaming pods, restore to something like "APP_NAME-upgrade" first, test and if all ok, remove old and rename new pod and containers
 ${__APP} remove $APP_NAME || return 1
-env NODE_VERSION="$NODE_VERSION" NODEBB_VERSION="$NODEBB_VERSION" ${__APP} restore $APP_NAME || ${__APP} restore $APP_NAME || return 1
+env ${__APP} restore $APP_NAME || ${__APP} restore $APP_NAME || return 1
