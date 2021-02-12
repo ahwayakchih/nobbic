@@ -14,7 +14,10 @@ export __TEMPLATES="${__DIRNAME}/src/templates"
 source ${__SRC}/common.sh
 
 export PODMAN_ARG_LABEL="--label ${__LABEL}=${__VERSION}"
-export PODMAN_CREATE_ARGS="${PODMAN_ARG_LABEL} ${PODMAN_CREATE_ARGS}"
+
+if [[ "${PODMAN_CREATE_ARGS}" =~ (^|[[:space:]])--label[\ ]+($__LABEL=([^\s]*))([[:space:]]|$) ]] ; then
+	export PODMAN_CREATE_ARGS=${PODMAN_CREATE_ARGS/${BASH_REMATCH[3]}/${__VERSION}}
+fi
 
 #
 # @param {string} scriptPath
