@@ -49,6 +49,7 @@ Project was tested and is known to work with following database images from dock
 #### Also from 3rd party:
 
 - bitnami/mongodb:latest (4.4.3-debian-10-r43 and 4.4.4 at the time of writing this)
+- bitnami/postgresql:13.2.0
 
 
 ### redis (Redis)
