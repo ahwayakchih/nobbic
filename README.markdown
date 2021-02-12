@@ -20,7 +20,7 @@ Simplest way to test whole thing is to [install Alpine Linux (with podman)](./do
 ## Compatibility
 
 It was tested with various versions of NodeBB between (and including) v1.12.1 and v1.16.2.
-Depending on NodeBB version, it was tested with [Node.js](https://nodejs.org/) versions 8, 10, 12, 13, 14 and 15, and various versions and combinations of databases supported by NodeBB ([MongoDB](https://www.mongodb.com/), [PostgreSQL](https://www.postgresql.org/) and [Redis](https://redis.io/)).
+Depending on NodeBB version, it was tested with [Node.js](https://nodejs.org/) versions from 8 to 15, and various versions and combinations of databases supported by NodeBB ([MongoDB](https://www.mongodb.com/), [PostgreSQL](https://www.postgresql.org/) and [Redis](https://redis.io/)).
 
 For a full list of software, read [docs/Compatibility.markdown](./docs/Compatibility.markdown).
 
