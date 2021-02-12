@@ -39,7 +39,7 @@ podman create --pod "$APP_NAME" --name "$MONGODB_CONTAINER" $MONGODB_CREATE_ARGS
 # Import from backup, if specified
 if [ ! -z "$RESTORE_FROM" ] && [ -f "${RESTORE_FROM}/mongodb.archive" ] ; then
 	podman cp "${RESTORE_FROM}/mongodb.archive" ${MONGODB_CONTAINER}:/docker-entrypoint-initdb.d/restore-${APP_NAME}.archive >/dev/null || exit 1
-	podman cp "${__DIRNAME}/mongodb-restore-archive.sh" ${MONGODB_CONTAINER}:/docker-entrypoint-initdb.d/restore-archive.sh >/dev/null || exit 1
+	podman cp "${__TOOLS}/mongodb-restore-archive.sh" ${MONGODB_CONTAINER}:/docker-entrypoint-initdb.d/restore-archive.sh >/dev/null || exit 1
 fi
 
 # Output result
