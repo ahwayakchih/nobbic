@@ -54,7 +54,6 @@ Project was tested and is known to work with following database images from dock
 - 6.0.10-alpine
 - 6.2-rc2-alpine
 - 6.2-rc3-alpine
-- *clearlinux/redis:* 6.0.10
 
 
 ## HTTP(S) servers
