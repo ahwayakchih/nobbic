@@ -12,7 +12,7 @@ if ! podman image exists "$MONGODB_IMAGE" &>/dev/null ; then
 	podman pull $PODMAN_PULL_ARGS_MONGODB "$MONGODB_IMAGE" >/dev/null || return 1
 fi
 
-MONGODB_PORT=${CONTAINER_MONGODB_PORT:-$(podman image inspect $MONGODB_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
+MONGODB_PORT=${CONTAINER_MONGODB_PORT:-$(podman image inspect $MONGODB_IMAGE --format=$'{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
 if [ -z "$MONGODB_PORT" ] ; then
 	MONGODB_PORT=27017
 	echo "WARNING: could not find port number exposed by ${MONGODB_IMAGE}, defaulting to ${MONGODB_PORT}" >&2

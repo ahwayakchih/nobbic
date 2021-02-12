@@ -222,11 +222,11 @@ function startPod () {
 		# and cgroups v1 problem seems to still exist. With cgroups v2 it works ok.
 		# podman pod restart "$APP_NAME" || return 1
 		(
-			WAIT_FOR_PORT=$(podman container inspect "${APP_NAME}-nodebb" --format="{{range .Config.Env}}{{.}}\n{{end}}" | grep -E '^PORT=' | cut -d= -f2 | cut -d, -f1)
+			WAIT_FOR_PORT=$(podman container inspect "${APP_NAME}-nodebb" --format=$'{{range .Config.Env}}{{.}}\n{{end}}' | grep -E '^PORT=' | cut -d= -f2 | cut -d, -f1)
 			echo "Waiting for ${APP_NAME} port ${WAIT_FOR_PORT} to be ready inside container"
 			podman exec "${APP_NAME}-nodebb" /app/.container/tools/wait-for.sh 127.0.0.1:${WAIT_FOR_PORT} -t 120 -l || exit 1
 			sleep 1
-			WAIT_FOR_PORT=$(podman container inspect "${APP_NAME}-nodebb" --format="{{range .Config.Env}}{{.}}\n{{end}}" | grep -E '^APP_USE_PORT=' | cut -d= -f2)
+			WAIT_FOR_PORT=$(podman container inspect "${APP_NAME}-nodebb" --format=$'{{range .Config.Env}}{{.}}\n{{end}}' | grep -E '^APP_USE_PORT=' | cut -d= -f2)
 			echo "Waiting for $APP_NAME port ${WAIT_FOR_PORT} to be accessible from outside of container"
 			${__DIRNAME}/.container/tools/wait-for.sh localhost:${WAIT_FOR_PORT} -t 20 -l && echo "NodeBB should be accessible now" && exit 0
 			echo "WARNING: Looks like podman on this system is buggy and needs restart, not just start. Restarting..."

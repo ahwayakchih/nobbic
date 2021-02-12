@@ -36,7 +36,7 @@ else
 	trap "echo 'Backup process '\$(test \$? -eq 0 && echo 'SUCCEEDED' || echo 'FAILED') && ${__APP} stop '$APP_NAME'" EXIT
 fi
 
-for CONTAINER in $(podman pod inspect "$APP_NAME" --format='{{range .Containers}}{{.Name}}\n{{end}}' | grep "^${APP_NAME}-") ; do
+for CONTAINER in $(podman pod inspect "$APP_NAME" --format=$'{{range .Containers}}{{.Name}}\n{{end}}' | grep "^${APP_NAME}-") ; do
 	backupBasename=${CONTAINER/$APP_NAME-/}
 	toolName="${__SRC}/podman-backup-${backupBasename}.sh"
 	export BACKUP_TO_FILE="${BACKUP_PATH}/${backupBasename}"

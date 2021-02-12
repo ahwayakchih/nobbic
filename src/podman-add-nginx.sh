@@ -17,7 +17,7 @@ PODMAN_CREATE_ARGS_NGINX="-v ${APP_NAME}-nodebb-build:${NGINX_NODEBB_ROOT}/build
 	-v ${APP_NAME}-nodebb-public:${NGINX_NODEBB_ROOT}/public:ro\
 	${PODMAN_CREATE_ARGS_NGINX}"
 
-# NGINX_PORT=${CONTAINER_NGINX_PORT:-$(podman image inspect $NGINX_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
+# NGINX_PORT=${CONTAINER_NGINX_PORT:-$(podman image inspect $NGINX_IMAGE --format=$'{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
 # if [ -z "$NGINX_PORT" ] ; then
 # 	# This is default NGINX's port
 # 	if [ "$NGINX_IMAGE" != "$FROM_IMAGE" ] ; then

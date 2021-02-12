@@ -24,12 +24,12 @@ if [ -z "$isRunning" ] ; then
 	podman start "$CONTAINER" || return 1
 fi
 
-containerEnv=$(podman inspect "$CONTAINER" --format='{{range .Config.Env}}{{.}}\n{{end}}')
+containerEnv=$(podman inspect "$CONTAINER" --format=$'{{range .Config.Env}}{{.}}\n{{end}}')
 MONGO_INITDB_DATABASE=$(echo "$containerEnv" | grep "MONGO_INITDB_DATABASE" | cut -d= -f2)
 MONGODB_HOSTNAME=$(echo "$containerEnv" | grep "HOSTNAME" | cut -d= -f2)
 
 MONGODB_IMAGE=$(podman inspect "$CONTAINER" --format='{{.ImageName}}')
-MONGODB_PORT=${CONTAINER_MONGODB_PORT:-$(podman inspect $MONGODB_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
+MONGODB_PORT=${CONTAINER_MONGODB_PORT:-$(podman inspect $MONGODB_IMAGE --format=$'{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
 if [ -z "$MONGODB_PORT" ] ; then
 	MONGODB_PORT=27017
 	echo "WARNING: could not find port number exposed by ${MONGODB_IMAGE}, defaulting to ${MONGODB_PORT}" >&2

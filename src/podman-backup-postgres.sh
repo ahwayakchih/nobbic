@@ -25,13 +25,13 @@ if [ -z "$isRunning" ] ; then
 fi
 
 POSTGRES_IMAGE=$(podman inspect "$CONTAINER" --format='{{.ImageName}}')
-POSTGRES_PORT=${CONTAINER_POSTGRES_PORT:-$(podman inspect $POSTGRES_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
+POSTGRES_PORT=${CONTAINER_POSTGRES_PORT:-$(podman inspect $POSTGRES_IMAGE --format=$'{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
 if [ -z "$POSTGRES_PORT" ] ; then
 	POSTGRES_PORT=5432
 	echo "WARNING: could not find port number exposed by ${POSTGRES_IMAGE}, defaulting to ${POSTGRES_PORT}" >&2
 fi
 
-containerEnv=$(podman inspect "$CONTAINER" --format='{{range .Config.Env}}{{.}}\n{{end}}')
+containerEnv=$(podman inspect "$CONTAINER" --format=$'{{range .Config.Env}}{{.}}\n{{end}}')
 POSTGRES_DB=$(echo "$containerEnv" | grep "POSTGRES_DB" | cut -d= -f2)
 POSTGRES_HOSTNAME=$(echo "$containerEnv" | grep "HOSTNAME" | cut -d= -f2)
 

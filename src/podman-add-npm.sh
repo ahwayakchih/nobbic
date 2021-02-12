@@ -11,7 +11,7 @@ if [ "$NPM_IMAGE" != "$FROM_IMAGE" ] ; then
 	PODMAN_CREATE_ARGS_NPM="-v ${NPM_CONTAINER}:/verdaccio/storage:z ${PODMAN_CREATE_ARGS_NPM}"
 fi
 
-NPM_PORT=${CONTAINER_NPM_PORT:-$(podman image inspect $NPM_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
+NPM_PORT=${CONTAINER_NPM_PORT:-$(podman image inspect $NPM_IMAGE --format=$'{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
 if [ -z "$NPM_PORT" ] ; then
 	# This is default Verdaccio's port
 	if [ "$NPM_IMAGE" != "$FROM_IMAGE" ] ; then

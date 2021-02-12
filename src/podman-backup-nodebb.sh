@@ -26,7 +26,7 @@ if [ ! -z "$isRunning" ] ; then
 fi
 
 # TODO: export all env variables, so additional custom settings are not lost.
-podman inspect "$CONTAINER" --format='{{range .Config.Env}}{{.}}\n{{end}}' | grep -E "^(NODE(BB)?_|CONTAINER_|APP_|PORT)"  > "${NODEBB_FILE}.env"
+podman inspect "$CONTAINER" --format=$'{{range .Config.Env}}{{.}}\n{{end}}' | grep -E "^(NODE(BB)?_|CONTAINER_|APP_|PORT)"  > "${NODEBB_FILE}.env"
 CONTAINER_REPO_DIR=$(cat "${NODEBB_FILE}.env" | grep "CONTAINER_REPO_DIR" | cut -d= -f2)
 
 podman run --rm --volumes-from $CONTAINER:ro\

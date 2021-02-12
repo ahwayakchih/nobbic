@@ -23,13 +23,13 @@ if [ -z "$isRunning" ] ; then
 fi
 
 REDIS_IMAGE=$(podman inspect "$CONTAINER" --format='{{.ImageName}}')
-REDIS_PORT=${CONTAINER_REDIS_PORT:-$(podman inspect $REDIS_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
+REDIS_PORT=${CONTAINER_REDIS_PORT:-$(podman inspect $REDIS_IMAGE --format=$'{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
 if [ -z "$REDIS_PORT" ] ; then
 	REDIS_PORT=6379
 	echo "WARNING: could not find port number exposed by ${REDIS_IMAGE}, defaulting to ${REDIS_PORT}" >&2
 fi
 
-REDIS_HOSTNAME=$(podman inspect "$CONTAINER" --format='{{range .Config.Env}}{{.}}\n{{end}}' | grep "HOSTNAME" | cut -d= -f2)
+REDIS_HOSTNAME=$(podman inspect "$CONTAINER" --format=$'{{range .Config.Env}}{{.}}\n{{end}}' | grep "HOSTNAME" | cut -d= -f2)
 
 echo "Waiting for Redis from '$REDIS_HOSTNAME' to be available on port $REDIS_PORT..."
 podman run --rm --pod "$REDIS_HOSTNAME" -v "${__DIRNAME}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:${REDIS_PORT}" -t 30 -l >&2\

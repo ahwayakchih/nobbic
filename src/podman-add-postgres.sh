@@ -17,7 +17,7 @@ if ! podman image exists "$POSTGRES_IMAGE" &>/dev/null ; then
 fi
 
 # Get postgres port
-POSTGRES_PORT=${CONTAINER_POSTGRES_PORT:-$(podman image inspect $POSTGRES_IMAGE --format='{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
+POSTGRES_PORT=${CONTAINER_POSTGRES_PORT:-$(podman image inspect $POSTGRES_IMAGE --format=$'{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
 if [ -z "$POSTGRES_PORT" ] ; then
 	POSTGRES_PORT=5432
 	echo "WARNING: could not find port number exposed by ${POSTGRES_IMAGE}, defaulting to ${POSTGRES_PORT}" >&2
