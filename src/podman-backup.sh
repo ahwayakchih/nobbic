@@ -41,7 +41,8 @@ for CONTAINER in $(podman pod inspect "$APP_NAME" --format=$'{{range .Containers
 	toolName="${__SRC}/podman-backup-${backupBasename}.sh"
 	export BACKUP_TO_FILE="${BACKUP_PATH}/${backupBasename}"
 	if [ -f "$toolName" ] ; then
-		 inline "$toolName" || fail "ERROR: backup of ${backupBasename} failed!"
+		echo "Backing up '${backupBasename}'"
+		inline "$toolName" || fail "ERROR: backup of ${backupBasename} failed!"
 	else
 		echo "Skipping '${backupBasename}' - no backup script exists for it." >&2
 	fi
