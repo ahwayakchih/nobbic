@@ -41,30 +41,52 @@ function redis () {
 	podman exec "$CONTAINER" /bin/sh -c "$cmd"
 }
 
+function redisFileExists () {
+	local cmd="[ -f '${1}' ] || exit 1"
+	podman exec "$CONTAINER" /bin/sh -c "$cmd" && echo "yes" || echo "no"
+}
+
 REDIS_DATA_DIR=$(redis config get dir | tail -n 1)
 REDIS_FILE_RDB=$(redis config get dbfilename | tail -n 1)
 REDIS_FILE_AOF=$(redis config get appendfilename | tail -n 1)
 REDIS_AOF_ENABLED=$(redis config get appendonly | tail -n 1)
+
+REDIS_FILE=""
+if [ -n "$REDIS_FILE_AOF" ] && [ "$REDIS_AOF_ENABLED" != "no" ]; then
+	REDIS_FILE="$REDIS_FILE_AOF"
+elif [ -n "$REDIS_FILE_RDB" ] ; then
+	REDIS_FILE="$REDIS_FILE_RDB"
+fi
+
+REDIS_FILE_EXISTS="no"
+if [ -n "$REDIS_FILE" ] ; then
+	REDIS_FILE_EXISTS=$(redisFileExists "${REDIS_DATA_DIR}/${REDIS_FILE}")
+	if [ "$REDIS_FILE_EXISTS" = "no" ] && [ -n "$REDIS_FILE_RDB" ] ; then
+		echo -n "Redis ${REDIS_DATA_DIR}/${REDIS_FILE} does not exist, triggering SAVE now... "
+		if [ "$(redis SAVE | tail -n 1)" = "OK" ] ; then
+			echo "done"
+			echo -n "Checking if file exists... "
+			REDIS_FILE_EXISTS=$(redisFileExists "${REDIS_DATA_DIR}/${REDIS_FILE}")
+			echo "$REDIS_FILE_EXISTS"
+		else
+			echo "failed"
+		fi
+	fi
+fi
 
 if [ -z "$isRunning" ] ; then
 	echo -n "Stopping '${CONTAINER}' now... "
 	podman stop "$CONTAINER" >/dev/null && echo "done" || echo "failed"
 fi
 
-if [ -n "$REDIS_FILE_RDB" ] ; then
-	REDIS_FILE="$REDIS_FILE_RDB"
-elif [ -n "$REDIS_FILE_AOF" ] ; then
-	REDIS_FILE="$REDIS_FILE_AOF"
+if [ "$REDIS_FILE_EXISTS" = "yes" ] ; then
+	REDIS_ARCHIVE="${BACKUP_TO_FILE}-${REDIS_FILE}"
+	echo "Copying ${CONTAINER}:${REDIS_DATA_DIR}/${REDIS_FILE} to ${REDIS_ARCHIVE}"
+	podman cp "${CONTAINER}:${REDIS_DATA_DIR}/${REDIS_FILE}" ${REDIS_ARCHIVE} \
+		|| (echo "ERROR: Could not copy ${CONTAINER}:${REDIS_DATA_DIR}/${REDIS_FILE} to ${REDIS_ARCHIVE}" >&2 && exit 1)\
+		|| return 1
 else
-	echo "ERROR: could not find info about Redis data storage" >&2
-	return 1
+	echo "Skipping: nothing to backup from Redis (${REDIS_DATA_DIR}/${REDIS_FILE} does not exist)" >&2
 fi
-
-REDIS_ARCHIVE="${BACKUP_TO_FILE}-${REDIS_FILE}"
-
-echo "Copying ${CONTAINER}:${REDIS_DATA_DIR}/${REDIS_FILE} to ${REDIS_ARCHIVE}"
-podman cp "${CONTAINER}:${REDIS_DATA_DIR}/${REDIS_FILE}" ${REDIS_ARCHIVE} \
-	|| (echo "ERROR: Could not copy ${CONTAINER}:${REDIS_DATA_DIR}/${REDIS_FILE} to ${REDIS_ARCHIVE}" >&2 && exit 1)\
-	|| return 1
 
 echo "Redis backup done"
