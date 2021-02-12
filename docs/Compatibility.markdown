@@ -26,7 +26,7 @@ Depending on NodeBB version, project was tested with **Node.js** versions **8**,
 
 ## Databases
 
-Project was tested and is known to work with following database images from docker.io:
+Project was tested and is known to work with following database images from docker.io (assume official repo unless specified otherwise):
 
 
 ### postgres (PostgreSQL)
@@ -36,6 +36,7 @@ Project was tested and is known to work with following database images from dock
 - 11.10-alpine
 - 12.5-alpine
 - 13.1-alpine
+- *bitnami/postgresql:*13.2.0
 
 
 ### mongo (MongoDB)
@@ -44,13 +45,8 @@ Project was tested and is known to work with following database images from dock
 - 4.0.22-xenial
 - 4.2.12-bionic
 - 4.4.3-bionic
-
-
-#### Also from 3rd party:
-
-- bitnami/mongodb:latest (4.4.3-debian-10-r43 and 4.4.4 at the time of writing this)
-- bitnami/postgresql:13.2.0
-
+- *bitnami/mongodb:*4.4.3-debian-10-r43
+- *bitnami/mongodb:*4.4.4
 
 ### redis (Redis)
 
