@@ -44,7 +44,7 @@ function import() {
 	local regex=${2:-^(PORT|(NODE(BB)?|CONTAINER|APP|PODMAN)_)}
 	local name
  	while read -r line ; do
- 		name=${line%=*}
+ 		name=${line%%=*}
  		[[ "$name" =~ $regex ]] || continue
  		test -z "${!name}" || continue
  		declare -x -g "${name}"="${line#*=}" || echo "failed to export '${name}'"
