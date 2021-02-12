@@ -36,7 +36,7 @@ Project was tested and is known to work with following database images from dock
 - 11.10-alpine
 - 12.5-alpine
 - 13.1-alpine
-- *bitnami/postgresql:*13.2.0
+- *bitnami/postgresql:* 13.2.0
 
 
 ### mongo (MongoDB)
@@ -45,8 +45,8 @@ Project was tested and is known to work with following database images from dock
 - 4.0.22-xenial
 - 4.2.12-bionic
 - 4.4.3-bionic
-- *bitnami/mongodb:*4.4.3-debian-10-r43
-- *bitnami/mongodb:*4.4.4
+- *bitnami/mongodb:* 4.4.3-debian-10-r43
+- *bitnami/mongodb:* 4.4.4
 
 ### redis (Redis)
 
