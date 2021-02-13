@@ -451,6 +451,13 @@ function cleanupImages () {
 	return 0
 }
 
+function selfTest () {
+	for t in $(find ./test -type f 2>/dev/null || echo '') ; do
+		echo "Testing ${t}"
+		(inline $t | sed -e 's/.* ok$/✔ &/;s/.* failed$/✗ &/') || return $?
+	done
+}
+
 
 if [ -z "$action" ] || [ "$action" = "help" ] ; then
 	showHelp $2
@@ -504,6 +511,10 @@ case "$action" in
 	;;
 	cleanup)
 		cleanupImages $2 || exit $?
+		exit 0
+	;;
+	self-test)
+		selfTest "$@" || exit $?
 		exit 0
 	;;
 	*)

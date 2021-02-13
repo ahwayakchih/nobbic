@@ -71,16 +71,29 @@ injectValue () {
 
 injectLine () {
 	local line=$1
+	local nl=$2
+
+	# Just copy empty lines
+	if [ -z "$line" ] ; then
+		printf '%s\n' "$line"
+		return
+	fi
+
+	# Inject values as long as there are any tokens left
 	while [[ $line =~ \{\{(\!|)(\.\.\.|)([^{}]+)\}\} ]] ; do
 		line=$(injectValue "$line" "${BASH_REMATCH[3]}" "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}")
 	done
-	echo "$line"
+
+	# Output modified line only if it's not empty
+	if [ -n "$line" ] ; then
+		printf '%s\n' "$line"
+	fi
 }
 
 template () {
 	while IFS= read -r line ; do
 		injectLine "$line"
-	done <"${1:-}"	
+	done <"${1:-}"
 }
 
 if [ -n "$1" ] && [ -f "$1" ] ; then
