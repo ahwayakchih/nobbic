@@ -1,2 +1,7 @@
-backups/
 !.gitignore
+# Generated backups
+backups/
+# Generated init scripts
+*.service
+# Generated temporary env files
+tmp.*
