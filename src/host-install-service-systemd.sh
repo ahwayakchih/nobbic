@@ -4,7 +4,7 @@
 #          It should be run on a system that uses SystemD init system.
 
 serviceFile="${APP_NAME}.service"
-generate openrc.handlebarsh $serviceFile || return 1
+generate systemd.handlebarsh $serviceFile || return 1
 chmod +x "$serviceFile"
 unitFile="/etc/systemd/system/${APP_NAME}.service"
 
