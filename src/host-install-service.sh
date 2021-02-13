@@ -2,6 +2,7 @@
 
 export USER=${USER:-$(id -un)}
 export GROUP=${GROUP:-$(id -gn)}
+export APP_NAME
 
 if [ -z "$APP_NAME" ] ; then
 	echo "ERROR: APP_NAME name must be specified to generate init service file to it" >&2
