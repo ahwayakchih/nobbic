@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# WARNING: This script has to be sourced by os-install-service.sh script.
+# WARNING: This script has to be sourced by host-install-service.sh script.
 #          It should be run on a system that uses SystemD init system.
 
 serviceFile="${APP_NAME}.service"
