@@ -17,13 +17,22 @@ if command su --help &>/dev/null ; then
 		&& echo "Done"\
 		&& exit 0
 	echo "Failed"
+	echo ""
 fi
 
-echo "Ask system administrator to copy it to $unitFile and let init system know about it"
+fullPath=$(readlink -f "$serviceFile")
+
+echo "Ask system administrator to copy file from"
+echo "$fullPath"
+echo "to"
+echo "$unitFile"
+echo "and make OpenRC add & start the service."
 echo "For example:"
-echo "cp -aT '$serviceFile' '$unitFile'\\"
-echo "  && rc-update add $APP_NAME\\"
-echo "  && rc-service $APP_NAME start"
-echo "Below is content of the file."
 echo ""
-cat $serviceFile
+echo "#==========================================."
+echo ""
+echo "  cp -aT '$fullPath' '$unitFile'\\"
+echo "    && rc-update add $APP_NAME\\"
+echo "    && rc-service $APP_NAME start"
+echo ""
+echo "#==========================================^"
