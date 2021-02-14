@@ -21,8 +21,8 @@ fi
 
 echo "Ask system administrator to copy it to $unitFile and let init system know about it"
 echo "For example:"
-echo "cp -aT '$serviceFile' '$unitFile'"
-echo "  && rc-update add $APP_NAME"
+echo "cp -aT '$serviceFile' '$unitFile'\\"
+echo "  && rc-update add $APP_NAME\\"
 echo "  && rc-service $APP_NAME start"
 echo "Below is content of the file."
 echo ""

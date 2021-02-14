@@ -21,8 +21,8 @@ fi
 
 echo "Ask system administrator to copy it to $unitFile and let init system know about it"
 echo "For example:"
-echo "cp -aT '$serviceFile' '$unitFile'"
-echo "  && systemctl start ${APP_NAME}.service"
+echo "cp -aT '$serviceFile' '$unitFile'\\"
+echo "  && systemctl start ${APP_NAME}.service\\"
 echo "  && systemctl enable ${APP_NAME}.service"
 echo "To check its logs:"
 echo "journalctl -u ${APP_NAME}.service -b -f"
