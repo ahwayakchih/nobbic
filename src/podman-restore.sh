@@ -67,31 +67,27 @@ export APP_USE_FQDN=${APP_USE_FQDN:-$CONTAINER_APP_DNS_ALIAS}
 # APP_USE_CLUSTER is not saved, so calculate it from PORT
 export APP_USE_CLUSTER=${APP_USE_CLUSTER:-$(( $(echo $PORT | tr -cd , | wc -c) + 1))}
 
-get_image_name () {
-	cat "$1" 2>/dev/null | grep ImageName | sed 's/^.*ImageName.*:\s*"//' | sed 's/".*$//' || echo "1"
-}
-
 # Check which database(s) to use
 if [ -f "${fromName}/container-postgres.json" ] ; then
-	oldImage=$(get_image_name "${fromName}/container-postgres.json")
+	oldImage=$(get_image_name_from_json "${fromName}/container-postgres.json")
 	export APP_ADD_POSTGRES=${APP_ADD_POSTGRES:-$oldImage}
 elif [ -f "${fromName}/container-mongodb.json" ] ; then
-	oldImage=$(get_image_name "${fromName}/container-mongodb.json")
+	oldImage=$(get_image_name_from_json "${fromName}/container-mongodb.json")
 	export APP_ADD_MONGODB=${APP_ADD_MONGODB:-$oldImage}
 fi
 
 if [ -n "$APP_ADD_REDIS" ] || [ -f "${fromName}/container-redis.json" ] ; then
-	oldImage=$(get_image_name "${fromName}/container-redis.json")
+	oldImage=$(get_image_name_from_json "${fromName}/container-redis.json")
 	export APP_ADD_REDIS=${APP_ADD_REDIS:-$oldImage}
 fi
 
 if [ -n "$APP_ADD_NPM" ] || [ -f "${fromName}/container-npm.json" ] ; then
-	oldImage=$(get_image_name "${fromName}/container-npm.json")
+	oldImage=$(get_image_name_from_json "${fromName}/container-npm.json")
 	export APP_ADD_NPM=${APP_ADD_NPM:-$oldImage}
 fi
 
 if [ -n "$APP_ADD_NGINX" ] || [ -f "${fromName}/container-nginx.json" ] ; then
-	oldImage=$(get_image_name "${fromName}/container-nginx.json")
+	oldImage=$(get_image_name_from_json "${fromName}/container-nginx.json")
 	export APP_ADD_NGINX=${APP_ADD_NGINX:-$oldImage}
 fi
 

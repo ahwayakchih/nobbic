@@ -36,6 +36,11 @@ get_env_values_for() {
 	done
 }
 
+# @param {string} jsonFilePath
+get_image_name_from_json () {
+	cat "$1" 2>/dev/null | grep ImageName | sed 's/^.*ImageName.*:\s*"//' | sed 's/".*$//' || echo "1"
+}
+
 # @param {string} envFilePath
 # @param {string} regex
 function import() {
