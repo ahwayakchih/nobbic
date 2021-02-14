@@ -85,6 +85,15 @@ if [ "$REDIS_FILE_EXISTS" = "yes" ] ; then
 	podman cp "${CONTAINER}:${REDIS_DATA_DIR}/${REDIS_FILE}" ${REDIS_ARCHIVE} \
 		|| (echo "ERROR: Could not copy ${CONTAINER}:${REDIS_DATA_DIR}/${REDIS_FILE} to ${REDIS_ARCHIVE}" >&2 && exit 1)\
 		|| return 1
+
+	# Backup config info, especially REDIS_DATA_DIR, so restore does not have to run container to get those
+	echo "Writing ${BACKUP_TO_FILE}.env file"
+	cat <<-EOF >"${BACKUP_TO_FILE}.env"
+		REDIS_DATA_DIR=${REDIS_DATA_DIR}
+		REDIS_FILE_RDB=${REDIS_FILE_RDB}
+		REDIS_FILE_AOF=${REDIS_FILE_AOF}
+		REDIS_AOF_ENABLED=${REDIS_AOF_ENABLED}
+	EOF
 else
 	echo "Skipping: nothing to backup from Redis (${REDIS_DATA_DIR}/${REDIS_FILE} does not exist)" >&2
 fi

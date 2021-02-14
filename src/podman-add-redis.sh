@@ -27,16 +27,28 @@ podman create --pod "$APP_NAME" --name "$REDIS_CONTAINER" $REDIS_CREATE_ARGS \
 
 # Import from backup, if specified
 if [ ! -z "$RESTORE_FROM" ] ; then
+	REDIS_PREVIOUS_IMAGE=""
+	if [ -f "${RESTORE_FROM}/container-redis.json" ] ; then
+		REDIS_PREVIOUS_IMAGE=$(get_image_name_from_json "${RESTORE_FROM}/container-redis.json")
+		if [ "${REDIS_PREVIOUS_IMAGE%%:*}" = "${REDIS_IMAGE%%:*}" ] ; then
+			echo "Loading ${RESTORE_FROM}/redis.env"
+			# Try to import REDIS_DATA_DIR from backed up env, but ignore any failure
+			import "${RESTORE_FROM}/redis.env" '^REDIS_DATA_DIR$'
+		fi
+	fi
+
 	# Since we may be trying to restore data to some different redis image, with different setup,
 	# it would be good to get data dir from its config. And to do that, we would need to have it running.
 	# But starting added container, seems to hangs whole script, and starting new one with same command
 	# then waiting for db to be ready... too much code for one stupid value.
 	# TODO: find good solution, or simply ecourage writing custom scripts for redis.
-
-	REDIS_DATA_DIR="/data"
 	for f in ${RESTORE_FROM}/redis-* ; do
 		name=$(basename $f)
 		name=${name/redis-/}
+		if [ -z "$REDIS_DATA_DIR" ] ; then
+			REDIS_DATA_DIR='/data'
+			echo "WARNING: could not find REDIS_DATA_DIR, using default ${REDIS_DATA_DIR}" >&2
+		fi
 		echo "Restoring data from ${f} to ${REDIS_CONTAINER}:${REDIS_DATA_DIR}/${name}" >&2
 		podman cp "$f" ${REDIS_CONTAINER}:${REDIS_DATA_DIR}/${name} >&2 || echo "ERROR: could not restore data for Redis" >&2
 	done
