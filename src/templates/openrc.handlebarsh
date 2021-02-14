@@ -1,6 +1,8 @@
 #!/sbin/openrc-run
 #supervisor="supervise-daemon"
 
+export NOBBIC_START_AUTOBUILD=no
+
 command={{!__APP}}
 command_args="start {{APP_NAME}}"
 command_background=true

@@ -215,7 +215,15 @@ function startPod () {
 	fi
 
 	local existed=$(podman pod exists "$APP_NAME" && echo "exists");
-	test "$existed" || buildPod "$APP_NAME" || return $?
+	if [ -z "$existed" ] ; then
+		if [ "${NOBBIC_START_AUTOBUILD:-yes}" = "yes" ] ; then
+			buildPod "$APP_NAME" || return $?
+		else
+			echo "ERROR: no pod exists for ${APP_NAME}" >&2
+			echo "       try to build it first" >&2
+			return 1
+		fi
+	fi
 
 	if test "$existed" ; then
 		echo "Restarting '$APP_NAME' pod..."

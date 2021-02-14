@@ -5,6 +5,7 @@ StartLimitIntervalSec=0
 
 [Service]
 User={{USER}}
+Environment="NOBBIC_START_AUTOBUILD=no"
 ExecStart={{!__APP}} start {{!APP_NAME}}
 ExecStop={{!__APP}} stop {{!APP_NAME}}
 Restart=always
