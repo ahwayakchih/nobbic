@@ -393,7 +393,15 @@ function removePod () {
 
 	echo "Removing '${APP_NAME}' pod..."
 	podman pod rm "$APP_NAME" || return $?
+
+	echo "Pod '${APP_NAME}' removed."
+	echo ""
+	echo "If you installed '${APP_NAME} as a service in host system, be sure to remove it!"
+	echo ""
+
+	echo "Removing pod's volumes..."
 	podman volume ls --format='{{.Name}}' | grep -E "^${APP_NAME}-" | xargs -r podman volume rm || return $?
+	echo "Volumes of pod '${APP_NAME}' removed."
 }
 
 #
