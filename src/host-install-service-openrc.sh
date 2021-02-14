@@ -16,7 +16,8 @@ if command su --help &>/dev/null ; then
 		&& (su -c "cp -aT '$serviceFile' '$unitFile' && ((rc-service -e $APP_NAME || rc-update add $APP_NAME) && rc-service $APP_NAME restart)"\
 			&& rm $serviceFile\
 			&& echo "Done"\
-			|| echo "Failed" && exit 1)\
+			&& exit 0\
+			|| (echo "Failed" && exit 1))\
 		&& exit 0\
 		|| echo "Cancelled"
 	echo ""

@@ -16,7 +16,8 @@ if command su --help &>/dev/null ; then
 		&& (su -c "cp -aT '$serviceFile' '$unitFile' && systemctl daemon-reload && (systemctl restart ${APP_NAME}.service || (systemctl start ${APP_NAME}.service && systemctl enable ${APP_NAME}.service))"\
 			&& rm $serviceFile\
 			&& echo "Done"\
-			|| echo "Failed" && exit 1)\
+			&& exit 0\
+			|| (echo "Failed" && exit 1))\
 		&& exit 0\
 		|| echo "Cancelled"
 	echo ""
