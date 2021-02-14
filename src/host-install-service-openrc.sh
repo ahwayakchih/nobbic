@@ -13,7 +13,7 @@ echo "Service file for $APP_NAME was created as $serviceFile"
 if command su --help &>/dev/null ; then
 	echo "Trying to install it now as root user..."
 	([ ! -f "$unitFile" ] && exit 0 || (read -r -p "'$unitFile' exists. Overwrite? [n/Y] " confirmation && [ "$confirmation" = 'Y' ] || exit 1))\
-		&& (su -c "cp -aT '$serviceFile' '$unitFile' && (rc-service $APP_NAME restart || (rc-update add $APP_NAME && rc-service $APP_NAME start))"\
+		&& (su -c "cp -aT '$serviceFile' '$unitFile' && ((rc-service -e $APP_NAME || rc-update add $APP_NAME) && rc-service $APP_NAME restart)"\
 			&& rm $serviceFile\
 			&& echo "Done"\
 			|| echo "Failed" && exit 1)\
