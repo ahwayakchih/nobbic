@@ -39,7 +39,7 @@ echo "Waiting for MongoDB from '$MONGODB_HOSTNAME' to be available on port $MONG
 podman run --rm --pod "$MONGODB_HOSTNAME" -v "${__DIRNAME}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:${MONGODB_PORT}" -t 30 -l >&2\
 	|| (echo "ERROR: timeout while waiting for database to be ready" >&2 && exit 1)\
 	|| return 1
-podman exec -u mongodb $CONTAINER sh -c 'exec mongodump -d "'$MONGO_INITDB_DATABASE'" --archive' > "${MONGODB_ARCHIVE}.archive"\
+podman exec $CONTAINER sh -c 'exec mongodump -d "'$MONGO_INITDB_DATABASE'" --archive' > "${MONGODB_ARCHIVE}.archive"\
 	&& echo "MongoDB backup done"
 
 if [ -z "$isRunning" ] ; then
