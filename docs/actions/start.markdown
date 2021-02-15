@@ -17,9 +17,9 @@ This will create and start pod named "my-new-forum", that will use latest Redis 
 
 When building, you can specify database images to use with the created pod by setting one of:
 
-`APP_ADD_MONGODB` can be set to 1, to use default 'bionic' image, or to specific image name, e.g., docker.io/mongo:4.4.2-bionic
-`APP_ADD_POSTGRES` can be set to 1, to use default 'alpine' image, or to specific image name, e.g., docker.io/postgres:13.1-alpine
-`APP_ADD_REDIS` can be set to 1, to use default 'alpine3.12' image, or to specific image name, e.g., docker.io/redis:6.0.9-alpine
+- `APP_ADD_MONGODB` can be set to 1, to use default 'bionic' image, or to specific image name, e.g., docker.io/mongo:4.4.2-bionic
+- `APP_ADD_POSTGRES` can be set to 1, to use default 'alpine' image, or to specific image name, e.g., docker.io/postgres:13.1-alpine
+- `APP_ADD_REDIS` can be set to 1, to use default 'alpine3.12' image, or to specific image name, e.g., docker.io/redis:6.0.9-alpine
 
 You can specify two of them as long as one of them is Redis. That will make NodeBB use Redis for session storage only.
 *Keep in mind that support for PostgreSQL was added in NodeBB v1.10.x.*
@@ -69,38 +69,38 @@ It will create pod with NodeBB v1.12.1 that uses PostgreSQL as database engine a
 
 Before container is created, specified (or default) images are pulled from repository (check: `podman pull --help`). You can pass additional arguments to pull command through environment variables:
 
-`PODMAN_PULL_ARGS_MONGODB` variable is used when pulling image for MongoDB database container,
-`PODMAN_PULL_ARGS_POSTGRES` variable is used when pulling image for PostgreSQL database container,
-`PODMAN_PULL_ARGS_REDIS` variable is used when pulling image for Redis database container,
-`PODMAN_PULL_ARGS_NPM` variable is used when pulling image for NPM mirror container,
-`PODMAN_PULL_ARGS_NGINX` variable is used when pulling image for NGINX server container.
+- `PODMAN_PULL_ARGS_MONGODB` variable is used when pulling image for MongoDB database container,
+- `PODMAN_PULL_ARGS_POSTGRES` variable is used when pulling image for PostgreSQL database container,
+- `PODMAN_PULL_ARGS_REDIS` variable is used when pulling image for Redis database container,
+- `PODMAN_PULL_ARGS_NPM` variable is used when pulling image for NPM mirror container,
+- `PODMAN_PULL_ARGS_NGINX` variable is used when pulling image for NGINX server container.
 
 You can set any additional environment variables for specific containers using CONTAINER_ENV_ prefix.
 
-`CONTAINER_ENV_NODE_*` variables will be set as NODE_* in nodebb container.
-`CONTAINER_ENV_NODEBB_*` variables will be set as * in nodebb container.
-`CONTAINER_ENV_MONGODB_*` variables will be set as * in mongodb container.
-`CONTAINER_ENV_POSTGRES_*` variables will be set as POSTGRES_* in postgres container.
-`CONTAINER_ENV_PG_*` variables will be set as PG* in postgres container.
-`CONTAINER_ENV_REDIS_*` variables will be set as * in redis container.
-`CONTAINER_ENV_NPM_*` variables will be set as * in npm container.
-`CONTAINER_ENV_NGINX_*` variables will be set as * in nginx server container.
+- `CONTAINER_ENV_NODE_*` variables will be set as NODE_* in nodebb container.
+- `CONTAINER_ENV_NODEBB_*` variables will be set as * in nodebb container.
+- `CONTAINER_ENV_MONGODB_*` variables will be set as * in mongodb container.
+- `CONTAINER_ENV_POSTGRES_*` variables will be set as POSTGRES_* in postgres container.
+- `CONTAINER_ENV_PG_*` variables will be set as PG* in postgres container.
+- `CONTAINER_ENV_REDIS_*` variables will be set as * in redis container.
+- `CONTAINER_ENV_NPM_*` variables will be set as * in npm container.
+- `CONTAINER_ENV_NGINX_*` variables will be set as * in nginx server container.
 
 You can pass additional arguments to podman commands used for creation of containers (check: `podman create --help`) through separate environment variables:
 
-`PODMAN_CREATE_ARGS_NODEBB` variable for NodeBB container,
-`PODMAN_CREATE_ARGS_MONGODB` variable for MongoDB database container,
-`PODMAN_CREATE_ARGS_POSTGRES` variable for PostgreSQL database container,
-`PODMAN_CREATE_ARGS_REDIS` variable for Redis database container,
-`PODMAN_CREATE_ARGS_NPM` variable for NPM mirror container,
-`PODMAN_CREATE_ARGS_NGINX` variable for NGINX server container.
+- `PODMAN_CREATE_ARGS_NODEBB` variable for NodeBB container,
+- `PODMAN_CREATE_ARGS_MONGODB` variable for MongoDB database container,
+- `PODMAN_CREATE_ARGS_POSTGRES` variable for PostgreSQL database container,
+- `PODMAN_CREATE_ARGS_REDIS` variable for Redis database container,
+- `PODMAN_CREATE_ARGS_NPM` variable for NPM mirror container,
+- `PODMAN_CREATE_ARGS_NGINX` variable for NGINX server container.
 
 You can also set `PODMAN_CREATE_ARGS` environment variable, to pass the same additional arguments to all `podman create` commands.
 
 When container is created, its port number is automaticaly read from image. In case of more than one port being exposed by that image, you can override its value through environment variable:
 
-`CONTAINER_MONGODB_PORT` for MongoDB container,
-`CONTAINER_POSTGRES_PORT` for PostgreSQL container,
-`CONTAINER_REDIS_PORT` for Redis container,
-`CONTAINER_NPM_PORT` for NPM container,
-`CONTAINER_NGINX_PORT` for NGINX container.
+- `CONTAINER_MONGODB_PORT` for MongoDB container,
+- `CONTAINER_POSTGRES_PORT` for PostgreSQL container,
+- `CONTAINER_REDIS_PORT` for Redis container,
+- `CONTAINER_NPM_PORT` for NPM container,
+- `CONTAINER_NGINX_PORT` for NGINX container.
