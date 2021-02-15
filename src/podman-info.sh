@@ -23,7 +23,7 @@ for container in $(podman pod inspect "$APP_NAME" --format=$'{{range .Containers
 	image=$(podman container inspect "$container" --format='{{.ImageName}}' || echo "")
 
 	echo "- $name ($image)"
-	echo "  with "$(podman container inspect "$container" --format=$'{{range .Config.Env}}{{.}}\n{{end}}' | grep '_VERSION' | xargs echo)
+	echo "  with "$(podman container inspect "$container" --format=$'{{range .Config.Env}}{{.}}\n{{end}}' | grep '_VERSION' | xargs echo || echo "")
 done
 
 isRunning=$(podman pod ps --filter status=running --filter name="$APP_NAME" -q)
