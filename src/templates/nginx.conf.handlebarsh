@@ -18,7 +18,7 @@ server {
     error_page  502    /502.html;
     location = /502.html {
         root /;
-        try_files {{!NGINX_NODEBB_ROOT}}/public/502.html /usr/share/nginx/html/50x.html =502;
+        try_files {{NGINX_NODEBB_ROOT}}/public/502.html /usr/share/nginx/html/50x.html =502;
     }
 
     proxy_set_header X-Real-IP $remote_addr;
