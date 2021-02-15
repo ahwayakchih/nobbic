@@ -6,7 +6,7 @@ Nobbic helps you nicely fit [NodeBB](https://nodebb.org/), database and other st
 While it's quite easy to start the NodeBB docker container alone, things complicate quickly when one wants to start also database container, [NGINX](https://www.nginx.com/) proxy container, etc... all the while trying out different versions of software. It's not difficult, but it takes time (and a lot of reading) if it's not something you do everyday already.
 
 Best of all is that after NodeBB is installed and running, it can be controlled with usual `podman` commands.
-Nobbic does not usurp ownership of anything. It just helps to set things up and running, and then may help with backing them up and restoring, but it's all optional.
+Nobbic does not usurp ownership of anything. It just helps to [set things up and running](./docs/actions/start.markdown), and then may help with [backing them up](./docs/actions/backup.markdown), [upgrading](./docs/actions/upgrade.markdown) and [restoring](./docs/actions/restore.markdown), but it's all optional.
 
 
 ## Requirements
