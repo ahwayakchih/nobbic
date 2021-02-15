@@ -54,7 +54,7 @@ Project was tested and is known to work with following database images from dock
 - 6.0.10-alpine
 - 6.2-rc2-alpine
 - 6.2-rc3-alpine
-
+- *bitnami/redis:* 6.0 (start with additional `CONTAINER_ENV_REDIS_ALLOW_EMPTY_PASSWORD=yes`)
 
 ## HTTP(S) servers
 
