@@ -33,7 +33,7 @@ NGINX_ENV=$(get_env_values_for CONTAINER_ENV_NGINX_ "")
 PODMAN_CREATE_ARGS="${PODMAN_CREATE_ARGS} ${PODMAN_CREATE_ARGS_NGINX}"
 
 podman create --pod "$APP_NAME" --name "$NGINX_CONTAINER" $PODMAN_CREATE_ARGS \
-	$NGINX_ENV "$NGINX_IMAGE" || return 1
+	$NGINX_ENV "$NGINX_IMAGE" $CONTAINER_CMD_NGINX || return 1
 
 configFileName="${APP_NAME}.nginx.conf"
 generate nginx.conf.handlebarsh $configFileName || return 1

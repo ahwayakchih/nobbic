@@ -27,7 +27,7 @@ NPM_ENV=$(get_env_values_for CONTAINER_ENV_NPM_ "")
 NPM_CREATE_ARGS="${PODMAN_CREATE_ARGS} ${PODMAN_CREATE_ARGS_NPM}"
 
 podman create --pod "$APP_NAME" --name "$NPM_CONTAINER" $NPM_CREATE_ARGS \
-	$NPM_ENV "$NPM_IMAGE" >/dev/null || return 1
+	$NPM_ENV "$NPM_IMAGE" $CONTAINER_CMD_NPM >/dev/null || return 1
 
 # Output result
 export PODMAN_CREATE_ARGS_NODEBB="-e NPM_CONFIG_REGISTRY=http://localhost:${NPM_PORT}\

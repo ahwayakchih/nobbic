@@ -23,7 +23,7 @@ REDIS_ENV=$(get_env_values_for CONTAINER_ENV_REDIS_ "")
 REDIS_CREATE_ARGS="${PODMAN_CREATE_ARGS} ${PODMAN_CREATE_ARGS_REDIS}"
 
 podman create --pod "$APP_NAME" --name "$REDIS_CONTAINER" $REDIS_CREATE_ARGS \
-	$REDIS_ENV "$REDIS_IMAGE" >/dev/null || exit 1
+	$REDIS_ENV "$REDIS_IMAGE" $CONTAINER_CMD_REDIS >/dev/null || exit 1
 
 # Import from backup, if specified
 if [ ! -z "$RESTORE_FROM" ] ; then

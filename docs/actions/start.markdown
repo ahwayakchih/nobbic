@@ -86,6 +86,14 @@ You can set any additional environment variables for specific containers using C
 - `CONTAINER_ENV_NPM_*` variables will be set as * in npm container.
 - `CONTAINER_ENV_NGINX_*` variables will be set as * in nginx server container.
 
+You can replace command executed by container by setting environment variable for specific container.
+
+- `CONTAINER_CMD_MONGODB` variable is used as a custom command passed to MongoDB database container,
+- `CONTAINER_CMD_POSTGRES` variable is used as a custom command passed to PostgreSQL database container,
+- `CONTAINER_CMD_REDIS` variable is used as a custom command passed to Redis database container,
+- `CONTAINER_CMD_NPM` variable is used as a custom command passed to NPM mirror container,
+- `CONTAINER_CMD_NGINX` variable is used as a custom command passed to NGINX server container.
+
 You can pass additional arguments to podman commands used for creation of containers (check: `podman create --help`) through separate environment variables:
 
 - `PODMAN_CREATE_ARGS_NODEBB` variable for NodeBB container,

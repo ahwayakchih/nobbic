@@ -60,7 +60,7 @@ POSTGRES_CREATE_ARGS="${PODMAN_CREATE_ARGS} ${PODMAN_CREATE_ARGS_POSTGRES}"
 	# "NodeBB could not connect to your PostgreSQL database. PostgreSQL returned the following error: role "custom_user" does not exist"
 	# -e POSTGRES_USER="$APP_NAME"\
 podman create --pod "$APP_NAME" --name "$POSTGRES_CONTAINER" $POSTGRES_CREATE_ARGS \
-	$POSTGRES_ENV "$POSTGRES_IMAGE" >/dev/null || exit 1
+	$POSTGRES_ENV "$POSTGRES_IMAGE" $CONTAINER_CMD_POSTGRES >/dev/null || exit 1
 
 # Import from backup, if specified
 if [ ! -z "$RESTORE_FROM" ] && [ -f "${RESTORE_FROM}/postgres.txt" ] ; then
