@@ -24,4 +24,8 @@ TODO
 - ask (or require "force" flag) before removing?
 - add command to send online users a message, e.g., "forum will close in 2 minutes, we will be back in about 10 minutes"
 - wait X time before closing forum, so users can save whatever they were working on
+- optimize backups (use fastest formats for each database engine) and restore (add node_modules volume)
+- consider something like "continous backup", where data is stored in a "universal" format. that would not only speed up
+  process of exporting backup, but also allow for such extravagant thing as jumping from one database engine to another,
+  e.g., from MongoDB to PostgreSQL and/or vice versa.
 - rewrite whole thing in Go :D
