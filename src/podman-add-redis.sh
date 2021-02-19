@@ -42,15 +42,19 @@ if [ ! -z "$RESTORE_FROM" ] ; then
 	# But starting added container, seems to hangs whole script, and starting new one with same command
 	# then waiting for db to be ready... too much code for one stupid value.
 	# TODO: find good solution, or simply ecourage writing custom scripts for redis.
-	for f in ${RESTORE_FROM}/redis-* ; do
+	for f in $(find ${RESTORE_FROM}/redis-* -type f 2>/dev/null || echo '') ; do
 		name=$(basename $f)
 		name=${name/redis-/}
+		test -n "$name" || continue
+
 		if [ -z "$REDIS_DATA_DIR" ] ; then
 			REDIS_DATA_DIR='/data'
 			echo "WARNING: could not find REDIS_DATA_DIR, using default ${REDIS_DATA_DIR}" >&2
 		fi
 		echo "Restoring data from ${f} to ${REDIS_CONTAINER}:${REDIS_DATA_DIR}/${name}" >&2
-		podman cp "$f" ${REDIS_CONTAINER}:${REDIS_DATA_DIR}/${name} >&2 || echo "ERROR: could not restore data for Redis" >&2
+		podman cp "$f" ${REDIS_CONTAINER}:${REDIS_DATA_DIR}/${name} >&2\
+			|| (echo "ERROR: could not restore data for Redis" >&2 && exit 1)\
+			|| return 1
 	done
 fi
 
