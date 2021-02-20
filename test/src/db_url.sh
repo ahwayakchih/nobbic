@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ${__TOOLS}/db_url.sh
+source ${__SRC}/db_url.sh
 
 # Temporary files used by tests
 EXPECT="tmp.test.expected"
