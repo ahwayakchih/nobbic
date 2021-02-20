@@ -9,8 +9,9 @@ RESULT="tmp.test.result"
 testURL () {
 	local URL=$1
 	echo "${2:-$1}" > "$EXPECT"
-	set_db_envs_from_url $URL TEST_
-	test -n "${TEST_PROTOCOL}" && echo -n "${TEST_PROTOCOL}://" > "$RESULT"
+	set_db_envs_from_url ${URL:-""} TEST_
+	echo -n "" > "$RESULT"
+	test -n "${TEST_PROTOCOL}" && echo -n "${TEST_PROTOCOL}://" >> "$RESULT"
 	test -n "${TEST_USER}" && echo -n "${TEST_USER}" >> "$RESULT"
 	test -n "${TEST_PASSWORD}" && echo -n ":${TEST_PASSWORD}" >> "$RESULT"
 	test -n "${TEST_USER}" && echo -n "@" >> "$RESULT"
@@ -21,7 +22,7 @@ testURL () {
 	echo "" >> "$RESULT"
 	diff "$EXPECT" "$RESULT"
 	result=$?
-	test $result -eq 0 && echo "$URL works ok" || echo "$URL failed"
+	test $result -eq 0 && echo "${URL:-''} works ok" || echo "${URL:-''} failed"
 	return $result
 }
 
@@ -40,3 +41,4 @@ testURL "mongodb://example.com:1234/db_name?param=value" || return 1
 testURL "mongodb://example.com/db_name?param=value" || return 1
 testURL "mongodb://example.com/?param=value" "mongodb://example.com?param=value" || return 1
 testURL "mongodb://example.com?param=value" || return 1
+testURL "" || return 1

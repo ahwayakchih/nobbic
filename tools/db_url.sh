@@ -20,7 +20,6 @@ set_db_envs_from_url () {
 		unset "${db_}PROTOCOL"
 	fi
 
-
 	local credentials=${url%%@*}
 	local user
 	local pass
