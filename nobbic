@@ -178,6 +178,7 @@ function buildPod () {
 
 	podman pod create -n "$APP_NAME" $podOptions \
 		$PODMAN_ARG_LABEL \
+		--network=slirp4netns:port_handler=slirp4netns\
 		--add-host=localhost:127.0.0.1 --hostname="$APP_NAME" || return $?
 
 	if [ -n "$APP_ADD_MONGODB" ] ; then
