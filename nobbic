@@ -469,9 +469,15 @@ function cleanupImages () {
 }
 
 function selfTest () {
-	for t in $(find ./test -type f 2>/dev/null || echo '') ; do
+	local filter=${2:-}
+	if [ -n "$filter" ] ; then
+		filter="/${filter}"
+	fi
+
+	for t in $(find ./test${filter} -type f 2>/dev/null || echo '') ; do
 		echo "Testing ${t}"
 		(inline $t | sed -e 's/.* ok$/✔ &/;s/.* failed$/✗ &/') || return $?
+		echo ""
 	done
 }
 
