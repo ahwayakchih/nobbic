@@ -1,0 +1,19 @@
+#!/bin/bash
+
+__nobbic_completions() {
+	local actions="help list build info start bash exec backup upgrade restore install stop remove cleanup"
+	if [ "${#COMP_WORDS[@]}" = "2" ]; then
+		COMPREPLY=($(compgen -W "$actions" "${COMP_WORDS[1]}"))
+	elif [ "${#COMP_WORDS[@]}" = "3" ]; then
+		if [ "${COMP_WORDS[1]}" = "cleanup" ] ; then
+			COMPREPLY=($(compgen -W "nodebb node repo" "${COMP_WORDS[2]}"))
+		elif [ "${COMP_WORDS[1]}" = "help" ] ; then
+			COMPREPLY=($(compgen -W "${actions/help[\s]+/}" "${COMP_WORDS[2]}"))
+		else
+			local pods=$(nobbic list | tail -n +2 | sed -E 's/[ ]+/ /g' | cut -d' ' -f2)
+			COMPREPLY=($(compgen -W "$pods" "${COMP_WORDS[2]}"))
+		fi
+	fi
+}
+
+complete -F __nobbic_completions nobbic
