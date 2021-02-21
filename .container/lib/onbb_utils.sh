@@ -419,16 +419,25 @@ function onbb_wait_until_db_ready () {
 		seconds=120
 	fi
 
+	local port=
 	local target=""
 
 	if [ "${CONTAINER_MONGODB_HOST}${CONTAINER_MONGODB_IP}" ] ; then
-		target="${CONTAINER_MONGODB_HOST:-$CONTAINER_MONGODB_IP}:${CONTAINER_MONGODB_PORT:-27017}"
+		port=${CONTAINER_MONGODB_PORT:-27017}
+		target="${CONTAINER_MONGODB_HOST:-$CONTAINER_MONGODB_IP}:${port}"
 	elif [ "${MONGOLAB_URI}" ] ; then
 		target=$(URL="${MONGOLAB_URI}" node -e 'const url=require("url");const u=url.parse(process.env.URL);const r=u.hostname+(u.port?":"+u.port:"");console.log(r);')
+		port=$(echo "$target" | cut -s -d: -f2)
+		if [ -z "$port" ] ; then
+			port=27017
+			target="${target}:${port}"
+		fi
 	elif [ "${CONTAINER_POSTGRES_HOST}${CONTAINER_POSTGRES_PASSWORD}" ] ; then
-		target="${CONTAINER_POSTGRES_HOST:-127.0.0.1}:${CONTAINER_POSTGRES_PORT:-5432}"
+		port=${CONTAINER_POSTGRES_PORT:-5432}
+		target="${CONTAINER_POSTGRES_HOST:-127.0.0.1}:${port}"
 	elif [ "${CONTAINER_REDIS_HOST}${REDIS_PASSWORD}" ] ; then
-		target="${CONTAINER_REDIS_HOST:-127.0.0.1}:${CONTAINER_POSTGRES_PORT:-6379}"
+		port=${CONTAINER_POSTGRES_PORT:-6379}
+		target="${CONTAINER_REDIS_HOST:-127.0.0.1}:${port}"
 	else
 		echo "ERROR: no database connection specified" >&2
 		return 1
@@ -436,7 +445,7 @@ function onbb_wait_until_db_ready () {
 
 	echo "Waiting for DB at ${target} to be ready" >&2
 	"${CONTAINER_REPO_DIR}.container/tools/wait-for.sh" ${target} -t $seconds -l \
-		|| (echo "WARNING: could not reach database port, checking if anything is listening on that port" >&2 && netstat -tulnp | grep 2701 && echo "WARNIG: looks like it is listening, allow for risky continuation" >&2) \
+		|| (echo "WARNING: could not reach database port, checking if anything is listening on that port" >&2 && (test -n "$port" && netstat -tulnp | grep "$port") && echo "WARNIG: looks like it is listening, allow for risky continuation" >&2) \
 		|| return 1
 }
 
