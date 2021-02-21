@@ -60,7 +60,7 @@ APP_USE_FQDN=localhost APP_ADD_REDIS=1 nobbic start my-new-forum
 
 That will install latest released NodeBB version, with latest version of Redis database, and make it accessible through "http://localhost:8080" URL.
 
-It will take some time to download and prepare all the stuff for the first time (somewhere between 15-30 minutes, but it all depends on network, processors and available RAM).
+It will take some time to download and prepare all the stuff for the first time (somewhere between 15-30 minutes, but it all depends on network, processor(s) and available RAM).
 Every next try that uses the same Node.js version, should be much faster.
 
 Read [docs/Usage.markdown](./docs/Usage.markdown) to see full list of supported actions.
