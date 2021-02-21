@@ -21,12 +21,12 @@ Project was tested with various versions of **NodeBB** between (and including) *
 
 ## Node.js
 
-Depending on NodeBB version, project was tested with **Node.js** versions **8**, **10**, **12**, **13**, **14** and **15** images from docker.io, all of them using Alpine Linux as a base.
+Depending on NodeBB version, project was tested with **Node.js** versions **8**, **10**, **12**, **13**, **14** and **15** using Alpine Linux based images from docker.io.
 
 
 ## Databases
 
-Project was tested and is known to work with following database images from docker.io (assume official repo unless specified otherwise):
+Project was tested and is known to work with following database images from docker.io (assume official repository, i.e., same as db's short-name, unless specified otherwise):
 
 
 ### postgres (PostgreSQL)
@@ -54,7 +54,7 @@ Project was tested and is known to work with following database images from dock
 - 6.0.10-alpine
 - 6.2-rc2-alpine
 - 6.2-rc3-alpine
-- *bitnami/redis:* 6.0 (start with additional `CONTAINER_ENV_REDIS_ALLOW_EMPTY_PASSWORD=yes`)
+- *bitnami/redis:* 6.0 ([build/start](./actions/start.markdown) with an additional `CONTAINER_ENV_REDIS_ALLOW_EMPTY_PASSWORD=yes` environment variable)
 
 ## HTTP(S) servers
 
