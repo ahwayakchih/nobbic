@@ -54,9 +54,9 @@ function sanitizeAppName () {
 
 function showHelp () {
 	local action=$1;
-	local src="./docs/Usage.markdown"
+	local src="${__DIRNAME}/docs/Usage.markdown"
 	if [ -n "$action" ] ; then
-		src="./docs/actions/$(basename $action).markdown"
+		src="${__DIRNAME}/docs/actions/$(basename $action).markdown"
 	fi
 
 	if [ ! -f "$src" ] ; then
@@ -66,7 +66,7 @@ function showHelp () {
 
 	local prefix=""
 	if ! command nobbic --help &>/dev/null ; then
-		prefix="$__DIRNAME"
+		prefix="${__DIRNAME}/"
 		if [ "$(pwd)" = "$__DIRNAME" ] ; then
 			prefix="./"
 		fi
