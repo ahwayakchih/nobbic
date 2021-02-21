@@ -13,6 +13,12 @@ Most of the actions require specifying APP_NAME as their first argument. APP_NAM
 
 Following "actions" are implemented so far:
 
+* `list`
+
+  Lists pods created with nobbic.
+
+  [Read more](./actions/list.markdown)
+
 * `build` APP_NAME
 
   Builds pod with containers using options passes through environment variables.

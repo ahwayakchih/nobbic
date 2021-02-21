@@ -488,6 +488,11 @@ if [ -z "$action" ] || [ "$action" = "help" ] ; then
 fi
 
 case "$action" in
+	list)
+		shift 1
+		podman pod ps --filter label="$__LABEL" $@
+		exit 0
+	;;
 	build)
 		buildPod $(sanitizeAppName $2) || exit $?
 		exit 0
