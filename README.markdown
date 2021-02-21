@@ -1,20 +1,21 @@
 Nobbic
 ======
 
-Nobbic helps you nicely fit [NodeBB](https://nodebb.org/), database and other stuff into a single pod with containers.
+Nobbic helps you nicely fit [NodeBB](https://nodebb.org/), database and other stuff into a single pod with containers controlled by [`podman`](https://podman.io/).
 
 While it's quite easy to start the NodeBB docker container alone, things complicate quickly when one wants to start also database container, [NGINX](https://www.nginx.com/) proxy container, etc... all the while trying out different versions of software. It's not difficult, but it takes time (and a lot of reading) if it's not something you do everyday already.
 
 Best of all is that after NodeBB is installed and running, it can be controlled with usual `podman` commands.
-Nobbic does not usurp ownership of anything. It just helps to [set things up and running](./docs/actions/start.markdown), and then may help with [backing them up](./docs/actions/backup.markdown), [upgrading](./docs/actions/upgrade.markdown) and [restoring](./docs/actions/restore.markdown), but it's all optional.
+Nobbic does not usurp ownership of anything. It just helps to [set things up and running](./docs/actions/start.markdown), and then may help with [backing them up](./docs/actions/backup.markdown), [upgrading](./docs/actions/upgrade.markdown) and [restoring](./docs/actions/restore.markdown), but only if you want to - it's all optional.
 
 
 ## Requirements
 
-All it requires to start is the [`bash`](https://www.gnu.org/software/bash/) shell and the [`podman`](https://podman.io/) installed. And a [Linux](https://www.linux.org/) operating system.
+All it requires to start is the [`bash`](https://www.gnu.org/software/bash/) shell and the `podman` installed and running on a [Linux](https://www.linux.org/) operating system.
 
 **Podman** should be at least **v2.2.1** and **[configured for running rootless](https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md)**.
-Simplest way to test whole thing is to [install Alpine Linux (with podman)](./docs/SetupPodmanOnAlpineHost.markdown) in a virtual machine (like [QEMU](https://www.qemu.org/)).
+
+If you're not running Linux at the moment, or just do not want to change anything in how it's set up, simplest way to test whole thing is to [install Alpine Linux (with podman)](./docs/SetupPodmanOnAlpineHost.markdown) in a virtual machine (like [QEMU](https://www.qemu.org/)).
 
 
 ## Compatibility
@@ -27,7 +28,7 @@ For a full list of software, read [docs/Compatibility.markdown](./docs/Compatibi
 
 ## Installation
 
-You can download ZIP archive with this project from [GitHub](https://github.com/ahwayakchih/nobbic)
+You can download ZIP archive with this project from [GitHub](https://github.com/ahwayakchih/nobbic/archive/main.zip)
 and unzip it to selected directory, or git clone repository if you already have `git` installed:
 
 ```sh
