@@ -75,7 +75,7 @@ function showHelp () {
 	echo 'Usage:'
 	grep -v -E '[[:space:]]*\[Read more\]\([^)]*\)\.*$' "$src"\
 		| tail -n +3\
-		| sed -E 's/[\#]+[[:space:]]*//g'\
+		| sed -E 's/^[\#]+[[:space:]]*//g'\
 		| sed 's/```txt$/'$(tput rev)'/'\
 		| sed 's/```sh$/'$(tput bold)'/'\
 		| sed 's/```$/'$(tput sgr0)'/'\
