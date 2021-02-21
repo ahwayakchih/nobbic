@@ -103,6 +103,28 @@ This will allocate pool of "virtual" ids for every user. You can read more about
 If you do not want to allocate pool of ids for every user, only for specific ones, you can skip editing `/etc/login.defs`. Instead, use the command `usermod` the way it's described in podman's repository.
 
 
+### Switch CGroups to v2
+
+Some of the features of podman are available only when system is using cgroups v2.
+Alpine Linux uses "hybrid" of v1 and v2, but that does not seem to work for podman.
+
+To fix that, edit configuration:
+
+```sh
+nano /etc/rc.conf
+```
+
+Find `rc_cgroup_mode` (CTRL+w, enter text you're looking for, ENTER) and set its value to "unified", so it looks like this:
+
+```txt
+rc_cgroup_mode="unified"
+```
+
+(it cannot be "commented", as in, the line should not start with "#").
+
+Save changes. It will start working in new mode after system reboot.
+
+
 ### Enable pinging from containers
 
 Make sure that pinging from rootless container is enabled:
