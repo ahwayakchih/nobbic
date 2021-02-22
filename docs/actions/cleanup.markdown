@@ -15,6 +15,7 @@ To remove all installations and cached images:
 nobbic cleanup node && nobbic cleanup repo
 ```
 
+
 ### Cleaning up everything
 
 **WARNING:** this will remove ALL the containers, images and volumes, not just the ones created with the help of `nobbic`!
