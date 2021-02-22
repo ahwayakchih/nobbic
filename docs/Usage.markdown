@@ -9,7 +9,7 @@ Nobbic offers an easy way to install and run NodeBB with one of PostgreSQL, Mong
 
 It also allows to create backups and restore from those backups.
 
-Most of the actions require specifying APP_NAME as their first argument. APP_NAME is simply a name of your chosing for the NodeBB installation.
+Most of the actions require specifying APP_NAME as their first argument. APP_NAME is simply a name of your chosing for the NodeBB installation, e.g., "my-new-forum".
 
 Following "actions" are implemented so far:
 
