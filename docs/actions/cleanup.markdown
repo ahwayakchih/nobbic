@@ -15,7 +15,9 @@ To remove all installations and cached images:
 nobbic cleanup node && nobbic cleanup repo
 ```
 
-### cleaning up everything
+### Cleaning up everything
+
+**WARNING:** this will remove ALL the containers, images and volumes, not just the ones created with the help of `nobbic`!
 
 To remove everything from podman, simply run:
 
