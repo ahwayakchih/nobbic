@@ -67,11 +67,17 @@ export APP_USE_FQDN=${APP_USE_FQDN:-$CONTAINER_APP_DNS_ALIAS}
 # APP_USE_CLUSTER is not saved, so calculate it from PORT
 export APP_USE_CLUSTER=${APP_USE_CLUSTER:-$(( $(echo $PORT | tr -cd , | wc -c) + 1))}
 
+# Error out if both "main" databases are added
+if [ -n "$APP_ADD_POSTGRES" ] && [ -n "$APP_ADD_MONGODB" ] ; then
+	echo "ERROR: You cannot use both PosgreSQL and MongoDB as main database" >&2
+	return 1
+fi
+
 # Check which database(s) to use
-if [ -f "${fromName}/container-postgres.json" ] ; then
+if [ -n "$APP_ADD_POSTGRES" ] || [ -f "${fromName}/container-postgres.json" ] ; then
 	oldImage=$(get_image_name_from_json "${fromName}/container-postgres.json")
 	export APP_ADD_POSTGRES=${APP_ADD_POSTGRES:-$oldImage}
-elif [ -f "${fromName}/container-mongodb.json" ] ; then
+elif [ -n "$APP_ADD_MONGODB" ] || [ -f "${fromName}/container-mongodb.json" ] ; then
 	oldImage=$(get_image_name_from_json "${fromName}/container-mongodb.json")
 	export APP_ADD_MONGODB=${APP_ADD_MONGODB:-$oldImage}
 fi
