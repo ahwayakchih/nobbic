@@ -5,6 +5,25 @@ if ! podman pod exists ${APP_NAME} &>/dev/null ; then
 	return 1
 fi
 
+DEFAULT_MONGODB_PORT=27017
+
+if [[ "$APP_ADD_MONGODB" =~ ^mongo(db)?:\/\/ ]] ; then
+	inline db_url.sh
+	set_db_envs_from_url "$APP_ADD_MONGODB" MONGODB_
+	if [ -n "$MONGODB_HOST" ] ; then
+		# Output result
+		export PODMAN_CREATE_ARGS_NODEBB="-e CONTAINER_MONGODB_HOST=${MONGODB_HOST}\
+			-e CONTAINER_MONGODB_PORT=${MONGODB_PORT:-$DEFAULT_MONGODB_PORT}\
+			-e CONTAINER_MONGODB_NAME=${MONGODB_NAME}\
+			-e CONTAINER_MONGODB_USER=${MONGODB_USER}\
+			-e CONTAINER_MONGODB_PASSWORD=${MONGODB_PASSWORD}\
+			${PODMAN_CREATE_ARGS_NODEBB}"
+		# TODO: support restoring from backup?
+		# Return early
+		return
+	fi
+fi
+
 MONGODB_CONTAINER=${CONTAINER:-"${APP_NAME}-mongodb"}
 
 MONGODB_IMAGE=${FROM_IMAGE:-docker.io/mongo:bionic}
@@ -14,7 +33,7 @@ fi
 
 MONGODB_PORT=${CONTAINER_MONGODB_PORT:-$(podman image inspect $MONGODB_IMAGE --format=$'{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
 if [ -z "$MONGODB_PORT" ] ; then
-	MONGODB_PORT=27017
+	MONGODB_PORT=$DEFAULT_MONGODB_PORT
 	echo "WARNING: could not find port number exposed by ${MONGODB_IMAGE}, defaulting to ${MONGODB_PORT}" >&2
 fi
 

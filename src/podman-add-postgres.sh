@@ -5,6 +5,25 @@ if ! podman pod exists ${APP_NAME} &>/dev/null ; then
 	return 1
 fi
 
+DEFAULT_POSTGRES_PORT=5432
+
+if [[ "$APP_ADD_POSTGRES" =~ ^postgre(s|sql)?:\/\/ ]] ; then
+	inline db_url.sh
+	set_db_envs_from_url "$APP_ADD_POSTGRES" POSTGRES_
+	if [ -n "$POSTGRES_HOST" ] ; then
+		# Output result
+		export PODMAN_CREATE_ARGS_NODEBB="-e CONTAINER_POSTGRES_HOST=${POSTGRES_HOST}\
+			-e CONTAINER_POSTGRES_PORT=${POSTGRES_PORT:-$DEFAULT_POSTGRES_PORT}\
+			-e CONTAINER_POSTGRES_DB=${POSTGRES_NAME}\
+			-e CONTAINER_POSTGRES_USER=${POSTGRES_USER}\
+			-e CONTAINER_POSTGRES_PASSWORD=${POSTGRES_PASSWORD}\
+			${PODMAN_CREATE_ARGS_NODEBB}"
+		# TODO: support restoring from backup?
+		# Return early
+		return
+	fi
+fi
+
 POSTGRES_CONTAINER=${CONTAINER:-"${APP_NAME}-postgres"}
 
 POSTGRES_IMAGE=${FROM_IMAGE:-docker.io/postgres:alpine}
@@ -19,7 +38,7 @@ fi
 # Get postgres port
 POSTGRES_PORT=${CONTAINER_POSTGRES_PORT:-$(podman image inspect $POSTGRES_IMAGE --format=$'{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
 if [ -z "$POSTGRES_PORT" ] ; then
-	POSTGRES_PORT=5432
+	POSTGRES_PORT=$DEFAULT_POSTGRES_PORT
 	echo "WARNING: could not find port number exposed by ${POSTGRES_IMAGE}, defaulting to ${POSTGRES_PORT}" >&2
 fi
 

@@ -13,8 +13,6 @@ TODO
   **update:** replacing may still be needed, or writing config AFTER install, because install parses url from config,
   and if there's a port specified, it overrides port setting with the one from url. Which breaks stuff if external port
   is defferent than the one NodeBB should listen on, e.g., example.com:8080 -> 4567.
-- add support for something like `APP_ADD_POSTGRES=postgres://user@hostname:port/dbname` for all databases,
-  so it will be easier to backup and restore access to external databases, and define by user when first start/build is done.
 - option for NodeBB to keep building assets in `series` mode
 - option to specify additional plugins when creating instance, so they are installed and
   activated from the start.
@@ -25,6 +23,7 @@ TODO
 - add command to send online users a message, e.g., "forum will close in 2 minutes, we will be back in about 10 minutes"
 - wait X time before closing forum, so users can save whatever they were working on
 - optimize backups (use fastest formats for each database engine) and restore (add node_modules volume)
+- add support for backing up and restoring external (those added as db url) databases?
 - consider something like "continous backup", where data is stored in a "universal" format. that would not only speed up
   process of exporting backup, but also allow for such extravagant thing as jumping from one database engine to another,
   e.g., from MongoDB to PostgreSQL and/or vice versa.

@@ -5,6 +5,24 @@ if ! podman pod exists ${APP_NAME} &>/dev/null ; then
 	return 1
 fi
 
+DEFAULT_REDIS_PORT=6379
+
+if [[ "$APP_ADD_REDIS" =~ ^redis:\/\/ ]] ; then
+	inline db_url.sh
+	set_db_envs_from_url "$APP_ADD_REDIS" REDIS_
+	if [ -n "$REDIS_HOST" ] ; then
+		# Output result
+		export PODMAN_CREATE_ARGS_NODEBB="-e CONTAINER_REDIS_HOST=${REDIS_HOST}\
+			-e CONTAINER_REDIS_PORT=${REDIS_PORT:-$DEFAULT_REDIS_PORT}\
+			-e CONTAINER_REDIS_DB=${REDIS_NAME}\
+			-e CONTAINER_REDIS_PASSWORD=${REDIS_PASSWORD}\
+			${PODMAN_CREATE_ARGS_NODEBB}"
+		# TODO: support restoring from backup?
+		# Return early
+		return
+	fi
+fi
+
 REDIS_CONTAINER=${CONTAINER:-"${APP_NAME}-redis"}
 
 REDIS_IMAGE=${FROM_IMAGE:-docker.io/redis:alpine3.12}
@@ -14,7 +32,7 @@ fi
 
 REDIS_PORT=${CONTAINER_REDIS_PORT:-$(podman inspect $REDIS_IMAGE --format=$'{{range $key,$value := .Config.ExposedPorts}}{{$key}}\n{{end}}' | grep -m 1 -E '^[[:digit:]]*' | cut -d/ -f1 || test $? -eq 141)}
 if [ -z "$REDIS_PORT" ] ; then
-	REDIS_PORT=6379
+	REDIS_PORT=$DEFAULT_REDIS_PORT
 	echo "WARNING: could not find port number exposed by ${REDIS_IMAGE}, defaulting to ${REDIS_PORT}" >&2
 fi
 
