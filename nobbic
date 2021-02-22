@@ -488,7 +488,7 @@ function selfTest () {
 
 	for t in $(find ./test${filter} -type f 2>/dev/null || echo '') ; do
 		echo "Testing ${t}"
-		(inline $t | sed -e 's/.* ok$/✔ &/;s/.* failed$/✗ &/') || return $?
+		(inline $t | sed -E 's/.* works (ok|too)$/✔ &/;s/.* failed$/✗ &/') || return $?
 		echo ""
 	done
 }
