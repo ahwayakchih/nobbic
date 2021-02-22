@@ -70,3 +70,36 @@ set_db_envs_from_url () {
 		unset "${db_}PORT"
 	fi
 }
+
+# @param {string} envPrefix
+get_url_from_db_envs () {
+	local db_="$1"
+	local URL=
+	local name
+
+	name="${db_}PROTOCOL"
+	test -n "${!name}" && URL="${URL}${!name}://" || (echo -n "" && exit 1) || return 1
+
+	name="${db_}USER"
+	test -n "${!name}" && URL="${URL}${!name}"
+
+	name="${db_}PASSWORD"
+	test -n "${!name}" && URL="${URL}:${!name}"
+
+	name="${db_}USER"
+	test -n "${!name}" && URL="${URL}@"
+
+	name="${db_}HOST"
+	test -n "${!name}" && URL="${URL}${!name}" || (echo -n "" && exit 1) || return 1
+
+	name="${db_}PORT"
+	test -n "${!name}" && URL="${URL}:${!name}"
+
+	name="${db_}NAME"
+	test -n "${!name}" && URL="${URL}/${!name}"
+
+	name="${db_}PARAMS"
+	test -n "${!name}" && URL="${URL}?${!name}"
+
+	echo -n "$URL"
+}
