@@ -13,6 +13,10 @@ __nobbic_completions() {
 			local pods=$(nobbic list | tail -n +2 | sed -E 's/[ ]+/ /g' | cut -d' ' -f2)
 			COMPREPLY=($(compgen -W "$pods" "${COMP_WORDS[2]}"))
 		fi
+	elif [ "${#COMP_WORDS[@]}" = "4" ]; then
+		if [ "${COMP_WORDS[1]}" = "restore" ] && [ -d "./backups" ] ; then
+			COMPREPLY=($(compgen -W "$(find ./backups -type d -name ${COMP_WORDS[2]}_*)" "${COMP_WORDS[3]}"))
+		fi
 	fi
 }
 
