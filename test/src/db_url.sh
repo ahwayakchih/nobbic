@@ -8,7 +8,7 @@ RESULT="tmp.test.result"
 
 testURL () {
 	local URL=$1
-	echo "${2:-$1}" > "$EXPECT"
+	echo -n "${2:-$1}" > "$EXPECT"
 	set_db_envs_from_url ${URL:-""} TEST_
 	echo -n "" > "$RESULT"
 	test -n "${TEST_PROTOCOL}" && echo -n "${TEST_PROTOCOL}://" >> "$RESULT"
@@ -19,10 +19,18 @@ testURL () {
 	test -n "${TEST_PORT}" && echo -n ":${TEST_PORT}" >> "$RESULT"
 	test -n "${TEST_NAME}" && echo -n "/${TEST_NAME}" >> "$RESULT"
 	test -n "${TEST_PARAMS}" && echo -n "?${TEST_PARAMS}" >> "$RESULT"
-	echo "" >> "$RESULT"
+
 	diff "$EXPECT" "$RESULT"
 	result=$?
-	test $result -eq 0 && echo "${URL:-''} works ok" || echo "${URL:-''} failed"
+	test $result -eq 0 && echo "set_db_envs_from_url ${URL:-''} works ok" || echo "set_db_envs_from_url ${URL:-''} failed"
+
+	if [ $result -eq 0 ] ; then
+		get_url_from_db_envs TEST_ > "$RESULT"
+		diff "$EXPECT" "$RESULT"
+		result=$?
+		test $result -eq 0 && echo "get_url_from_db_envs ${URL:-''} works too" || echo "get_url_from_db_envs ${URL:-''} failed"
+	fi
+
 	return $result
 }
 
@@ -42,3 +50,6 @@ testURL "mongodb://example.com/db_name?param=value" || return 1
 testURL "mongodb://example.com/?param=value" "mongodb://example.com?param=value" || return 1
 testURL "mongodb://example.com?param=value" || return 1
 testURL "" || return 1
+
+# We're here, so nothing exited earlier and we can cleanup temporary files
+# rm -rf "$EXPECT" "$RESULT" &>/dev/null || true
