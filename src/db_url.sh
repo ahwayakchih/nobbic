@@ -26,15 +26,22 @@ set_db_envs_from_url () {
 	if [ "$credentials" != "$url" ] ; then
 		user=${credentials%%:*}
 		pass=${credentials#*:}
-		if [ "$pass" != "$user" ] ; then
+		if [ -n "$pass" ] && [ "$pass" != "$credentials" ] ; then
 			export "${db_}PASSWORD=${pass}"
 		else
 			unset "${db_}PASSWORD"
 		fi
-		export "${db_}USER=${user}"
+
+		if [ -n "$user" ] ; then
+			export "${db_}USER=${user}"
+		else
+			unset "${db_}USER"
+		fi
+
 		url=${url/${credentials}@/}
 	else
 		unset "${db_}USER"
+		unset "${db_}PASSWORD"
 	fi
 
 	local params=${url#*\?}
@@ -86,8 +93,9 @@ get_url_from_db_envs () {
 	name="${db_}PASSWORD"
 	test -n "${!name}" && URL="${URL}:${!name}"
 
+	# If there was a user
 	name="${db_}USER"
-	test -n "${!name}" && URL="${URL}@"
+	(test -n "${!name}" || (name="${db_}PASSWORD"; test -n "${!name}")) && URL="${URL}@"
 
 	name="${db_}HOST"
 	test -n "${!name}" && URL="${URL}${!name}" || (echo -n "" && exit 1) || return 1
