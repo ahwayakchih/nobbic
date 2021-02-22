@@ -53,4 +53,4 @@ testURL "mongodb://example.com?param=value" || return 1
 testURL "" || return 1
 
 # We're here, so nothing exited earlier and we can cleanup temporary files
-# rm -rf "$EXPECT" "$RESULT" &>/dev/null || true
+rm -rf "$EXPECT" "$RESULT" &>/dev/null || true
