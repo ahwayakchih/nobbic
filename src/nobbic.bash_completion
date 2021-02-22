@@ -10,7 +10,7 @@ __nobbic_completions() {
 		elif [ "${COMP_WORDS[1]}" = "help" ] ; then
 			COMPREPLY=($(compgen -W "${actions/help[\s]+/}" "${COMP_WORDS[2]}"))
 		else
-			local pods=$(nobbic list | tail -n +2 | sed -E 's/[ ]+/ /g' | cut -d' ' -f2)
+			local pods=$("${COMP_WORDS[0]}" list | tail -n +2 | sed -E 's/[ ]+/ /g' | cut -d' ' -f2)
 			COMPREPLY=($(compgen -W "$pods" "${COMP_WORDS[2]}"))
 		fi
 	elif [ "${#COMP_WORDS[@]}" = "4" ]; then
