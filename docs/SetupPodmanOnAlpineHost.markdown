@@ -122,6 +122,22 @@ rc_cgroup_mode="unified"
 
 (it cannot be "commented", as in, the line should not start with "#").
 
+
+A few lines below, there should also be something like:
+
+```txt
+#rc_cgroup_controllers=""
+```
+
+Change it to:
+
+```txt
+rc_cgroup_controllers="memory pids"
+```
+
+That will allow `podman stats` and `podman pod stats` commands to output more info.
+
+
 Save changes. It will start working in new mode after system reboot.
 
 
