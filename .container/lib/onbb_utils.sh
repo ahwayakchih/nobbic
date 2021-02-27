@@ -436,7 +436,7 @@ function onbb_wait_until_db_ready () {
 		port=${CONTAINER_POSTGRES_PORT:-5432}
 		target="${CONTAINER_POSTGRES_HOST:-127.0.0.1}:${port}"
 	elif [ "${CONTAINER_REDIS_HOST}${REDIS_PASSWORD}" ] ; then
-		port=${CONTAINER_POSTGRES_PORT:-6379}
+		port=${CONTAINER_REDIS_PORT:-6379}
 		target="${CONTAINER_REDIS_HOST:-127.0.0.1}:${port}"
 	else
 		echo "ERROR: no database connection specified" >&2
