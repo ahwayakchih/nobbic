@@ -197,12 +197,12 @@ function buildPod () {
 		addToPod "$APP_NAME" "$APP_ADD_MONGODB" podman-add-mongodb.sh || return $?
 	fi
 
-	if [ -n "$APP_ADD_REDIS" ] ; then
-		addToPod "$APP_NAME" "$APP_ADD_REDIS" podman-add-redis.sh || return $?
-	fi
-
 	if [ -n "$APP_ADD_POSTGRES" ] ; then
 		addToPod "$APP_NAME" "$APP_ADD_POSTGRES" podman-add-postgres.sh || return $?
+	fi
+
+	if [ -n "$APP_ADD_REDIS" ] ; then
+		addToPod "$APP_NAME" "$APP_ADD_REDIS" podman-add-redis.sh || return $?
 	fi
 
 	if [ -n "$APP_ADD_NPM" ] ; then
