@@ -90,6 +90,7 @@ else
         -c "ENV=NODEBB_VERSION=${NODEBB_VERSION}"\
         -c "ENV=NODE_ENV=${NODE_ENV:-production}"\
         -c "ENV=CONTAINER_REPO_DIR=/app/"\
+        -c "LABEL ${__LABEL}=${__VERSION}"\
         -c 'USER node'\
         -c 'WORKDIR /app'\
         -c 'CMD ["/bin/bash", "-l", "./.container/entrypoint.sh"]'\

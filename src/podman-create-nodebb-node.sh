@@ -21,7 +21,7 @@ NODE_IMAGE=${NODE_IMAGE/\%NODE_VERSION\%/$NODE_VERSION}
 echo "Using $NODE_IMAGE as a base for ${NODEBB_NODE_IMAGE}:${NODE_VERSION}"
 
 podman run --replace --name build-${NODEBB_NODE_IMAGE} -v ${__TOOLS}/alpine-reconfigure-node.sh:/usr/local/bin/alpine-reconfigure-node.sh:ro "$NODE_IMAGE" alpine-reconfigure-node.sh\
-    && podman commit -c CMD=/bin/sh -c USER=node -c WORKDIR=/app -c ENV=ENV=/etc/profile build-${NODEBB_NODE_IMAGE} ${NODEBB_NODE_IMAGE}:${NODE_VERSION}\
+    && podman commit -c CMD=/bin/sh -c USER=node -c WORKDIR=/app -c ENV=ENV=/etc/profile -c "LABEL ${__LABEL}=${__VERSION}" build-${NODEBB_NODE_IMAGE} ${NODEBB_NODE_IMAGE}:${NODE_VERSION}\
     && podman rm build-${NODEBB_NODE_IMAGE}
 
 INSTALLED_NODE_VERSION=$(podman run --rm ${NODEBB_NODE_IMAGE}:${NODE_VERSION} node --version)
