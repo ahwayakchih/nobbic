@@ -5,12 +5,14 @@ if [ -z "$APP_NAME" ] ; then
     echo "WARNING: APP_NAME not specified, default '$APP_NAME' will be used" >&2
 fi
 
-NODEBB_REPO_VOLUME=${NODEBB_REPO_VOLUME:-nodebb-repo}
+export NODEBB_REPO_VOLUME=${NODEBB_REPO_VOLUME:-nodebb-repo}
 NODEBB_REPO_DOWNLOADER="${NODEBB_REPO_VOLUME}-downloader"
+
+# Prepare toolbox, if it's not ready yet
+inline podman-create-nodebb-toolbox.sh
 
 # Clone NodeBB repo to separate volume, so we don't have to do full clone again next time
 # and so we can extract which NODE_VERSION selected NODEBB_VERSION depends on.
-inline podman-create-nodebb-repo.sh
 # We split NodeBB directories into 3 volumes, so it's easier to share selected parts between containers
 # Also, ${APP_NAME}-nodebbb* volumes will need `chown` run on them, once node.js image is ready
 # (repo container is pure Alpine, so no "node" user yet).
@@ -22,7 +24,7 @@ podman run --replace -it --rm --name nodebb-downloader\
     -v ${APP_NAME}-nodebb-build:/target/build:z\
     -v ${APP_NAME}-nodebb-public:/target/public:z\
     -e CONTAINER_INSTALL_DIR=/target\
-    ${NODEBB_REPO_IMAGE}
+    ${NODEBB_TOOLBOX_IMAGE} alpine-get-nodebb-repo.sh
 
 if [ -z "$NODEBB_VERSION" ] || [ "$NODEBB_VERSION" = "latest" ] ; then
     NODEBB_VERSION=$(podman run --rm -v $NODEBB_REPO_VOLUME:/app:ro docker.io/alpine cat /app/NODEBB_VERSION)

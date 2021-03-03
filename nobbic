@@ -434,14 +434,6 @@ function cleanupImages () {
 	done
 
 	if [ "$imageType" = "repo" ] ; then
-		if podman images --format "{{.Repository}}" | grep localhost/nodebb-repo >/dev/null ; then
-			# Select only repo downloader image and repo volume
-			echo "Removing 'nodebb-repo' image..."
-			podman rmi -f localhost/nodebb-repo && echo "'nodebb-repo' image removed"
-		else
-			echo "Image 'nodebb-repo' was already removed"
-		fi
-
 		if podman volume ls | grep 'nodebb-repo' >/dev/null ; then
 			echo "Removing 'nodebb-repo' volume..."
 			podman volume rm nodebb-repo && echo "'nodebb-repo' volume removed"
