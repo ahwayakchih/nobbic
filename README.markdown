@@ -69,7 +69,7 @@ Read [docs/Usage.markdown](./docs/Usage.markdown) to see full list of supported 
 
 ## TODO
 
-This is not a finished project yet (it may never will be).
+This is not a finished project yet (it may never be, since it depends on other projects that are being worked on also).
 
 Read [TODO.markdown](./TODO.markdown) to see a list of changes that are already planned.
 
