@@ -26,14 +26,24 @@ mkdir -p "$BACKUP_PATH"
 
 isRunning=$(podman pod ps --filter status=running --filter name="$APP_NAME" -q)
 
+restart_after_backup() {
+	echo "Backup process $(test ${EXIT_STATUS} -eq 0 && echo 'SUCCEEDED' || echo 'FAILED'), restarting ${APP_NAME} now..."\
+		&& podman start "${APP_NAME}-nodebb"
+}
+
+stop_all_after_backup() {
+	echo "Backup process $(test ${EXIT_STATUS} -eq 0 && echo 'SUCCEEDED' || echo 'FAILED')"\
+		&& ${__APP} stop "$APP_NAME"
+}
+
 # We'll stop nodebb container, to be sure that no requests will go to database(s)
 if [ -n "$isRunning" ] ; then
 	echo "'$APP_NAME' is running, its NodeBB server will be stopped for the duration of making data backups... "
-	podman stop "${APP_NAME}-nodebb" || fail "Could not stop '${APP_NAME}-nodebb' container"
-	trap "echo 'Backup process '\$(test \$? -eq 0 && echo 'SUCCEEDED' || echo 'FAILED')', restarting ${APP_NAME} now...' && podman start '${APP_NAME}-nodebb'" EXIT
+	podman stop "${APP_NAME}-nodebb" || fail "ERROR: Could not stop '${APP_NAME}-nodebb' container"
+	on_exit restart_after_backup
 else
 	# Make sure whole pod will remain stopped
-	trap "echo 'Backup process '\$(test \$? -eq 0 && echo 'SUCCEEDED' || echo 'FAILED') && ${__APP} stop '$APP_NAME'" EXIT
+	on_exit stop_all_after_backup
 fi
 
 for CONTAINER in $(podman pod inspect "$APP_NAME" --format=$'{{range .Containers}}{{.Name}}\n{{end}}' | grep "^${APP_NAME}-") ; do
