@@ -8,10 +8,30 @@ on_error() {
     JOB="$0"              # job name
     LASTLINE="$1"         # line of error occurrence
     LASTERR="$2"          # error code
-    echo "ERROR: ${JOB}, on line #${LASTLINE}, exited with code ${LASTERR}" >&2
+    echo "ERROR: ${TASKED_FROM_FILE:-JOB}, on line #${TASKED_FROM_LINE:-$LASTLINE}, exited with code ${LASTERR}" >&2
     exit $LASTERR
 }
 trap 'on_error ${LINENO} ${?}' ERR
+
+# When called with arguments, add them as a command to run at script's exit.
+# When called without arguments, run all commands added so far.
+#
+# Commands are NOT evaluated intentionally! So no & or > or && or || will work!
+# Use `async` to run task asynchronously, `carelessly` to ingnore all the output.
+# Write proper functions to run multiple commands conditionally.
+declare -a ON_EXIT_ITEMS
+on_exit() {
+	if test ${#@} -gt 0 ; then
+		ON_EXIT_ITEMS+=( "__tasked_by $(caller) $*" )
+	else
+		readonly EXIT_STATUS=$?
+		local cmd
+		for (( i=0; i<${#ON_EXIT_ITEMS[@]}; i++ )) ; do
+			${ON_EXIT_ITEMS[$i]}
+		done
+	fi
+}
+trap 'on_exit' EXIT
 
 # @param {string}    error message
 # @param [number=$?] code  exit code
@@ -19,6 +39,29 @@ fail() {
 	LASTERR=${2:-$?}
 	echo ${1:-Failed} >&2
 	exit $LASTERR
+}
+
+# Run command ignoring any output (both stdout and stderr)
+carelessly() {
+	$@ &>/dev/null
+}
+
+# Run command in background, output it's PID
+async() {
+	$@ &
+	echo $!
+}
+
+# @private
+# @param {number} line
+# @param {string} filePath
+__tasked_by() {
+	TASKED_FROM_LINE=$1
+	TASKED_FROM_FILE=$2
+	shift 2
+	$@
+	TASKED_FROM_LINE=
+	TASKED_FROM_FILE=
 }
 
 # @param {string} from  e.g., CONTAINER_ENV_MONGODB_
