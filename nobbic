@@ -140,7 +140,7 @@ function buildPod () {
 
 	local APP_CREATE_ENV_FILE=$(mktemp -p ./)
 	env APP_NAME="$APP_NAME" | grep -E "^(NODE(BB)?|CONTAINER|APP|PODMAN)_" > "$APP_CREATE_ENV_FILE"
-	trap "rm '${APP_CREATE_ENV_FILE}'" EXIT
+	on_exit carelessly rm "$APP_CREATE_ENV_FILE"
 
 	if [ -z "$APP_ADD_MONGODB" ] && [ -z "$APP_ADD_REDIS" ] && [ -z "$APP_ADD_POSTGRES" ] ; then
 		echo "WARNING: building without database container" >&2
