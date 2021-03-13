@@ -45,8 +45,8 @@ function sanitizeAppName () {
 	local appName=$1
 
 	if [ -z "$appName" ] ; then
-		echo "WARNING: No application name was specified, using 'nodebb' as default" >&2
 		appName="nodebb"
+		echo "WARNING: No application name was specified, using '${appName}' as default" >&2
 	fi
 
 	echo "${appName}" | tr "[:blank:]" "_"
