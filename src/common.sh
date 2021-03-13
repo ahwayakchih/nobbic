@@ -92,6 +92,8 @@ function import() {
 	local regex=${2:-^(PORT|(NODE(BB)?|CONTAINER|APP|PODMAN)_)}
 	local name
  	while read -r line ; do
+ 		line=${line%%\#*}
+ 		[[ -n "$line" ]] || continue
  		name=${line%%=*}
  		[[ "$name" =~ $regex ]] || continue
  		test -z "${!name}" || continue
