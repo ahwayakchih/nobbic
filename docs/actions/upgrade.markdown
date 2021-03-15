@@ -13,6 +13,4 @@ NODEBB_VERSION=latest nobbic upgrade my-new-forum
 
 It will create a backup, stop current pod, remove it, restore from backup but using new version of NodeBB, and start it (including runnig NodeBB's upgrade procedure).
 
-You can also override `NODE_VERSION`, `APP_USE_FQDN` (if you want to change also domain name), and other options.
-
-See list of all options at [/docs/actions/start.markdown](./start.markdown).
+You can also override `NODE_VERSION`, `APP_USE_FQDN` (if you want to change also domain name), and any other options available for [`start`](./start.markdown) action.
