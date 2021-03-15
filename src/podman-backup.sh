@@ -1,11 +1,11 @@
 #!/bin/bash
 
 if [ -z "$APP_NAME" ] ; then
-    fail "ERROR: APP_NAME must be specified for backuper to know what data to backup"
+    abort "ERROR: APP_NAME must be specified for backuper to know what data to backup"
 fi
 
 if ! podman pod exists ${APP_NAME} &>/dev/null ; then
-	fail "ERROR: backuper could not find pod '${APP_NAME}'"
+	abort "ERROR: backuper could not find pod '${APP_NAME}'"
 fi
 
 export BACKUPS_DIR="$BACKUPS_DIR"
@@ -39,7 +39,7 @@ stop_all_after_backup() {
 # We'll stop nodebb container, to be sure that no requests will go to database(s)
 if [ -n "$isRunning" ] ; then
 	echo "'$APP_NAME' is running, its NodeBB server will be stopped for the duration of making data backups... "
-	podman stop "${APP_NAME}-nodebb" || fail "ERROR: Could not stop '${APP_NAME}-nodebb' container"
+	podman stop "${APP_NAME}-nodebb" || abort "ERROR: Could not stop '${APP_NAME}-nodebb' container"
 	on_exit restart_after_backup
 else
 	# Make sure whole pod will remain stopped
@@ -52,11 +52,11 @@ for CONTAINER in $(podman pod inspect "$APP_NAME" --format=$'{{range .Containers
 	export BACKUP_TO_FILE="${BACKUP_PATH}/${backupBasename}"
 	if [ -f "$toolName" ] ; then
 		echo "Backing up '${backupBasename}'"
-		inline "$toolName" || fail "ERROR: backup of ${backupBasename} failed!"
+		inline "$toolName" || abort "ERROR: backup of ${backupBasename} failed!"
 	else
 		echo "Skipping '${backupBasename}' - no backup script exists for it." >&2
 	fi
-	podman inspect "$CONTAINER" > "${BACKUP_PATH}/container-${backupBasename}.json" || fail "ERROR: failed to export information about ${backupBasename} container!"
+	podman inspect "$CONTAINER" > "${BACKUP_PATH}/container-${backupBasename}.json" || abort "ERROR: failed to export information about ${backupBasename} container!"
 done
 
-podman pod inspect "$APP_NAME" > "${BACKUP_PATH}/pod.json" || fail "ERROR: failed to export information about ${APP_NAME} pod!"
+podman pod inspect "$APP_NAME" > "${BACKUP_PATH}/pod.json" || abort "ERROR: failed to export information about ${APP_NAME} pod!"

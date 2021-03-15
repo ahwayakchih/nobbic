@@ -35,8 +35,8 @@ trap 'on_exit' EXIT
 
 # @param {string}    error message
 # @param [number=$?] code  exit code
-fail() {
-	LASTERR=${2:-$?}
+abort() {
+	readonly LASTERR=${2:-$?}
 	echo ${1:-Failed} >&2
 	exit $LASTERR
 }
