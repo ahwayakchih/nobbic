@@ -371,6 +371,40 @@ function installPod () {
 
 #
 # @param {string} APP_NAME is the same as pod's name
+# @env {number} TUNNEL_PORT=80
+#
+function tunnel () {
+	local APP_NAME=$1
+	local PORT=${TUNNEL_PORT:-80}
+
+	if [ -z "$APP_NAME" ] ; then
+		echo "ERROR: missing pod name" >&2
+		return 1
+	fi
+
+	if ! podman pod exists "$APP_NAME" ; then
+		echo "ERROR: pod '${APP_NAME}' does not seem to exist" >&2
+		return 1
+	fi
+
+	local NODEBB_ENV=$(podman container inspect "${APP_NAME}-nodebb" --format=$'{{range .Config.Env}}{{.}}\n{{end}}' | grep -E "^(NODE(BB)?|APP_USE)_")
+	local NODEBB_PORT=$(echo "$NODEBB_ENV" | grep -E "^APP_USE_PORT=" | cut -d= -f2 || echo "")
+
+	local LOWEST_AVAILABLE_PORT=$(sysctl -n net.ipv4.ip_unprivileged_port_start)
+	if [ -n "$LOWEST_AVAILABLE_PORT" ] && [ $LOWEST_AVAILABLE_PORT -gt $PORT ] ; then
+		if ! command su --help &>/dev/null ; then
+			echo "ERROR: cannot run 'nc' as root, contact your administrator" >&2
+			return 1
+		fi
+
+		su -c "${__TOOLS}/local-tunnel.sh ${PORT} ${NODEBB_PORT}"
+	else
+		${__TOOLS}/local-tunnel.sh ${PORT} ${NODEBB_PORT}
+	fi
+}
+
+#
+# @param {string} APP_NAME is the same as pod's name
 #
 function stopPod () {
 	local APP_NAME=$1
@@ -531,6 +565,10 @@ case "$action" in
 	;;
 	install)
 		installPod $(sanitizeAppName $2) || exit $?
+		exit 0
+	;;
+	tunnel)
+		tunnel $(sanitizeAppName $2) || exit $?
 		exit 0
 	;;
 	stop)
