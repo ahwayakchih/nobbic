@@ -19,15 +19,15 @@ trap 'on_error ${LINENO} ${?}' ERR
 # Commands are NOT evaluated intentionally! So no & or > or && or || will work!
 # Use `async` to run task asynchronously, `carelessly` to ingnore all the output.
 # Write proper functions to run multiple commands conditionally.
-declare -a ON_EXIT_ITEMS
+declare -a __ON_EXIT_QUEUE
 on_exit() {
 	if test ${#@} -gt 0 ; then
-		ON_EXIT_ITEMS+=( "__tasked_by $(caller) $*" )
+		__ON_EXIT_QUEUE+=( "__tasked_by $(caller) $*" )
 	else
 		readonly EXIT_STATUS=$?
 		local cmd
-		for (( i=0; i<${#ON_EXIT_ITEMS[@]}; i++ )) ; do
-			${ON_EXIT_ITEMS[$i]}
+		for (( i=0; i<${#__ON_EXIT_QUEUE[@]}; i++ )) ; do
+			${__ON_EXIT_QUEUE[$i]}
 		done
 	fi
 }
