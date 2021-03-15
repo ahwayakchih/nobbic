@@ -142,6 +142,12 @@ function buildPod () {
 	env APP_NAME="$APP_NAME" | grep -E "^(NODE(BB)?|CONTAINER|APP|PODMAN)_" > "$APP_CREATE_ENV_FILE"
 	on_exit carelessly rm "$APP_CREATE_ENV_FILE"
 
+	# Prepare toolbox, if it's not ready yet
+	inline podman-create-nodebb-toolbox.sh || return $?
+
+	# Prepare APP_USE_FQDN, APP_USE_PORT and APP_ROUTED_THROUGH_PORT
+	inline host-detect-network-config.sh || return $?
+
 	if [ -z "$APP_ADD_MONGODB" ] && [ -z "$APP_ADD_REDIS" ] && [ -z "$APP_ADD_POSTGRES" ] ; then
 		echo "WARNING: building without database container" >&2
 		echo "         Set APP_ADD_MONGODB, APP_ADD_REDIS and/or APP_ADD_POSTGRES in environment" >&2
@@ -159,7 +165,7 @@ function buildPod () {
 	#       ideally ports would be prepared by podman-add-nodebb, overwritten by podman-add-nginx,
 	#       then pod would be created and then containers. Maybe even scripts could be defined
 	#       to be run "before" or "after" nodebb script.
-	local port=${APP_USE_PORT:-8080}
+	local port=$APP_USE_PORT
 	local nodebbPort=4567
 	if [ -n "$APP_USE_CLUSTER" ] && [ "$APP_USE_CLUSTER" -gt 1 ] ; then
 		local nodebbEnvPort=""
@@ -178,14 +184,13 @@ function buildPod () {
 		podOptions="$podOptions -p $port:$nodebbPort"
 		export CONTAINER_ENV_NODEBB_PORT=${CONTAINER_ENV_NODEBB_PORT:-$nodebbPort}
 	fi
-	export CONTAINER_ENV_NODEBB_APP_USE_PORT=${CONTAINER_ENV_NODEBB_APP_USE_PORT:-${APP_USE_PORT:-8080}}
+	export CONTAINER_ENV_NODEBB_APP_USE_PORT=${CONTAINER_ENV_NODEBB_APP_USE_PORT:-$APP_USE_PORT}
 
 	if [ -n "$APP_ADD_NGINX" ] ; then
 		# TODO: once "add-*" scripts only modify variables/state and actual `podman create`
 		#       commands are run at the end, these hardcoded values won't be needed here anyway.
-		port=${APP_USE_PORT:-8080}
 		export CONTAINER_NGINX_PORT=${CONTAINER_NGINX_PORT:-80}
-		podOptions="-p ${port}:${CONTAINER_NGINX_PORT}"
+		podOptions="-p ${APP_USE_PORT}:${CONTAINER_NGINX_PORT}"
 	fi
 
 	podman pod create -n "$APP_NAME" $podOptions \
