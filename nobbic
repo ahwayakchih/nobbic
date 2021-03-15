@@ -20,25 +20,6 @@ if [[ "${PODMAN_CREATE_ARGS}" =~ (^|[[:space:]])--label[\ ]+($__LABEL=([^\s]*))(
 fi
 
 #
-# @param {string} scriptPath
-#
-function inline () {
-	local __INLINED=$1
-
-	if [ -z "$__INLINED" ] ; then
-		echo "WARNING: No script path was specified to inline, ignoring" >&2
-		return 0
-	fi
-
-	if test $(basename "$__INLINED") = "$__INLINED" ; then
-		__INLINED="${__SRC}/${__INLINED}"
-	fi
-
-	source $__INLINED
-	return $?
-}
-
-#
 # @param {string} appName
 #
 function sanitizeAppName () {

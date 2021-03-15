@@ -80,13 +80,32 @@ get_env_values_for() {
 }
 
 # @param {string} jsonFilePath
-get_image_name_from_json () {
+get_image_name_from_json() {
 	cat "$1" 2>/dev/null | grep ImageName | sed 's/^.*ImageName.*:\s*"//' | sed 's/".*$//' || echo "1"
+}
+
+#
+# @param {string} scriptPath
+#
+inline() {
+	local __INLINED=$1
+
+	if [ -z "$__INLINED" ] ; then
+		echo "WARNING: No script path was specified to inline, ignoring" >&2
+		return 0
+	fi
+
+	if test $(basename "$__INLINED") = "$__INLINED" ; then
+		__INLINED="${__SRC}/${__INLINED}"
+	fi
+
+	source $__INLINED
+	return $?
 }
 
 # @param {string} envFilePath
 # @param {string} regex
-function import() {
+import() {
 	test -f "$1" || return 1
 
 	local regex=${2:-^(PORT|(NODE(BB)?|CONTAINER|APP|PODMAN)_)}
