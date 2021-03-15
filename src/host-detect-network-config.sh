@@ -62,7 +62,7 @@ export APP_USE_PORT=$PORT
 local REQUEST="$(pwd)/tmp.nobbic.network.test.request"
 local RESULT="$(pwd)/tmp.nobbic.network.test.result"
 local EXPECTED="$(pwd)/tmp.nobbic.network.test.expected"
-on_exit carelessly rm "$REQUEST" "$RESULT" "$EXPECTED"
+on_return carelessly rm "$REQUEST" "$RESULT" "$EXPECTED"
 
 local SECRET=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w32 | head -n1 | fold -w8 | paste -sd\- -)
 echo "GET / HTTP/1.1\nHost:${FQDN}\n\n" > $REQUEST
@@ -78,7 +78,7 @@ if [ $? -ne 0 ] ; then
 	fi
 	return 1
 fi
-on_exit carelessly async podman rm -f nodebb-network-test
+on_return carelessly async podman rm -f nodebb-network-test
 
 echo -n "Waiting for test server to be ready"
 while true ; do
@@ -103,7 +103,6 @@ if [ "$FQDN" != "localhost" ] ; then
 				fi
 				export APP_ROUTED_THROUGH_PORT=$TEST_THROUGH_PORT
 				export APP_USE_FQDN=$FQDN
-				carelessly podman rm -f nodebb-network-test
 				return 0
 			elif [ -n "$APP_ROUTED_THROUGH_PORT" ] ; then
 				echo "ERROR: something else is listening on port ${APP_ROUTED_THROUGH_PORT}" >&2
@@ -138,7 +137,6 @@ if [ "$FQDN" != "localhost" ] ; then
 			fi
 			export APP_ROUTED_THROUGH_PORT=${APP_ROUTED_THROUGH_PORT:-80}
 			export APP_USE_FQDN=$FQDN
-			carelessly podman rm -f nodebb-network-test
 			return 0
 		fi
 
@@ -161,7 +159,6 @@ echo "Testing access through ${FQDN}:${PORT}"
 if [ $? -eq 0 ] && diff -Naur "$EXPECTED" "$RESULT" ; then
 	# Done!
 	export APP_USE_FQDN=$FQDN
-	carelessly podman rm -f nodebb-network-test
 	return 0
 elif [ "$FQDN" = "localhost" ] ; then
 	echo "ERROR: ${FQDN}:${PORT} is not accessible!" >&2

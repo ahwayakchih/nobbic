@@ -13,25 +13,56 @@ on_error() {
 }
 trap 'on_error ${LINENO} ${?}' ERR
 
+# @private
+declare __CURRENT_EVENT=
+__on_event() {
+	local event=$1
+	shift 1
+
+	[ -z "$event" ] && echo "ERROR: no event name specified" && return 1
+
+	declare -ag "__ON_${event}_QUEUE"
+	local -n queue="__ON_${event}_QUEUE"
+
+	if test ${#@} -gt 0 ; then
+		queue+=( "__tasked_by $(caller) $*" )
+	else
+		[ "$__CURRENT_EVENT" = "$event" ] && echo "ERROR: event recursion detected for $event" && return 1
+		local parentEvent=$__CURRENT_EVENT
+		__CURRENT_EVENT=$event
+
+		# echo "RUNNING ON_${event} queue"
+
+		local cmd
+		for (( i=0; i<${#queue[@]}; i++ )) ; do
+			${queue[$i]}
+		done
+		queue=()
+
+		__CURRENT_EVENT=$parentEvent
+	fi
+}
+
 # When called with arguments, add them as a command to run at script's exit.
 # When called without arguments, run all commands added so far.
 #
 # Commands are NOT evaluated intentionally! So no & or > or && or || will work!
 # Use `async` to run task asynchronously, `carelessly` to ingnore all the output.
 # Write proper functions to run multiple commands conditionally.
-declare -a __ON_EXIT_QUEUE
-on_exit() {
-	if test ${#@} -gt 0 ; then
-		__ON_EXIT_QUEUE+=( "__tasked_by $(caller) $*" )
-	else
-		readonly EXIT_STATUS=$?
-		local cmd
-		for (( i=0; i<${#__ON_EXIT_QUEUE[@]}; i++ )) ; do
-			${__ON_EXIT_QUEUE[$i]}
-		done
-	fi
+on_return() {
+	__on_event RETURN $@
 }
-trap 'on_exit' EXIT
+
+# When called with arguments, add them as a command to run at script's exit.
+# When called without arguments, run all commands added so far.
+#
+# Commands are NOT evaluated intentionally! So no & or > or && or || will work!
+# Use `async` to run task asynchronously, `carelessly` to ingnore all the output.
+# Write proper functions to run multiple commands conditionally.
+on_exit() {
+	__on_event EXIT $@
+}
+trap 'readonly EXIT_STATUS=$? && on_exit' EXIT
 
 # @param {string}    error message
 # @param [number=$?] code  exit code
@@ -99,8 +130,19 @@ inline() {
 		__INLINED="${__SRC}/${__INLINED}"
 	fi
 
+	# wrap sourcing of $__INLINED with function, so we can "catch" any `return`...
+	__inlined
+	local -r __result=$?
+
+	# ... and run "on_return" event queue
+	on_return
+
+	return $__result
+}
+
+# @private
+__inlined() {
 	source $__INLINED
-	return $?
 }
 
 # @param {string} envFilePath
