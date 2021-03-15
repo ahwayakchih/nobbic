@@ -5,9 +5,9 @@
 set -o pipefail  # trace ERR through pipes
 set -o errtrace  # trace ERR through 'time command' and other functions
 on_error() {
-    JOB="$0"              # job name
-    LASTLINE="$1"         # line of error occurrence
-    LASTERR="$2"          # error code
+    readonly JOB="$0"              # job name
+    readonly LASTLINE="$1"         # line of error occurrence
+    readonly LASTERR="$2"          # error code
     echo "ERROR: ${TASKED_FROM_FILE:-$JOB}, on line #${TASKED_FROM_LINE:-$LASTLINE}, exited with code ${LASTERR}" >&2
     exit $LASTERR
 }
