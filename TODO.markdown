@@ -19,6 +19,7 @@ TODO
 - option to specify additional plugins when creating instance, so they are installed and
   activated from the start.
 - optional, mini-test (puppeteer-based?) to run after start
+- add "recovery" mode: disable non-standard plugins, build assets and restart (suggested by @nhlpl)
 - add support for specifying more than one app name at the same time for build, start, upgrade, backup, restore and stop?
 - when no app/pod name is specified backup all of them?
 - ask (or require "force" flag) before removing?
