@@ -1,0 +1,5 @@
+# Except one, NodeBB plugins stored here are used for local testing only
+nodebb-plugin-*
+
+# Allow selected NodeBB plugins to not be ignored
+!nodebb-plugin-command-sock/
