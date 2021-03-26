@@ -1,6 +1,8 @@
 TODO
 ====
 
+- set socket.io.origins with multiple values: FQDN, IP, etc... so they keep working OK both when accessing site
+  through domain name and IP number (suggested by @nhlpl)
 - do not downgrade NODEBB_VERSION when running restoring/upgrading without specifying version using next beta version
   (reported by @nhlpl).
 - when restoring data with bigger database (like over 1GB), deploy script in NodeBB can timeout while waiting for DB.
