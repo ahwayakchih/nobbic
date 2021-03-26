@@ -17,7 +17,7 @@ depend() {
 }
 
 stop() {
-    ebegin "Stopping ${RC_SVCNAME}" $(whoami)
+    ebegin "Stopping ${RC_SVCNAME}"
     su -c "${command} stop {{APP_NAME}}" {{USER}}
     eend $?
 }
