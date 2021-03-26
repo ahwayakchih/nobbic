@@ -9,6 +9,11 @@ if [ -z "$APP_NAME" ] ; then
 	return 1
 fi
 
+if ! podman pod exists "$APP_NAME" ; then
+	echo "ERROR: '$APP_NAME' pod does not exists" >&2
+	return 1
+fi
+
 # Try OpenRC first
 if (command -v rc || command -v openrc) &>/dev/null ; then
 	inline host-install-service-openrc.sh || return $?
