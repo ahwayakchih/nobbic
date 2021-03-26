@@ -1,6 +1,8 @@
 TODO
 ====
 
+- do not downgrade NODEBB_VERSION when running restoring/upgrading without specifying version using next beta version
+  (reported by @nhlpl).
 - when restoring data with bigger database (like over 1GB), deploy script in NodeBB can timeout while waiting for DB.
   Wait for DB outside container before starting NodeBB container, and check each timeout if DB container is running
   (in which case wait more), or not (in which case error out).
