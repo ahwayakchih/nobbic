@@ -12,7 +12,7 @@ NODEBB_ENV=$(podman container inspect "${APP_NAME}-nodebb" --format=$'{{range .C
 NODE_VERSION=$(echo "$NODEBB_ENV" | grep NODE_VERSION | cut -d= -f2 || echo "")
 NODEBB_VERSION=$(echo "$NODEBB_ENV" | grep NODEBB_VERSION | cut -d= -f2 || echo "")
 NODEBB_GIT_SHA=$(podman run --rm --volumes-from "${APP_NAME}-nodebb:ro" "localhost/${NODEBB_TOOLBOX_IMAGE}" /bin/sh -c 'cd /app/nodebb && git rev-parse HEAD')
-APP_URL=$(podman run --rm --volumes-from "${APP_NAME}-nodebb:ro" "localhost/${NODEBB_TOOLBOX_IMAGE}" jq -r '.url' 'nodebb/config.json')
+APP_URL=$(podman run --rm --volumes-from "${APP_NAME}-nodebb:ro" "localhost/${NODEBB_TOOLBOX_IMAGE}" jq -r '.url' 'nodebb/config.json' 2>/dev/null || echo "")
 
 echo "Hosted on "$(source /etc/os-release && echo $PRETTY_NAME)" using Podman v"$(podman version | head -n 1 | tr -d '[:blank:]' | cut -d : -f2)
 echo "NodeBB v${NODEBB_VERSION} is run with Node.js v${NODE_VERSION}"
@@ -28,11 +28,14 @@ for container in $(podman pod inspect "$APP_NAME" --format=$'{{range .Containers
 	echo "  with "$(podman container inspect "$container" --format=$'{{range .Config.Env}}{{.}}\n{{end}}' | grep '_VERSION' | xargs echo || echo "")
 done
 
-isRunning=$(podman pod ps --filter status=running --filter name="$APP_NAME" -q)
-if test $isRunning ; then
-	echo -n "Awaits "
+if [ -n "$APP_URL" ] ; then
+	isRunning=$(podman pod ps --filter status=running --filter name="$APP_NAME" -q)
+	if test $isRunning ; then
+		echo -n "Awaits "
+	else
+		echo -n "When started, it will await "
+	fi
+	echo "connections at ${APP_URL}"
 else
-	echo -n "When started, it will await "
+	echo "When NodeBB setup succeeds, call info again to see URL at which it awaits for connections."
 fi
-# TODO: check if gateway uses SSL or not
-echo "connections at ${APP_URL}"
