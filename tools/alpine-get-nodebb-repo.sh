@@ -42,7 +42,7 @@ fi
 branchName=${NODEBB_VERSION/tags\//}
 isBranch=$(git branch -l | grep "$branchName" || echo "")
 
-if [ ! -z "$isBranch" ] ; then
+if [ -n "$isBranch" ] ; then
 	git checkout "${branchName}" || exit 1
 else
 	git checkout ${NODEBB_VERSION} -b "$branchName" || exit 1
