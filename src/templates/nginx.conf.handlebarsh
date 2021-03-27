@@ -8,7 +8,7 @@ server {
     listen {{!CONTAINER_NGINX_PORT}};
     listen [::]:{{!CONTAINER_NGINX_PORT}};
 
-    server_name {{!APP_USE_FQDN}} *.{{!APP_USE_FQDN}};
+    server_name {{!APP_USE_FQDN}};
 
     # Just in case of some mistakes later, make sure there is some safe root set.
     root /usr/share/nginx/html/;
@@ -54,4 +54,13 @@ server {
     location / {
         proxy_pass http://io_nodes;
     }
+}
+
+server {
+    listen {{!CONTAINER_NGINX_PORT}} default_server;
+    listen [::]:{{!CONTAINER_NGINX_PORT}} default_server;
+
+    server_name _;
+
+    return 301 $scheme://{{!APP_USE_FQDN}}:{{!APP_USE_PORT}}$request_uri;
 }
