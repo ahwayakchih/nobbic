@@ -153,6 +153,25 @@ echo 'net.ipv4.ping_group_range=0 2000000' > /etc/sysctl.d/podman.conf
 You can read more about why this is needed in tutorial found in [`podman`'s repository](https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md#enable-unprivileged-ping).
 
 
+### Enable port 80 and 443 for regular users
+
+Ports below 1024 are usually reserved for use by administrators only.
+If you want to run services on such ports, e.g., NodeBB forum on port 80 (so things like ':8080' are not needed in URL), one of these is needed:
+
+1. You can allow ports 80 and up to be used by regular users;
+2. You can use firewall software or `iptables` directly to redirect port 80 to port 8080, and keep service running on port 8080 while being accessible through port 80;
+3. You can start the service as administrator, but that's not the point of this guide.
+
+Assuming that only you will be starting any services in the system, it should be safe to allow starting services on ports 80 and up by regular user accounts.
+
+```sh
+sysctl -w "net.ipv4.ip_unprivileged_port_start=80"
+echo 'net.ipv4.ip_unprivileged_port_start=80' >> /etc/sysctl.d/podman.conf
+```
+
+WARNING: use this only if you are sure that you are the only person using the system! Otherwise, setup firewall and/or iptables rules.
+
+
 ### Add a new regular user
 
 Execute following commands to create a new user account named "username" belonging to their own "username" group.
