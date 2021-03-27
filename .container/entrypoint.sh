@@ -5,6 +5,7 @@ ${CONTAINER_REPO_DIR}.container/action_hooks/pre_start || exit 1
 
 cd "${CONTAINER_REPO_DIR}nodebb"
 
+# copy output to log file because NodeBB does not write there when not silent
 exec &> >(tee -a "${CONTAINER_REPO_DIR}nodebb/logs/output.log")
 
 # Installation should be done by now, make sure PORT is removed
@@ -16,7 +17,7 @@ unset PORT
 
 # start process detached from script
 # no daemon, so we can control when it stops
-# no silent, so `podman logs` can be useful, but copy output to log file because NodeBB does not write there when not silent
+# no silent, so `podman logs` can be useful
 daemon=false silent=false ./nodebb start &
 
 # remember process ID
