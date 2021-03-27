@@ -5,12 +5,14 @@ if ! podman pod exists ${APP_NAME} &>/dev/null ; then
 	return 1
 fi
 
+# Prepare toolbox, if it's not ready yet
+inline podman-create-nodebb-toolbox.sh || return $?
+
 NODEBB_ENV=$(podman container inspect "${APP_NAME}-nodebb" --format=$'{{range .Config.Env}}{{.}}\n{{end}}' | grep -E "^(NODE(BB)?|APP_USE)_")
 NODE_VERSION=$(echo "$NODEBB_ENV" | grep NODE_VERSION | cut -d= -f2 || echo "")
 NODEBB_VERSION=$(echo "$NODEBB_ENV" | grep NODEBB_VERSION | cut -d= -f2 || echo "")
-NODEBB_PORT=$(echo "$NODEBB_ENV" | grep -E "^APP_USE_PORT=" | cut -d= -f2 || echo "")
-NODEBB_FQDN=$(echo "$NODEBB_ENV" | grep -E "^APP_USE_FQDN=" | cut -d= -f2 || echo "")
-NODEBB_GIT_SHA=$(podman run --rm --volumes-from "${APP_NAME}-nodebb:ro" "nodebb-node:${NODE_VERSION}" /bin/sh -c 'cd /app/nodebb && git rev-parse HEAD')
+NODEBB_GIT_SHA=$(podman run --rm --volumes-from "${APP_NAME}-nodebb:ro" "localhost/${NODEBB_TOOLBOX_IMAGE}" /bin/sh -c 'cd /app/nodebb && git rev-parse HEAD')
+APP_URL=$(podman run --rm --volumes-from "${APP_NAME}-nodebb:ro" "localhost/${NODEBB_TOOLBOX_IMAGE}" jq -r '.url' 'nodebb/config.json')
 
 echo "Hosted on "$(source /etc/os-release && echo $PRETTY_NAME)" using Podman v"$(podman version | head -n 1 | tr -d '[:blank:]' | cut -d : -f2)
 echo "NodeBB v${NODEBB_VERSION} is run with Node.js v${NODE_VERSION}"
@@ -33,4 +35,4 @@ else
 	echo -n "When started, it will await "
 fi
 # TODO: check if gateway uses SSL or not
-echo "connections at https://${NODEBB_FQDN}:${NODEBB_PORT}"
+echo "connections at ${APP_URL}"
