@@ -56,13 +56,13 @@ For clarity, example commands following in this and other documents found in [do
 To quickly proceed to creating and starting NodeBB, try:
 
 ```sh
-APP_USE_FQDN=localhost APP_ADD_REDIS=1 nobbic start my-new-forum
+APP_ADD_REDIS=1 nobbic start my-new-forum
 ```
 
 That will install latest released NodeBB version, with latest version of Redis database, and make it accessible through "http://localhost:8080" URL.
 
-It will take some time to download and prepare all the stuff for the first time (somewhere between 15-30 minutes, but it all depends on network, processor(s) and available RAM).
-Every next try that uses the same Node.js version, should be much faster.
+It will take some time to download and prepare all the stuff for the first time (somewhere between 15-30 minutes, but it all depends on network, available processor(s) and RAM).
+Every next try that uses the same Node.js version, should build much faster. Simply starting the same pod, once it was created, will be nearly as fast as if NodeBB was started directly, without any containers.
 
 Read [docs/Usage.markdown](./docs/Usage.markdown) to see full list of supported actions.
 
