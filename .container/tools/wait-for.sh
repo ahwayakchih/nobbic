@@ -38,7 +38,7 @@ wait_for() {
   fi
 
   for i in `seq $TIMEOUT` ; do
-    (nc -z "$HOST" "$PORT" > /dev/null 2>&1 || (test $LOCAL -ne 0 && netstat -tuln | grep ":$PORT " > /dev/null 2>&1))
+    (nc -z "$HOST" "$PORT" > /dev/null 2>&1 || (test $LOCAL -ne 0 && netstat -tuln | tr -s ' ' ' ' | cut -d ' ' -f 4 | grep ":${PORT}\$" > /dev/null 2>&1))
     
     result=$?
     if [ $result -eq 0 ] ; then
