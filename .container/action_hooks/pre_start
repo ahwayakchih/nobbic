@@ -4,9 +4,11 @@ source "${CONTAINER_REPO_DIR}.container/lib/onbb_utils.sh"
 
 # Wait for database indefinitely
 echo "Waiting for database to start..."
+seconds=4
 while true ; do
-	onbb_wait_until_db_ready 5 || continue
-	break
+	seconds=$(($seconds + 1))
+	echo -n "waiting ${seconds}s..."
+	onbb_wait_until_db_ready 5 &> /dev/null && echo "" && break || echo " db is not ready yet"
 done
 
 echo "Database seems to be ready, start can continue"
