@@ -429,7 +429,7 @@ function removePod () {
 
 	echo "Pod '${APP_NAME}' removed."
 	echo ""
-	echo "If you installed '${APP_NAME} as a service in host system, be sure to remove it!"
+	echo "If you installed '${APP_NAME}' as a service in host system, be sure to remove it!"
 	echo ""
 
 	echo "Removing pod's volumes..."
