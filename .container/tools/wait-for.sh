@@ -49,7 +49,7 @@ wait_for() {
     fi
     sleep 1
   done
-  echo "Operation timed out after ${TIMEOUT}s" >&2
+  echoerr "Operation timed out after ${TIMEOUT}s" >&2
   exit 1
 }
 
