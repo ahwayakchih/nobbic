@@ -1,8 +1,8 @@
 TODO
 ====
 
-- do not downgrade NODEBB_VERSION when running restoring/upgrading without specifying version using next beta version
-  (reported by @nhlpl).
+- do not downgrade NODEBB_VERSION when restoring/upgrading without specifying version having NodeBB setup using
+  next beta version (reported by @nhlpl).
 - add support for Let's Encrypt when `APP_USE_FQDN` is specified and names existing domain name (not IP number).
 - stop replacing app.js and src/cli/index.js, run config generator instead before calling nodebb in entrypoint.sh.
   we're not running in changing environment (old OpenShift v2) any more, environment variables in containers are
