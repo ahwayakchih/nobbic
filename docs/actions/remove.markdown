@@ -9,4 +9,4 @@ To just remove single installation of NodeBB, use following command line:
 nobbic remove my-new-forum
 ```
 
-Of course, replace `my-new-forum` with whatever name you used to create it in the first place.
+Of course, replace `my-new-forum` with whatever name you used to create it with the [`start` or `build`](./start.markdown) action in the first place.

@@ -9,7 +9,7 @@ To remove all installations:
 nobbic cleanup nodebb
 ```
 
-To remove all installations and cached images:
+To remove all installations and cached container images:
 
 ```sh
 nobbic cleanup node && nobbic cleanup repo

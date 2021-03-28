@@ -21,13 +21,13 @@ Following "actions" are implemented so far:
 
 * `build` APP_NAME
 
-  Builds pod with containers using options passes through environment variables.
+  Builds pod with containers using options passed through environment variables.
 
   [Read more](./actions/start.markdown)
 
 * `start` APP_NAME
 
-  Starts pod with containers, building it first if it does not exist yet.
+  Starts pod with its containers, building it first if it does not exist yet.
 
   [Read more](./actions/start.markdown)
 
@@ -81,12 +81,12 @@ Following "actions" are implemented so far:
 
 * `remove` APP_NAME
 
-  Removes pods, its containers and their data.
+  Removes pod, its containers and their data.
 
   [Read more](./actions/remove.markdown)
 
 * `cleanup` ["nodebb"|"node"|"repo"]
 
-  Removes pods (if any are still existing) and NodeBB or both NodeBB and Node.js images. Or volumes with NodeBB repository and shared data.
+  Removes pods (if any are still existing) and container images for NodeBB or both NodeBB and Node.js. Or "repo" volumes with NodeBB repository and other data shared between pods.
 
   [Read more](./actions/cleanup.markdown)

@@ -4,7 +4,7 @@
 ## `build` APP_NAME
 ## `start` APP_NAME
 
-The only difference between `build` and `start` is that `start` will automatically call `build`, if specified forum was not built yet, and then it will start pod and containers (`build` does not start anything).
+The only difference between `build` and `start` is that `start` will automatically call `build`, if specified NodeBB pod was not built yet, and then it will start pod and its containers (`build` does not start anything).
 
 Both support the same set of options passed through environment variables. You can either set them up beforehand or use one-liners like it was shown in a [README.markdown](../README.markdown):
 

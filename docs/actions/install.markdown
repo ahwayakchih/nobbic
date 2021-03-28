@@ -3,9 +3,10 @@
 
 ## `install` APP_NAME
 
-Generates a system service file and tries to install it (will ask for root password, just hit enter if you don't want to give it permissions to install anything).
+Generates a system service file and tries to install it.
+Once installed, service file simply makes sure that your NodeBB pod will be started along with the operating system next time it is rebooted.
 
-Service file simply makes sure that pod will be started after operating system reboots.
+This is one of the only two actions (the other one being [`tunnel`](./tunnel.markdown)) that asks for `root` privilages.
 
-This is one of the only two actions (the other one being [`tunnel`](./tunnel.markdown)) that asks for `root` privilages. Enter valid password only if service file has to be installed.
-Without permissions, it will show instructions on how to enable service in the system.
+Enter valid password only if you want generated service file to be installed in host operating system.
+Otherwise just press ENTER key. It will omit installation and show instructions on how to enable service in the system manually.

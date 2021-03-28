@@ -3,7 +3,7 @@
 
 ## `list` APP_NAME
 
-This action simply passes output of `podman pod ps` filtered for pods created with nobbic.
+This action simply filters output of `podman pod ps` for pods created with nobbic.
 
 ```sh
 nobbic list
@@ -16,7 +16,7 @@ POD ID        NAME    STATUS  CREATED       INFRA ID      # OF CONTAINERS
 34e98ed6fd45  one     Exited  42 hours ago  50ae843b5b8d  5
 ```
 
-Since it just passes arguments, you can pass whatever `podman` supports. For example:
+Since it just passes arguments to `podman`, you can pass whatever it supports. For example:
 
 ```sh
 nobbic list --format '{{.Name}}'
