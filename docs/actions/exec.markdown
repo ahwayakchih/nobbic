@@ -3,7 +3,7 @@
 
 ## `exec` APP_NAME COMMAND [ARG...]
 
-Runs command inside NodeBB's container. For example:
+Runs a single command inside NodeBB's container. For example:
 
 ```sh
 nobbic exec my-new-forum ls -la
@@ -50,3 +50,6 @@ nobbic exec my-new-forum onbb_exec_command resetPassword my-new-forum@127.0.0.1
 ```
 
 It should output an URL to "change password" page.
+
+
+If you want to run multiple commands or whole scripts inside NodeBB's container, check [`bash`](./bash.markdown) action.
