@@ -73,6 +73,12 @@ Following "actions" are implemented so far:
 
   [Read more](./actions/install.markdown)
 
+* `tunnel` APP_NAME
+
+  Creates "tunnel" between port 80 and port used by NodeBB's pod.
+
+  [Read more](./actions/tunnel.markdown)
+
 * `stop` APP_NAME
 
   Stops the pod and its containers.
