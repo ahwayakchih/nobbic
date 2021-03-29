@@ -8,14 +8,22 @@ fi
 # Prepare toolbox, if it's not ready yet
 inline podman-create-nodebb-toolbox.sh || return $?
 
-NODEBB_ENV=$(podman container inspect "${APP_NAME}-nodebb" --format=$'{{range .Config.Env}}{{.}}\n{{end}}' | grep -E "^(NODE(BB)?|APP_USE)_")
+NODEBB_ENV=$(podman container inspect "${APP_NAME}-nodebb" --format=$'{{range .Config.Env}}{{.}}\n{{end}}' | grep -E "^((NODE(BB)?|APP_USE)_|PORT=)")
+PORT=$(echo "$NODEBB_ENV" | grep '^PORT=' | cut -d= -f2 || echo "")
 NODE_VERSION=$(echo "$NODEBB_ENV" | grep NODE_VERSION | cut -d= -f2 || echo "")
 NODEBB_VERSION=$(echo "$NODEBB_ENV" | grep NODEBB_VERSION | cut -d= -f2 || echo "")
 NODEBB_GIT_SHA=$(podman run --rm --volumes-from "${APP_NAME}-nodebb:ro" "localhost/${NODEBB_TOOLBOX_IMAGE}" /bin/sh -c 'cd /app/nodebb && git rev-parse HEAD')
 APP_URL=$(podman run --rm --volumes-from "${APP_NAME}-nodebb:ro" "localhost/${NODEBB_TOOLBOX_IMAGE}" jq -r '.url' 'nodebb/config.json' 2>/dev/null || echo "")
 
+APP_USE_CLUSTER=$(printf "${PORT//,/"\n"}\n" | wc -l)
+
 echo "Hosted on "$(source /etc/os-release && echo $PRETTY_NAME)" using Podman v"$(podman version | head -n 1 | tr -d '[:blank:]' | cut -d : -f2)
-echo "NodeBB v${NODEBB_VERSION} is run with Node.js v${NODE_VERSION}"
+echo -n "NodeBB v${NODEBB_VERSION} is run with Node.js v${NODE_VERSION}"
+if [ $APP_USE_CLUSTER -gt 1 ] ; then
+	echo " on ${APP_USE_CLUSTER} processes (ports: ${PORT})"
+else
+	echo " on a single process (port ${PORT})"
+fi
 echo "NodeBB SHA:${NODEBB_GIT_SHA}"
 echo "Built with Nobbic v"$(podman pod inspect "$APP_NAME" --format=$'{{range $key,$value := .Labels}}{{$key}}={{$value}}\n{{end}}' | grep "$__LABEL" | cut -d= -f2 || echo "unknown")
 echo "It uses:"
