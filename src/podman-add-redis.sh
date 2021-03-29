@@ -25,7 +25,7 @@ fi
 
 REDIS_CONTAINER=${CONTAINER:-"${APP_NAME}-redis"}
 
-REDIS_IMAGE=${FROM_IMAGE:-docker.io/redis:alpine3.12}
+REDIS_IMAGE=${FROM_IMAGE:-docker.io/redis:alpine}
 if ! podman image exists "$REDIS_IMAGE" &>/dev/null ; then
 	podman pull $PODMAN_PULL_ARGS_REDIS "$REDIS_IMAGE" >/dev/null || exit 1
 fi
