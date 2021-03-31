@@ -3,7 +3,7 @@ Compatibility
 
 ## Podman
 
-Nobbic was created while **podman v2.2.1** was current. Now it's tested with podman **v3.0**.
+Nobbic was created while **podman v2.2.1** was current. Now it's tested with podman **v3.1**.
 
 It's tested ONLY in rootless mode.
 
@@ -59,4 +59,4 @@ Project was tested and is known to work with following database images from dock
 
 ## HTTP(S) servers
 
-Project was tested with **NGINX v1.19.6-alpine** and **v1.18.0-alpine** images from docker.io.
+Project was tested with **NGINX v1.19-alpine** and **v1.18.0-alpine** images from docker.io.
