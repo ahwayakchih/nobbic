@@ -18,7 +18,7 @@ APP_URL=$(podman run --rm --volumes-from "${APP_NAME}-nodebb:ro" "localhost/${NO
 APP_USE_CLUSTER=$(printf "${PORT//,/"\n"}\n" | wc -l)
 
 echo "Hosted on "$(source /etc/os-release && echo $PRETTY_NAME)" using Podman v"$(podman version | head -n 1 | tr -d '[:blank:]' | cut -d : -f2)
-echo "Available CPU(s): "$(getconf _NPROCESSORS_ONLN || echo 'N/A')
+echo "Running on a machine with "$(getconf _NPROCESSORS_ONLN || echo 'N/A')" CPU(s) and "$(free -m | grep -oE '\d+' | head -n 1)" MB RAM"
 echo -n "NodeBB v${NODEBB_VERSION} is run with Node.js v${NODE_VERSION}"
 if [ $APP_USE_CLUSTER -gt 1 ] ; then
 	echo " on ${APP_USE_CLUSTER} processes (ports: ${PORT})"
