@@ -18,6 +18,10 @@ All it requires to start is the [`bash`](https://www.gnu.org/software/bash/) she
 If you're not running Linux at the moment, or just do not want to change anything in how it's set up, simplest way to test whole thing is to [install Alpine Linux (with podman)](./docs/SetupPodmanOnAlpineHost.markdown) in a virtual machine (like [QEMU](https://www.qemu.org/)).
 
 
+Depending on which database and additional software you will use, prepare between 360 MB (with Redis), 500 MB (with PostgreSQL) and 800 MB (with MongoDB) hard drive space at minimum.
+You will also need 2 GB or more of RAM available.
+
+
 ## Compatibility
 
 It was tested with various versions of NodeBB between (and including) v1.12.1 and v1.16.2.
