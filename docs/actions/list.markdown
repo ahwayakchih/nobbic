@@ -1,7 +1,7 @@
 [Usage](../Usage.markdown)
 ==========================
 
-## `list` APP_NAME
+## `list`
 
 This action simply filters output of `podman pod ps` for pods created with nobbic.
 
