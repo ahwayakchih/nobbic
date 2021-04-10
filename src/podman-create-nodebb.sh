@@ -72,9 +72,9 @@ if podman image exists $NODEBB_IMAGE ; then
     # Just make sure NodeBB volumes are owned by "node" user
     podman run --rm -it --replace --name prepare-nodebb\
         -u root\
-        -v ${APP_NAME}-nodebb:/app/node:z\
-        -v ${APP_NAME}-nodebb-build:/app/node/build:z\
-        -v ${APP_NAME}-nodebb-public:/app/node/public:z\
+        -v ${APP_NAME}-nodebb:/app/nodebb:z\
+        -v ${APP_NAME}-nodebb-build:/app/nodebb/build:z\
+        -v ${APP_NAME}-nodebb-public:/app/nodebb/public:z\
          $NODEBB_IMAGE /bin/sh -c 'chown -R node:node /app'
     # TODO: support some kind of "force-rebuild" switch?
 else
@@ -82,9 +82,9 @@ else
         -e NODEBB_GIT=$NODEBB_GIT\
         -e NODEBB_VERSION=$NODEBB_VERSION\
         -u root\
-        -v ${APP_NAME}-nodebb:/app/node:z\
-        -v ${APP_NAME}-nodebb-build:/app/node/build:z\
-        -v ${APP_NAME}-nodebb-public:/app/node/public:z\
+        -v ${APP_NAME}-nodebb:/app/nodebb:z\
+        -v ${APP_NAME}-nodebb-build:/app/nodebb/build:z\
+        -v ${APP_NAME}-nodebb-public:/app/nodebb/public:z\
         -v ${__DIRNAME}:/mnt:ro\
         ${NODEBB_NODE_IMAGE}:${NODE_VERSION} /bin/sh /mnt/tools/alpine-prepare-nodebb-image.sh
     podman commit\
