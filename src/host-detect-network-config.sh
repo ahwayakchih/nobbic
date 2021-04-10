@@ -94,7 +94,7 @@ if [ "$FQDN" != "localhost" ] ; then
 		echo "Testing access through ${FQDN}:${TEST_THROUGH_PORT}, assuming SSL termination exists"
 		podman run --rm "localhost/${NODEBB_TOOLBOX_IMAGE}" curl --connect-timeout 5 --no-progress-meter "https://${FQDN}:${TEST_THROUGH_PORT}" 2>/dev/null | tail -n 1 >"$RESULT"
 		if [ $? -eq 0 ] ; then
-			if diff -Naur "$EXPECTED" "$RESULT" ; then
+			if diff -Nawr "$EXPECTED" "$RESULT" ; then
 				# Done!
 				if [ -n "$APP_ADD_SSL" ] ; then
 					unset APP_ADD_SSL
@@ -112,7 +112,7 @@ if [ "$FQDN" != "localhost" ] ; then
 
 		echo "Testing access through ${FQDN}:${TEST_THROUGH_PORT}, assuming passthrough"
 		(cat "$REQUEST" | timeout -s KILL 5 nc "$FQDN" "$TEST_THROUGH_PORT" | tail -n 1 >"$RESULT")&>/dev/null
-		if [ $? -eq 0 ] && diff -Naur "$EXPECTED" "$RESULT" ; then
+		if [ $? -eq 0 ] && diff -Nawr "$EXPECTED" "$RESULT" ; then
 			if [ -n "$APP_USE_FQDN" ] ; then
 				export APP_ADD_SSL=${APP_ADD_SSL:-1}
 			fi
@@ -129,7 +129,7 @@ if [ "$FQDN" != "localhost" ] ; then
 	if [ "$TEST_THROUGH_PORT" = "80" ] || [ -n "$APP_ADD_SSL" ] ; then
 		echo "Testing access through ${FQDN}:80"
 		(cat "$REQUEST" | timeout -s KILL 5 nc "$FQDN" "80" | tail -n 1 >"$RESULT")&>/dev/null
-		if [ $? -eq 0 ] && diff -Naur "$EXPECTED" "$RESULT" ; then
+		if [ $? -eq 0 ] && diff -Nawr "$EXPECTED" "$RESULT" ; then
 			# Done!
 			if [ "$APP_ROUTED_THROUGH_PORT" = "80" ] ; then
 				unset APP_ADD_SSL
@@ -156,7 +156,7 @@ fi
 unset APP_ROUTED_THROUGH_PORT
 echo "Testing access through ${FQDN}:${PORT}"
 (cat "$REQUEST" | timeout -s KILL 5 nc "$FQDN" "$PORT" | tail -n 1 >"$RESULT")&>/dev/null
-if [ $? -eq 0 ] && diff -Naur "$EXPECTED" "$RESULT" ; then
+if [ $? -eq 0 ] && diff -Nawr "$EXPECTED" "$RESULT" ; then
 	# Done!
 	export APP_USE_FQDN=$FQDN
 	return 0
