@@ -84,6 +84,9 @@ Set `NODEBB_GIT` to the URL of git repository of NodeBB forum.
 Official repository will be used by default, but you can specify different one, e.g., with your custom modifications.
 It just has to follow example set by the official repository and create a tag per released version.
 
+Optionally, set `NODEBB_ADMIN_EMAIL` to the e-mail address you want set for NodeBB's administration account.
+If not set, "fake" address (based on application name and URL) will be set by default, e.g., "my-new-forum@localhost" or "my-new-forum@example.com".
+
 
 You can set `APP_USE_PORT` variable (http/https, defaults to 8080) to the port number you want the pod to listen on.
 
