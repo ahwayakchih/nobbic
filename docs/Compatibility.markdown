@@ -16,7 +16,7 @@ runtime = "crun"
 
 ## NodeBB
 
-Project was tested with various versions of **NodeBB** between (and including) **v1.12.1** and **v1.16.2**.
+Project was tested with various versions of **NodeBB** between (and including) **v1.12.1** and **v1.17.0**.
 
 
 ## Node.js
@@ -36,6 +36,7 @@ Project was tested and is known to work with following database images from dock
 - 11.10-alpine
 - 12.5-alpine
 - 13.1-alpine
+- 13.2-alpine
 - *bitnami/postgresql:* 13.2.0
 
 
