@@ -37,6 +37,7 @@ Project was tested and is known to work with following database images from dock
 - 12.5-alpine
 - 13.1-alpine
 - 13.2-alpine
+- 13.3-alpine
 - *bitnami/postgresql:* 13.2.0
 
 
@@ -56,6 +57,7 @@ Project was tested and is known to work with following database images from dock
 - 6.2-rc2-alpine
 - 6.2-rc3-alpine
 - 6.2.1-alpine
+- 6.2.3-alpine
 - *bitnami/redis:* 6.0 ([build/start](./actions/start.markdown) with an additional `CONTAINER_ENV_REDIS_ALLOW_EMPTY_PASSWORD=yes` environment variable)
 
 ## HTTP(S) servers
