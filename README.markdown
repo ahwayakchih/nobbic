@@ -33,7 +33,7 @@ For a full list of software, read [docs/Compatibility.markdown](./docs/Compatibi
 ## Installation
 
 You can download ZIP archive with this project from [GitHub](https://github.com/ahwayakchih/nobbic/archive/main.zip)
-and unzip it to selected directory, or git clone repository if you already have `git` installed:
+and unzip it to selected directory, or clone repository if you already have [`git`](https://git-scm.com/) installed:
 
 ```sh
 git clone https://github.com/ahwayakchih/nobbic.git
@@ -45,14 +45,14 @@ Once you have directory with files in it, open command line and change to that d
 cd nobbic
 ```
 
-Once it's "installed", you can use it from command line, for example:
+Once in its directory, you can use it from command line, for example:
 
 ```sh
 ./nobbic help
 ```
 
-You can add nobbic's path to the `PATH` environment variable, or keep prefixing commands with path to its location, e.g., `./nobbic` or `~/nobbic/nobic`, etc...
-For clarity, example commands following in this and other documents found in [docs](./docs) subdirectory will not be prefixed.
+You can add nobbic's full path to the `PATH` environment variable, or keep prefixing commands with path to its location, e.g., `./nobbic` or `~/nobbic/nobic`, etc...
+For clarity, example commands following in this and other [documents found in "docs"](./docs) subdirectory will not be prefixed, as if nobbic was added to the `PATH`.
 
 
 ## Usage
