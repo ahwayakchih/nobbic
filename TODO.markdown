@@ -1,9 +1,12 @@
 TODO
 ====
 
-- when podman 3.2 is released, make NGINX script add itself as `--required` to NodeBB container, so it will be
-  started earlier (and be able to show some kind of a placeholder page while NodeBB and database are started).
+- Make NGINX script add itself as `--required` to NodeBB container, so it will be started earlier
+  (and be able to show some kind of a placeholder page while NodeBB and database are started).
   NodeBB can use `--required` to specify database(s) too.
+  This requires changing the way scripts prepare containers - it needs two passes. First they prepare all info,
+  then containers are created. Otherwise when nginx requires nodebb, it cannot be created, because nodebb
+  container is created last.
 - do not downgrade NODEBB_VERSION when restoring/upgrading without specifying version having NodeBB setup using
   next beta version (reported by @nhlpl).
 - add support for Let's Encrypt when `APP_USE_FQDN` is specified and names existing domain name (not IP number).
