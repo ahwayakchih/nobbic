@@ -3,7 +3,7 @@ Compatibility
 
 ## Podman
 
-Nobbic was created while **podman v2.2.1** was current. Now it's tested with podman **v3.1**.
+Nobbic was created while **podman v2.2.1** was current. Now it's tested with podman **v3.2.2**.
 
 It's tested ONLY in rootless mode.
 
@@ -16,7 +16,7 @@ runtime = "crun"
 
 ## NodeBB
 
-Project was tested with various versions of **NodeBB** between (and including) **v1.12.1** and **v1.17.0**.
+Project was tested with various versions of **NodeBB** between (and including) **v1.12.1** and **v1.17.1**.
 
 
 ## Node.js

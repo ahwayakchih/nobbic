@@ -7,13 +7,10 @@ This tutorial is mainly a compilation of 3 other documents:
 2. https://wiki.alpinelinux.org/wiki/Podman
 3. https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md
 
-It was written when [**Alpine Linux**](https://alpinelinux.org/) did not have `podman` in the **v3.13** repository, only in the "edge" repository. Hopefully with next version it will be available in default repositories.
-In the meantime, keep reading this "tutorial".
-
 
 ## Install Alpine Linux from ISO
 
-After booting virtual machine or a computer from ISO/CD/USB/etc..., login as "root" and execute following sequence of commands:
+After booting virtual machine (for example, download and use ISO "virtual" edition of Alpine) or a computer from ISO/CD/USB/etc..., login as "root" and execute following sequence of commands:
 
 ```sh
 setup-alpine
@@ -34,22 +31,22 @@ You should see something like this (URLs may differ, but last two parts should b
 
 ```txt
 #/media/cdrom/apks
-http://dl-4.alpinelinux.org/alpine/v3.13/main
-#http://dl-4.alpinelinux.org/alpine/v3.13/community
+http://dl-4.alpinelinux.org/alpine/v3.14/main
+#http://dl-4.alpinelinux.org/alpine/v3.14/community
 #http://dl-4.alpinelinux.org/alpine/edge/main
 #http://dl-4.alpinelinux.org/alpine/edge/community
 #http://dl-4.alpinelinux.org/alpine/edge/testing
 ```
 
-Comment out lines with "v3.13" and uncomment "edge" lines, so it looks more like this:
+Uncomment line with "v3.14/community", so it looks more like this (notice lack of '#' at the beginning of 3rd line):
 
 ```txt
 #/media/cdrom/apks
-#http://dl-4.alpinelinux.org/alpine/v3.13/main
-#http://dl-4.alpinelinux.org/alpine/v3.13/community
-http://dl-4.alpinelinux.org/alpine/edge/main
-http://dl-4.alpinelinux.org/alpine/edge/community
-http://dl-4.alpinelinux.org/alpine/edge/testing
+http://dl-4.alpinelinux.org/alpine/v3.14/main
+http://dl-4.alpinelinux.org/alpine/v3.14/community
+#http://dl-4.alpinelinux.org/alpine/edge/main
+#http://dl-4.alpinelinux.org/alpine/edge/community
+#http://dl-4.alpinelinux.org/alpine/edge/testing
 ```
 
 Save changes and exit editor (CTRL+x, confirm write with "y" and ENTER).
@@ -57,15 +54,14 @@ Save changes and exit editor (CTRL+x, confirm write with "y" and ENTER).
 Now update system and its packages from edge repositories:
 
 ```sh
-apk upgrade --update-cache --available
+apk upgrade --available
 sync
-reboot
 ```
 
 
 ## Configuring Podman
 
-After logging in as a root user, it's time to install and configure podman.
+After enabling "community" repository, it's time to install and configure podman.
 
 
 ### Install various dependencies and helpful tools
@@ -95,7 +91,7 @@ SUB_UID_COUNT 10000
 SUB_GID_COUNT 10000
 ```
 
-You can set numbers bigger than 1000, if there will be many containers (and user accounts created inside them) run by users.
+You can set numbers bigger than 10000, if there will be many containers (and user accounts created inside them) run by users.
 Save changes and exit editor.
 
 This will allocate pool of "virtual" ids for every user. You can read more about this in tutorial found in [`podman`'s repository](https://github.com/containers/podman/blob/master/docs/tutorials/rootless_tutorial.md#etcsubuid-and-etcsubgid-configuration) and deep-dive into why this is needed at [Red Hat's blog](https://www.redhat.com/en/blog/understanding-root-inside-and-outside-container).
@@ -252,5 +248,21 @@ curl -sL https://raw.githubusercontent.com/ahwayakchih/nobbic/main/tools/podman-
 ```
 
 If it did not work, report any errors - maybe we can fix it. Otherwise...
+
+
+Logout from temporary login back to "root" account:
+
+```sh
+exit
+```
+
+... logout from "root" account:
+
+```sh
+exit
+```
+
+... and login as regular username (enter username, hit ENTER, enter password).
+
 
 Have fun running containers rootlessly!
