@@ -58,8 +58,9 @@ Project was tested and is known to work with following database images from dock
 - 6.2-rc3-alpine
 - 6.2.1-alpine
 - 6.2.3-alpine
+- 6.2.4-alpine
 - *bitnami/redis:* 6.0 ([build/start](./actions/start.markdown) with an additional `CONTAINER_ENV_REDIS_ALLOW_EMPTY_PASSWORD=yes` environment variable)
 
 ## HTTP(S) servers
 
-Project was tested with **NGINX v1.19-alpine** and **v1.18.0-alpine** images from docker.io.
+Project was tested with **NGINX v1.21-alpine**, **NGINX v1.19-alpine** and **v1.18.0-alpine** images from docker.io.
