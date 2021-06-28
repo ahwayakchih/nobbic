@@ -35,10 +35,23 @@ if [ -z "$MONGODB_PORT" ] ; then
 	echo "WARNING: could not find port number exposed by ${MONGODB_IMAGE}, defaulting to ${MONGODB_PORT}" >&2
 fi
 
+function mongodbAvailable () {
+	local timeout=${1}
+	test -n "${timeout}" ||	timeout=10;
+	for i in `seq $timeout`; do
+		# Command based on info from https://stackoverflow.com/a/56264776/6352710
+		podman exec -t $CONTAINER sh -c "mongo --eval 'printjson(db.serverStatus())'" && return 0;
+		echo "waiting..."; sleep 1;
+	done
+	return 1
+}
+
 echo "Waiting for MongoDB from '$MONGODB_HOSTNAME' to be available on port $MONGODB_PORT..."
-podman run --rm --pod "$MONGODB_HOSTNAME" -v "${__DIRNAME}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:${MONGODB_PORT}" -t 30 -l >&2\
+# podman run --rm --pod "$MONGODB_HOSTNAME" -v "${__DIRNAME}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:${MONGODB_PORT}" -t 30 -l >&2\
+mongodbAvailable 30\
 	|| (echo "ERROR: timeout while waiting for database to be ready" >&2 && exit 1)\
 	|| return 1
+
 echo "Running mongodump inside ${CONTAINER} and redirecting its output to ${MONGODB_ARCHIVE}.archive"
 podman exec $CONTAINER sh -c 'exec mongodump -d "'$MONGO_INITDB_DATABASE'" --archive' > "${MONGODB_ARCHIVE}.archive"\
 	&& echo "MongoDB backup done"

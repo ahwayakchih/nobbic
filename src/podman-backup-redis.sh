@@ -31,11 +31,6 @@ fi
 
 REDIS_HOSTNAME=$(podman inspect "$CONTAINER" --format=$'{{range .Config.Env}}{{.}}\n{{end}}' | grep "HOSTNAME" | cut -d= -f2)
 
-echo "Waiting for Redis from '$REDIS_HOSTNAME' to be available on port $REDIS_PORT..."
-podman run --rm --pod "$REDIS_HOSTNAME" -v "${__DIRNAME}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:${REDIS_PORT}" -t 30 -l >&2\
-	|| (echo "ERROR: timeout while waiting for database to be ready" >&2 && exit 1)\
-	|| return 1
-
 function redis () {
 	local cmd="redis-cli --raw $@"
 	podman exec "$CONTAINER" /bin/sh -c "$cmd"
@@ -45,6 +40,22 @@ function redisFileExists () {
 	local cmd="[ -f '${1}' ] || exit 1"
 	podman exec "$CONTAINER" /bin/sh -c "$cmd" && echo "yes" || echo "no"
 }
+
+function redisAvailable () {
+	local timeout=${1}
+	test -n "${timeout}" ||	timeout=10;
+	for i in `seq $timeout`; do
+		redis info server | grep 'process_id:' && return 0;
+		echo "waiting..."; sleep 1;
+	done
+	return 1
+}
+
+echo "Waiting for Redis from '$REDIS_HOSTNAME' to be available..."
+# podman run --rm --pod "$REDIS_HOSTNAME" -v "${__DIRNAME}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "localhost:${REDIS_PORT}" -t 30 -l >&2\
+redisAvailable 30\
+	|| (echo "ERROR: timeout while waiting for database to be ready" >&2 && exit 1)\
+	|| return 1
 
 REDIS_DATA_DIR=$(redis config get dir | tail -n 1)
 REDIS_FILE_RDB=$(redis config get dbfilename | tail -n 1)
@@ -60,9 +71,10 @@ fi
 
 REDIS_FILE_EXISTS="no"
 if [ -n "$REDIS_FILE" ] ; then
+	echo "Redis is using ${REDIS_FILE} for persistence."
 	REDIS_FILE_EXISTS=$(redisFileExists "${REDIS_DATA_DIR}/${REDIS_FILE}")
-	if [ "$REDIS_FILE_EXISTS" = "no" ] && [ -n "$REDIS_FILE_RDB" ] ; then
-		echo -n "Redis ${REDIS_DATA_DIR}/${REDIS_FILE} does not exist, triggering SAVE now... "
+	if [ "$REDIS_FILE" = "$REDIS_FILE_RDB" ] ; then
+		echo -n "Triggering SAVE to ${REDIS_DATA_DIR}/${REDIS_FILE}... "
 		if [ "$(redis SAVE | tail -n 1)" = "OK" ] ; then
 			echo "done"
 			echo -n "Checking if file exists... "
@@ -71,6 +83,15 @@ if [ -n "$REDIS_FILE" ] ; then
 		else
 			echo "failed"
 		fi
+	else
+		echo -n "Triggering BGSAVE to ${REDIS_DATA_DIR}/${REDIS_FILE}... "
+		LASTSAVE=$(redis LASTSAVE)
+		redis BGSAVE
+		while true; do
+			test $LASTSAVE != $(redis LASTSAVE) && break;
+			echo -n "."
+		done
+		echo "done"
 	fi
 fi
 

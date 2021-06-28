@@ -35,10 +35,22 @@ containerEnv=$(podman inspect "$CONTAINER" --format=$'{{range .Config.Env}}{{.}}
 POSTGRES_DB=$(echo "$containerEnv" | grep "POSTGRES_DB" | cut -d= -f2)
 POSTGRES_HOSTNAME=$(echo "$containerEnv" | grep "HOSTNAME" | cut -d= -f2)
 
-echo "Waiting for PostgreSQL from '$POSTGRES_HOSTNAME' to be available on port $POSTGRES_PORT..."
-podman run --rm --pod "$POSTGRES_HOSTNAME" -v "${__DIRNAME}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "127.0.0.1:${POSTGRES_PORT}" -t 30 -l >&2\
+function postgresAvailable () {
+	local timeout=${1}
+	test -n "${timeout}" ||	timeout=10;
+	for i in `seq $timeout`; do
+		podman exec -t -u postgres $CONTAINER /bin/bash -c "pg_isready" && return 0;
+		echo "waiting..."; sleep 1;
+	done
+	return 1
+}
+
+echo "Waiting for PostgreSQL from '$POSTGRES_HOSTNAME' to be available..."
+# podman run --rm --pod "$POSTGRES_HOSTNAME" -v "${__DIRNAME}/.container/tools:/tools:ro" docker.io/alpine /tools/wait-for.sh "127.0.0.1:${POSTGRES_PORT}" -t 30 -l >&2\
+postgresAvailable 30\
 	|| (echo "ERROR: timeout while waiting for database to be ready" >&2 && exit 1)\
 	|| return 1
+
 echo "Running pg_dump inside ${CONTAINER} and redirecting its output to ${POSTGRES_ARCHIVE}.txt"
 podman exec -t -u postgres $CONTAINER /bin/bash -c 'pg_dump -d "'$POSTGRES_DB'"' > "${POSTGRES_ARCHIVE}.txt"\
 	&& echo "PostgreSQL backup done"
