@@ -18,7 +18,7 @@ reboot
 ```
 
 
-## Switch to "edge" version
+## Enable "community" repository
 
 After logging in as root user, change repositories:
 
