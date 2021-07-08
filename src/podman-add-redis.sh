@@ -52,6 +52,11 @@ if [ ! -z "$RESTORE_FROM" ] ; then
 			echo "Loading ${RESTORE_FROM}/redis.env"
 			# Try to import REDIS_DATA_DIR from backed up env, but ignore any failure
 			import "${RESTORE_FROM}/redis.env" '^REDIS_DATA_DIR$'
+		else
+			# TODO: Try to run test container to get configuration, same as when creating backup.
+			echo "Restoring using different image than the one used for backup:"
+			echo "	${REDIS_PREVIOUS_IMAGE%%:*} != ${REDIS_IMAGE%%:*}"
+			echo "REDIS_DATA_DIR will not be imported from backed up 'redis.env' file."
 		fi
 	fi
 
