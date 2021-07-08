@@ -16,7 +16,7 @@ runtime = "crun"
 
 ## NodeBB
 
-Project was tested with various versions of **NodeBB** between (and including) **v1.12.1** and **v1.17.1**.
+Project was tested with various versions of **NodeBB** between (and including) **v1.12.1** and **v1.17.2**.
 
 
 ## Node.js
@@ -47,6 +47,7 @@ Project was tested and is known to work with following database images from dock
 - 4.0.22-xenial
 - 4.2.12-bionic
 - 4.4.3-bionic
+- 4.4.6-bionic
 - *bitnami/mongodb:* 4.4.3-debian-10-r43
 - *bitnami/mongodb:* 4.4.4
 
