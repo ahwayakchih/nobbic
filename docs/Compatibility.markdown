@@ -48,6 +48,7 @@ Project was tested and is known to work with following database images from dock
 - 4.2.12-bionic
 - 4.4.3-bionic
 - 4.4.6-bionic
+- 4.4.7-rc1-focal
 - *bitnami/mongodb:* 4.4.3-debian-10-r43
 - *bitnami/mongodb:* 4.4.4
 
