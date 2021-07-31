@@ -10,6 +10,7 @@ local IP
 if [ "$FQDN" = "1" ] ; then
 	echo "Calling OpenDNS service to get public IP..."
 
+	# Alternative: dig @ns1.google.com TXT o-o.myaddr.l.google.com +short
 	IP=$(podman run --rm "localhost/${NODEBB_TOOLBOX_IMAGE}" dig +short myip.opendns.com @resolver1.opendns.com || echo '')
 	if [ -z "$IP" ] ; then
 		echo "ERROR: could not determine public IP, cannot run without APP_USE_FQDN specified" >&2
@@ -66,7 +67,7 @@ on_return carelessly rm "$REQUEST" "$RESULT" "$EXPECTED"
 
 local SECRET=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w32 | head -n1 | fold -w8 | paste -sd\- -)
 echo "GET / HTTP/1.1\nHost:${FQDN}\n\n" > $REQUEST
-echo "" > $RESULT
+echo -n "" > $RESULT
 echo -n "$SECRET" > $EXPECTED
 
 echo "Starting test server..."
