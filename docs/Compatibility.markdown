@@ -40,6 +40,7 @@ Project was tested and is known to work with following database images from dock
 - 13.3-alpine
 - 13.4-alpine
 - 14beta2-alpine
+- 14beta3-alpine
 - *bitnami/postgresql:* 13.2.0
 
 
