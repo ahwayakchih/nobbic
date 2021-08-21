@@ -3,7 +3,7 @@ Compatibility
 
 ## Podman
 
-Nobbic was created while **podman v2.2.1** was current. Now it's tested with podman **v3.2.3**.
+Nobbic was created while **podman v2.2.1** was current. Now it's tested with podman **v3.3.0**.
 
 It's tested ONLY in rootless mode.
 
