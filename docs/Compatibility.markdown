@@ -16,7 +16,7 @@ runtime = "crun"
 
 ## NodeBB
 
-Project was tested with various versions of **NodeBB** between (and including) **v1.12.1** and **v1.17.3**.
+Project was tested with various versions of **NodeBB** between (and including) **v1.12.1** and **v1.18.0**.
 
 
 ## Node.js

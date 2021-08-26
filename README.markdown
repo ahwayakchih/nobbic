@@ -24,7 +24,7 @@ You will also need 2 GB or more of RAM available.
 
 ## Compatibility
 
-It was tested with various versions of **NodeBB** between (and including) **v1.12.1** and **v1.17.3**.
+It was tested with various versions of **NodeBB** between (and including) **v1.12.1** and **v1.18.0**.
 Depending on NodeBB version, it was tested with [Node.js](https://nodejs.org/) versions from 8 to 15, and various versions and combinations of databases supported by NodeBB ([MongoDB](https://www.mongodb.com/), [PostgreSQL](https://www.postgresql.org/) and [Redis](https://redis.io/)).
 
 For a full list of software, read [docs/Compatibility.markdown](./docs/Compatibility.markdown).
