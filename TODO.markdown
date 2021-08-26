@@ -1,6 +1,8 @@
 TODO
 ====
 
+- Check if we can use `podman container checkpoint` and `podman container restore` commands for our backup/restore
+  functionality. That would simplify our scripts a lot, but could be more resource consuming (larger backups).
 - Make NGINX script add itself as `--required` to NodeBB container, so it will be started earlier
   (and be able to show some kind of a placeholder page while NodeBB and database are started).
   NodeBB can use `--required` to specify database(s) too.
